@@ -1,0 +1,235 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ──────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  CAMPUS_ADMIN
+  SUPER_ADMIN
+}
+
+enum EnrollmentStatus {
+  ACTIVE
+  BROKEN
+  COMPLETED
+}
+
+enum SubmissionStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum InterviewStatus {
+  QUEUED
+  SCHEDULED
+  PASSED
+  FAILED
+}
+
+enum GoodiesStatus {
+  ELIGIBLE
+  CLAIMED
+  SHIPPED
+}
+
+// ─── Models ─────────────────────────────────────────────────────────────────
+
+model Campus {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  region    String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users User[]
+
+  @@map("campuses")
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  role         Role     @default(STUDENT)
+  campusId     String?  @map("campus_id")
+  year         Int?     // 1, 2, 3, or 4 — nullable for admins
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  campus Campus? @relation(fields: [campusId], references: [id])
+
+  enrollments           Enrollment[]
+  reviewedSubmissions   Submission[]           @relation("ReviewedBy")
+  interviewApplications InterviewApplication[] @relation("Applicant")
+  conductedInterviews   InterviewApplication[] @relation("Interviewer")
+  goodiesClaims         GoodiesClaim[]
+  auditLogs             AuditLog[]
+  createdChallenges     Challenge[]            @relation("ChallengeCreator")
+
+  @@map("users")
+}
+
+model Challenge {
+  id                          String   @id @default(cuid())
+  name                        String   // "APEX 151" or "BASE 111"
+  slug                        String   @unique
+  totalDays                   Int      @map("total_days")
+  rules                       Json     @default("{}")
+  requiresCompletedChallengeId String? @map("requires_completed_challenge_id")
+  isActive                    Boolean  @default(true) @map("is_active")
+  createdById                 String?  @map("created_by")
+  createdAt                   DateTime @default(now()) @map("created_at")
+  updatedAt                   DateTime @updatedAt @map("updated_at")
+
+  requiresCompletedChallenge Challenge?  @relation("ChallengePrereq", fields: [requiresCompletedChallengeId], references: [id])
+  prerequisiteFor            Challenge[] @relation("ChallengePrereq")
+  createdBy                  User?       @relation("ChallengeCreator", fields: [createdById], references: [id])
+
+  problems              Problem[]
+  enrollments           Enrollment[]
+  interviewApplications InterviewApplication[]
+  goodiesClaims         GoodiesClaim[]
+  linkedInPostTemplates LinkedInPostTemplate[]
+
+  @@map("challenges")
+}
+
+model Problem {
+  id           String @id @default(cuid())
+  challengeId  String @map("challenge_id")
+  dayNumber    Int    @map("day_number")
+  title        String
+  topic        String
+  difficulty   String // "Easy", "Medium", "Hard"
+  externalLink String @map("external_link") // LeetCode/GFG URL
+
+  challenge   Challenge    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
+  submissions Submission[]
+
+  @@unique([challengeId, dayNumber])
+  @@map("problems")
+}
+
+model Enrollment {
+  id                     String           @id @default(cuid())
+  userId                 String           @map("user_id")
+  challengeId            String           @map("challenge_id")
+  startDate              DateTime         @default(now()) @map("start_date")
+  currentDay             Int              @default(1) @map("current_day")
+  streakCount            Int              @default(0) @map("streak_count")
+  longestStreak          Int              @default(0) @map("longest_streak")
+  graceDaysUsedThisMonth Int              @default(0) @map("grace_days_used_this_month")
+  graceDaysResetAt       DateTime?        @map("grace_days_reset_at")
+  restartCount           Int              @default(0) @map("restart_count")
+  status                 EnrollmentStatus @default(ACTIVE)
+  completedAt            DateTime?        @map("completed_at")
+  createdAt              DateTime         @default(now()) @map("created_at")
+  updatedAt              DateTime         @updatedAt @map("updated_at")
+
+  user        User         @relation(fields: [userId], references: [id])
+  challenge   Challenge    @relation(fields: [challengeId], references: [id])
+  submissions Submission[]
+
+  @@unique([userId, challengeId])
+  @@map("enrollments")
+}
+
+model Submission {
+  id              String           @id @default(cuid())
+  enrollmentId    String           @map("enrollment_id")
+  dayNumber       Int              @map("day_number")
+  problemId       String           @map("problem_id")
+  linkedinPostUrl String           @map("linkedin_post_url")
+  supportingLink  String?          @map("supporting_link")
+  githubLink      String?          @map("github_link")
+  status          SubmissionStatus @default(PENDING)
+  reviewedById    String?          @map("reviewed_by")
+  reviewedAt      DateTime?        @map("reviewed_at")
+  rejectionReason String?          @map("rejection_reason")
+  submittedAt     DateTime         @default(now()) @map("submitted_at")
+
+  enrollment Enrollment @relation(fields: [enrollmentId], references: [id])
+  problem    Problem    @relation(fields: [problemId], references: [id])
+  reviewedBy User?      @relation("ReviewedBy", fields: [reviewedById], references: [id])
+
+  @@unique([enrollmentId, dayNumber])
+  @@index([status])
+  @@map("submissions")
+}
+
+model InterviewApplication {
+  id            String          @id @default(cuid())
+  userId        String          @map("user_id")
+  challengeId   String          @map("challenge_id")
+  appliedAt     DateTime        @default(now()) @map("applied_at")
+  status        InterviewStatus @default(QUEUED)
+  scheduledAt   DateTime?       @map("scheduled_at")
+  interviewerId String?         @map("interviewer_id")
+  notes         String?
+
+  user        User      @relation("Applicant", fields: [userId], references: [id])
+  challenge   Challenge @relation(fields: [challengeId], references: [id])
+  interviewer User?     @relation("Interviewer", fields: [interviewerId], references: [id])
+
+  @@map("interview_applications")
+}
+
+model GoodiesClaim {
+  id              String       @id @default(cuid())
+  userId          String       @map("user_id")
+  challengeId     String       @map("challenge_id")
+  status          GoodiesStatus @default(ELIGIBLE)
+  shippingName    String?      @map("shipping_name")
+  shippingAddress String?      @map("shipping_address")
+  phone           String?
+  claimedAt       DateTime?    @map("claimed_at")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  user      User      @relation(fields: [userId], references: [id])
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@map("goodies_claims")
+}
+
+model LinkedInPostTemplate {
+  id              String  @id @default(cuid())
+  challengeId     String  @map("challenge_id")
+  templateText    String  @map("template_text")
+  requiredHashtag String  @map("required_hashtag")
+  isActive        Boolean @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  challenge Challenge @relation(fields: [challengeId], references: [id])
+
+  @@map("linkedin_post_templates")
+}
+
+model AuditLog {
+  id         String   @id @default(cuid())
+  actorId    String   @map("actor_id")
+  action     String
+  targetType String   @map("target_type")
+  targetId   String   @map("target_id")
+  metadata   Json?
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  actor User @relation(fields: [actorId], references: [id])
+
+  @@index([actorId])
+  @@index([targetType, targetId])
+  @@map("audit_logs")
+}
