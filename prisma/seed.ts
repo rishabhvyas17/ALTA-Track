@@ -35,6 +35,31 @@ async function main() {
       update: {},
       create: { name: "BITS Pilani", region: "West India" },
     }),
+    prisma.campus.upsert({
+      where: { name: "SAGE University" },
+      update: {},
+      create: { name: "SAGE University", region: "Indore, Madhya Pradesh" },
+    }),
+    prisma.campus.upsert({
+      where: { name: "ADYPU" },
+      update: {},
+      create: { name: "ADYPU", region: "Pune, Maharashtra" },
+    }),
+    prisma.campus.upsert({
+      where: { name: "IITM" },
+      update: {},
+      create: { name: "IITM", region: "Delhi NCR" },
+    }),
+    prisma.campus.upsert({
+      where: { name: "VGU" },
+      update: {},
+      create: { name: "VGU", region: "Jaipur, Rajasthan" },
+    }),
+    prisma.campus.upsert({
+      where: { name: "DRK Institute" },
+      update: {},
+      create: { name: "DRK Institute", region: "Hyderabad, Telangana" },
+    }),
   ]);
 
   console.log(`✅ Created ${campuses.length} campuses`);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Trophy, MapPin, Users, FileText, TrendingUp, Flame } from "lucide-react";
+import { Trophy, MapPin, Users, FileText, TrendingUp, Flame, Plus, ChevronRight, Share2, ShieldCheck, Sparkles } from "lucide-react";
 import Link from "next/link";
 
 interface Stats {
@@ -9,219 +9,209 @@ interface Stats {
   activeChallenges: number;
   totalCampuses: number;
   totalStudents: number;
-  totalAdmins: number;
   totalTemplates: number;
 }
 
 export default function SuperAdminDashboard() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<Stats>({
+    totalChallenges: 0,
+    activeChallenges: 0,
+    totalCampuses: 0,
+    totalStudents: 0,
+    totalTemplates: 0,
+  });
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Fetch aggregate stats
-    Promise.all([
-      fetch("/api/superadmin/challenges").then((r) => r.json()),
-      fetch("/api/superadmin/campuses").then((r) => r.json()),
-      fetch("/api/superadmin/templates").then((r) => r.json()),
-    ]).then(([challengesData, campusesData, templatesData]) => {
-      const challenges = challengesData.challenges || [];
-      const campuses = campusesData.campuses || [];
-      const templates = templatesData.templates || [];
-
-      setStats({
-        totalChallenges: challenges.length,
-        activeChallenges: challenges.filter((c: { isActive: boolean }) => c.isActive).length,
-        totalCampuses: campuses.length,
-        totalStudents: campuses.reduce(
-          (sum: number, c: { _count: { users: number } }) => sum + (c._count?.users || 0),
-          0
-        ),
-        totalAdmins: campuses.reduce(
-          (sum: number, c: { users: { id: string }[] }) => sum + (c.users?.length || 0),
-          0
-        ),
-        totalTemplates: templates.length,
-      });
-    });
+    fetchStats();
   }, []);
 
-  const cards = stats
-    ? [
-        {
-          icon: Trophy,
-          label: "Active Challenges",
-          value: stats.activeChallenges,
-          subtext: `${stats.totalChallenges} total`,
-          color: "#3bc3e2",
-          href: "/superadmin/challenges",
-        },
-        {
-          icon: MapPin,
-          label: "Campuses",
-          value: stats.totalCampuses,
-          subtext: `${stats.totalAdmins} admins`,
-          color: "#3ccc8b",
-          href: "/superadmin/campuses",
-        },
-        {
-          icon: Users,
-          label: "Total Students",
-          value: stats.totalStudents,
-          subtext: "across all campuses",
-          color: "#fcc032",
-          href: "/superadmin/campuses",
-        },
-        {
-          icon: FileText,
-          label: "Post Templates",
-          value: stats.totalTemplates,
-          subtext: "LinkedIn templates",
-          color: "#8b5cf6",
-          href: "/superadmin/templates",
-        },
-      ]
-    : [];
+  const fetchStats = async () => {
+    try {
+      setLoading(true);
+      const [challengesRes, campusesRes, templatesRes] = await Promise.all([
+        fetch("/api/superadmin/challenges"),
+        fetch("/api/superadmin/campuses"),
+        fetch("/api/superadmin/templates"),
+      ]);
+
+      let cData = { challenges: [] };
+      let campData = { campuses: [] };
+      let tData = { templates: [] };
+
+      if (challengesRes.ok) cData = await challengesRes.json();
+      if (campusesRes.ok) campData = await campusesRes.json();
+      if (templatesRes.ok) tData = await templatesRes.json();
+
+      const totalStudents = (campData.campuses || []).reduce(
+        (sum: number, c: any) => sum + (c._count?.users || 0),
+        0
+      );
+
+      setStats({
+        totalChallenges: cData.challenges?.length || 0,
+        activeChallenges:
+          cData.challenges?.filter((c: any) => c.isActive).length || 0,
+        totalCampuses: campData.campuses?.length || 0,
+        totalStudents,
+        totalTemplates: tData.templates?.length || 0,
+      });
+    } catch (err) {
+      console.error("Failed to fetch stats:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="space-y-8 animate-fade-in">
-      {/* Welcome */}
-      <div
-        className="rounded-2xl p-6 sm:p-8 text-white relative overflow-hidden"
-        style={{
-          background: "linear-gradient(135deg, #0d1e56 0%, #1a2d6b 100%)",
-        }}
-      >
-        <div
-          className="absolute top-[-50%] right-[-10%] w-[300px] h-[300px] rounded-full opacity-20 blur-3xl"
-          style={{
-            background: "radial-gradient(circle, #3bc3e2, transparent)",
-          }}
-        />
-        <div className="relative z-10">
-          <div className="flex items-center gap-2 mb-2">
-            <Flame className="w-5 h-5 text-[#fcc032]" />
-            <span className="text-xs font-bold text-[#3bc3e2] uppercase tracking-wider">
-              Super Admin Dashboard
-            </span>
+    <div className="space-y-8 max-w-6xl mx-auto pb-12">
+      {/* Hero Welcome Banner */}
+      <div className="alta-card p-6 sm:p-8 relative overflow-hidden bg-gradient-to-br from-[#0c1b48] via-[#071130] to-[#050c24] border border-[#3bc3e2]/30">
+        <div className="absolute top-0 right-0 w-80 h-80 bg-[#3bc3e2]/10 rounded-full blur-3xl pointer-events-none" />
+        
+        <div className="space-y-3 relative z-10">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#3bc3e2]/15 text-[#3bc3e2] border border-[#3bc3e2]/30 text-xs font-black uppercase tracking-wider">
+            <Sparkles className="w-3.5 h-3.5 text-[#fcc032]" />
+            Super Admin Control Deck
           </div>
-          <h1 className="text-2xl sm:text-3xl font-black mb-2">
+          <h1 className="text-3xl sm:text-4xl font-black text-white tracking-tight">
             Welcome back! 👋
           </h1>
-          <p className="text-sm text-white/50 max-w-lg">
-            Manage challenges, campuses, and students across the entire ALTA DSA
-            platform from here.
+          <p className="text-sm text-slate-300 max-w-2xl font-medium">
+            Manage challenge tracks, rules engine configurations, campus allocations, and global student progress across all partner institutions.
           </p>
         </div>
       </div>
 
-      {/* Stats Grid */}
-      {stats ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {cards.map(({ icon: Icon, label, value, subtext, color, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="alta-card p-5 group cursor-pointer"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div
-                  className="w-10 h-10 rounded-xl flex items-center justify-center"
-                  style={{ background: `${color}15` }}
-                >
-                  <Icon className="w-5 h-5" style={{ color }} />
-                </div>
-                <TrendingUp className="w-4 h-4 text-[#3ccc8b] opacity-0 group-hover:opacity-100 transition-opacity" />
-              </div>
-              <div className="text-2xl font-black text-[#0d1e56] mb-0.5">
-                {value}
-              </div>
-              <div className="text-xs font-bold text-[#0d1e56]">{label}</div>
-              <div className="text-[10px] text-[#64748b] mt-0.5">
-                {subtext}
-              </div>
-            </Link>
-          ))}
-        </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="alta-card p-5">
-              <div className="skeleton w-10 h-10 mb-3" />
-              <div className="skeleton w-16 h-7 mb-2" />
-              <div className="skeleton w-24 h-3 mb-1" />
-              <div className="skeleton w-20 h-2.5" />
+      {/* Metrics Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="alta-card p-6 space-y-3 border border-white/10 hover:border-[#3bc3e2]/40 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-slate-300 uppercase tracking-wider">
+              Active Challenges
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-[#3bc3e2]/15 border border-[#3bc3e2]/30 flex items-center justify-center text-[#3bc3e2]">
+              <Trophy className="w-5 h-5" />
             </div>
-          ))}
+          </div>
+          <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            {stats.activeChallenges}
+          </div>
+          <p className="text-xs font-bold text-slate-400">
+            {stats.totalChallenges} Total Created
+          </p>
         </div>
-      )}
 
-      {/* Quick Actions */}
-      <div>
-        <h2 className="text-sm font-extrabold text-[#0d1e56] mb-3">
-          Quick Actions
+        <div className="alta-card p-6 space-y-3 border border-white/10 hover:border-[#3ccc8b]/40 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-slate-300 uppercase tracking-wider">
+              Campuses
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+              <MapPin className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            {stats.totalCampuses}
+          </div>
+          <p className="text-xs font-bold text-emerald-400 flex items-center gap-1">
+            <TrendingUp className="w-3.5 h-3.5" /> Partner Institutions
+          </p>
+        </div>
+
+        <div className="alta-card p-6 space-y-3 border border-white/10 hover:border-[#fcc032]/40 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-slate-300 uppercase tracking-wider">
+              Total Students
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
+              <Users className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            {stats.totalStudents}
+          </div>
+          <p className="text-xs font-bold text-amber-400 flex items-center gap-1">
+            <Flame className="w-3.5 h-3.5 fill-amber-400" /> Active Solvers
+          </p>
+        </div>
+
+        <div className="alta-card p-6 space-y-3 border border-white/10 hover:border-purple-500/40 transition-all">
+          <div className="flex items-center justify-between">
+            <span className="text-xs font-black text-slate-300 uppercase tracking-wider">
+              Post Templates
+            </span>
+            <div className="w-10 h-10 rounded-xl bg-purple-500/15 border border-purple-500/30 flex items-center justify-center text-purple-400">
+              <Share2 className="w-5 h-5" />
+            </div>
+          </div>
+          <div className="text-3xl sm:text-4xl font-black text-white tracking-tight">
+            {stats.totalTemplates}
+          </div>
+          <p className="text-xs font-bold text-slate-400">LinkedIn Format Rules</p>
+        </div>
+      </div>
+
+      {/* Quick Actions Grid */}
+      <div className="space-y-4">
+        <h2 className="text-lg font-black text-white tracking-tight flex items-center gap-2">
+          <ShieldCheck className="w-5 h-5 text-[#3bc3e2]" /> Quick Actions
         </h2>
-        <div className="grid sm:grid-cols-3 gap-3">
-          {[
-            {
-              label: "Create Challenge",
-              desc: "Set up a new DSA challenge program",
-              href: "/superadmin/challenges",
-              icon: Trophy,
-              color: "#3bc3e2",
-            },
-            {
-              label: "Add Campus",
-              desc: "Register a new college campus",
-              href: "/superadmin/campuses",
-              icon: MapPin,
-              color: "#3ccc8b",
-            },
-            {
-              label: "Manage Templates",
-              desc: "Edit LinkedIn post templates",
-              href: "/superadmin/templates",
-              icon: FileText,
-              color: "#fcc032",
-            },
-          ].map(({ label, desc, href, icon: Icon, color }) => (
-            <Link
-              key={label}
-              href={href}
-              className="alta-card p-4 flex items-center gap-4 group"
-            >
-              <div
-                className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0"
-                style={{ background: `${color}15` }}
-              >
-                <Icon className="w-5 h-5" style={{ color }} />
-              </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-[#0d1e56]">{label}</p>
-                <p className="text-xs text-[#64748b]">{desc}</p>
-              </div>
-              <ChevronRight className="w-4 h-4 text-[#64748b] opacity-0 group-hover:opacity-100 transition-opacity" />
-            </Link>
-          ))}
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <Link
+            href="/superadmin/challenges"
+            className="alta-card p-6 flex items-center justify-between group hover:border-[#3bc3e2] transition-all"
+          >
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-white text-base group-hover:text-[#3bc3e2] transition-colors">
+                Create Challenge
+              </h3>
+              <p className="text-xs text-slate-400 font-medium">
+                Set up a new DSA challenge track
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-[#3bc3e2]/15 text-[#3bc3e2] flex items-center justify-center group-hover:bg-[#3bc3e2] group-hover:text-[#050c24] transition-all">
+              <Plus className="w-5 h-5" />
+            </div>
+          </Link>
+
+          <Link
+            href="/superadmin/campuses"
+            className="alta-card p-6 flex items-center justify-between group hover:border-[#3ccc8b] transition-all"
+          >
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-white text-base group-hover:text-[#3ccc8b] transition-colors">
+                Add Campus
+              </h3>
+              <p className="text-xs text-slate-400 font-medium">
+                Register a new college campus
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-emerald-500/15 text-emerald-400 flex items-center justify-center group-hover:bg-[#3ccc8b] group-hover:text-[#050c24] transition-all">
+              <Plus className="w-5 h-5" />
+            </div>
+          </Link>
+
+          <Link
+            href="/superadmin/templates"
+            className="alta-card p-6 flex items-center justify-between group hover:border-[#fcc032] transition-all"
+          >
+            <div className="space-y-1">
+              <h3 className="font-extrabold text-white text-base group-hover:text-[#fcc032] transition-colors">
+                Manage Templates
+              </h3>
+              <p className="text-xs text-slate-400 font-medium">
+                Edit LinkedIn post templates
+              </p>
+            </div>
+            <div className="w-10 h-10 rounded-xl bg-amber-500/15 text-amber-400 flex items-center justify-center group-hover:bg-[#fcc032] group-hover:text-[#050c24] transition-all">
+              <Share2 className="w-5 h-5" />
+            </div>
+          </Link>
         </div>
       </div>
     </div>
-  );
-}
-
-function ChevronRight(props: React.SVGProps<SVGSVGElement> & { className?: string }) {
-  return (
-    <svg
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      {...props}
-    >
-      <path d="m9 18 6-6-6-6" />
-    </svg>
   );
 }

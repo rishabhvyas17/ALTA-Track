@@ -11,6 +11,7 @@ import {
   Loader2,
   X,
   UserPlus,
+  ShieldCheck,
 } from "lucide-react";
 
 interface AdminUser {
@@ -139,7 +140,7 @@ export default function CampusesPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-[var(--color-primary-cyan)] animate-spin" />
+        <Loader2 className="w-8 h-8 text-[#3bc3e2] animate-spin" />
       </div>
     );
   }
@@ -150,30 +151,30 @@ export default function CampusesPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-3">
-            <MapPin className="w-8 h-8 text-[var(--color-accent-cyan)]" />
+            <MapPin className="w-8 h-8 text-[#3bc3e2]" />
             Campus Management
           </h1>
-          <p className="text-xs text-[var(--color-neutral-silver)] mt-1">
+          <p className="text-xs text-slate-300 font-medium mt-1">
             Manage partner institution campuses and provision Campus Admin accounts.
           </p>
         </div>
 
         <button
           onClick={() => setShowCreateCampusModal(true)}
-          className="alta-button flex items-center gap-2 cursor-pointer self-start sm:self-auto"
+          className="alta-button flex items-center gap-2 cursor-pointer self-start sm:self-auto text-sm font-extrabold"
         >
           <Plus className="w-5 h-5" /> Add Campus
         </button>
       </div>
 
       {error && (
-        <div className="p-4 rounded-xl bg-red-500/10 border border-red-500/30 text-red-300 text-sm">
+        <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/30 text-red-200 text-sm">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-sm">
+        <div className="p-4 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-sm">
           {success}
         </div>
       )}
@@ -185,47 +186,47 @@ export default function CampusesPage() {
           return (
             <div
               key={campus.id}
-              className="alta-card p-6 flex flex-col justify-between space-y-6 hover:border-[var(--color-accent-cyan)]/50 transition-all duration-300"
+              className="alta-card p-6 flex flex-col justify-between space-y-6 border border-white/10 hover:border-[#3bc3e2]/60 transition-all duration-300 bg-[#0c1b48]/90"
             >
               <div className="space-y-4">
-                <div className="flex items-start justify-between">
-                  <div className="w-10 h-10 rounded-xl bg-[var(--color-accent-cyan)]/10 border border-[var(--color-accent-cyan)]/30 flex items-center justify-center text-[var(--color-accent-cyan)] font-bold">
-                    <Building className="w-5 h-5" />
+                <div className="flex items-start justify-between gap-2">
+                  <div className="w-11 h-11 rounded-2xl bg-[#3bc3e2]/15 border border-[#3bc3e2]/30 flex items-center justify-center text-[#3bc3e2] shrink-0">
+                    <Building className="w-6 h-6" />
                   </div>
-                  <span className="px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-semibold text-gray-300">
+                  <span className="px-3 py-1 rounded-full bg-[#3bc3e2]/10 border border-[#3bc3e2]/30 text-[11px] font-bold text-[#3bc3e2] truncate max-w-[180px]">
                     {campus.region}
                   </span>
                 </div>
 
                 <div>
-                  <h3 className="text-lg font-bold text-white group-hover:text-[var(--color-accent-cyan)] transition-colors">
+                  <h3 className="text-xl font-black text-white group-hover:text-[#3bc3e2] transition-colors">
                     {campus.name}
                   </h3>
-                  <div className="flex items-center gap-4 text-xs text-[var(--color-neutral-silver)] mt-2">
-                    <span className="flex items-center gap-1">
-                      <Users className="w-3.5 h-3.5 text-[var(--color-accent-cyan)]" />
+                  <div className="flex items-center gap-4 text-xs font-bold text-slate-300 mt-2">
+                    <span className="flex items-center gap-1.5 text-[#3bc3e2]">
+                      <Users className="w-4 h-4" />
                       {campus._count?.users || 0} Students
                     </span>
-                    <span className="flex items-center gap-1">
-                      <UserPlus className="w-3.5 h-3.5 text-[var(--color-accent-green)]" />
+                    <span className="flex items-center gap-1.5 text-[#3ccc8b]">
+                      <ShieldCheck className="w-4 h-4" />
                       {admins.length} Admins
                     </span>
                   </div>
                 </div>
 
                 {/* Assigned Admins */}
-                <div className="pt-3 border-t border-[var(--color-border-dark)]">
-                  <p className="text-xs font-semibold text-gray-400 mb-2 uppercase tracking-wider">
-                    Campus Admins
+                <div className="pt-3 border-t border-white/10">
+                  <p className="text-[11px] font-black text-slate-400 uppercase tracking-wider mb-2">
+                    Assigned Campus Admins
                   </p>
                   {admins.length === 0 ? (
-                    <p className="text-xs text-amber-400 italic">No admin assigned yet</p>
+                    <p className="text-xs text-amber-400 font-semibold italic">No admin assigned yet</p>
                   ) : (
                     <div className="space-y-1.5">
                       {admins.map((adm) => (
-                        <div key={adm.id} className="text-xs text-gray-300 flex items-center justify-between">
-                          <span className="font-semibold">{adm.name}</span>
-                          <span className="text-gray-500">{adm.email}</span>
+                        <div key={adm.id} className="text-xs text-slate-200 flex items-center justify-between font-semibold">
+                          <span>{adm.name}</span>
+                          <span className="text-slate-400 text-[11px]">{adm.email}</span>
                         </div>
                       ))}
                     </div>
@@ -234,19 +235,19 @@ export default function CampusesPage() {
               </div>
 
               {/* Action Buttons */}
-              <div className="pt-4 border-t border-[var(--color-border-dark)] flex items-center justify-between gap-2">
+              <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-2">
                 <button
                   onClick={() => setSelectedCampusForAdmin(campus)}
-                  className="px-3 py-1.5 rounded-lg bg-[var(--color-accent-cyan)]/10 hover:bg-[var(--color-accent-cyan)]/20 text-[var(--color-accent-cyan)] text-xs font-semibold border border-[var(--color-accent-cyan)]/20 transition-all flex items-center gap-1.5 cursor-pointer"
+                  className="px-3 py-2 rounded-xl bg-[#3bc3e2]/15 hover:bg-[#3bc3e2]/25 text-[#3bc3e2] text-xs font-bold border border-[#3bc3e2]/30 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5" /> + Admin Account
                 </button>
 
                 <Link
                   href={`/superadmin/campuses/${campus.id}`}
-                  className="text-xs font-semibold text-[var(--color-neutral-silver)] hover:text-white transition-colors flex items-center gap-1"
+                  className="text-xs font-bold text-slate-300 hover:text-white transition-colors flex items-center gap-1"
                 >
-                  Details <ChevronRight className="w-3.5 h-3.5" />
+                  Details <ChevronRight className="w-3.5 h-3.5 text-[#3bc3e2]" />
                 </Link>
               </div>
             </div>
@@ -256,15 +257,15 @@ export default function CampusesPage() {
 
       {/* Create Campus Modal */}
       {showCreateCampusModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-[var(--color-border-cyan)]">
-            <div className="flex items-center justify-between border-b border-[var(--color-border-dark)] pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-[#3bc3e2]/40 bg-[#071130]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
-                <Building className="w-5 h-5 text-[var(--color-accent-cyan)]" /> Add New Campus
+                <Building className="w-5 h-5 text-[#3bc3e2]" /> Add New Campus
               </h3>
               <button
                 onClick={() => setShowCreateCampusModal(false)}
-                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -272,13 +273,13 @@ export default function CampusesPage() {
 
             <form onSubmit={handleCreateCampus} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
                   Campus / Institution Name
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. IIT Delhi"
+                  placeholder="e.g. SAGE University"
                   value={campusName}
                   onChange={(e) => setCampusName(e.target.value)}
                   className="alta-input w-full"
@@ -286,31 +287,31 @@ export default function CampusesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
                   Region / Location
                 </label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. New Delhi, India"
+                  placeholder="e.g. Indore, Madhya Pradesh"
                   value={campusRegion}
                   onChange={(e) => setCampusRegion(e.target.value)}
                   className="alta-input w-full"
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-dark)]">
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setShowCreateCampusModal(false)}
-                  className="alta-button-secondary text-sm"
+                  className="alta-button-secondary text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingCampus}
-                  className="alta-button text-sm flex items-center gap-2"
+                  className="alta-button text-xs font-extrabold flex items-center gap-2"
                 >
                   {creatingCampus ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
@@ -326,20 +327,20 @@ export default function CampusesPage() {
 
       {/* Create Campus Admin Account Modal */}
       {selectedCampusForAdmin && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-[var(--color-border-cyan)]">
-            <div className="flex items-center justify-between border-b border-[var(--color-border-dark)] pb-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-[#3bc3e2]/40 bg-[#071130]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                  <UserPlus className="w-5 h-5 text-[var(--color-accent-green)]" /> Create Campus Admin
+                  <UserPlus className="w-5 h-5 text-[#3ccc8b]" /> Create Campus Admin
                 </h3>
-                <p className="text-xs text-[var(--color-neutral-silver)]">
-                  For campus: <span className="text-[var(--color-accent-cyan)]">{selectedCampusForAdmin.name}</span>
+                <p className="text-xs text-slate-300 mt-1">
+                  For campus: <span className="text-[#3bc3e2] font-bold">{selectedCampusForAdmin.name}</span>
                 </p>
               </div>
               <button
                 onClick={() => setSelectedCampusForAdmin(null)}
-                className="text-gray-400 hover:text-white transition-colors cursor-pointer"
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -347,7 +348,7 @@ export default function CampusesPage() {
 
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
                   Full Name
                 </label>
                 <input
@@ -361,7 +362,7 @@ export default function CampusesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
                   Admin Email Address
                 </label>
                 <input
@@ -375,7 +376,7 @@ export default function CampusesPage() {
               </div>
 
               <div>
-                <label className="block text-xs font-semibold text-gray-300 mb-1">
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
                   Password
                 </label>
                 <input
@@ -389,18 +390,18 @@ export default function CampusesPage() {
                 />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t border-[var(--color-border-dark)]">
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
                 <button
                   type="button"
                   onClick={() => setSelectedCampusForAdmin(null)}
-                  className="alta-button-secondary text-sm"
+                  className="alta-button-secondary text-xs"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={creatingAdmin}
-                  className="alta-button text-sm flex items-center gap-2"
+                  className="alta-button text-xs font-extrabold flex items-center gap-2"
                 >
                   {creatingAdmin ? (
                     <Loader2 className="w-4 h-4 animate-spin" />

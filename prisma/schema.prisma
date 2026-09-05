@@ -6,8 +6,8 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 // ─── Enums ──────────────────────────────────────────────────────────────────
@@ -86,7 +86,7 @@ model Challenge {
   name                        String   // "APEX 151" or "BASE 111"
   slug                        String   @unique
   totalDays                   Int      @map("total_days")
-  rules                       Json     @default("{}")
+  rules                       Json
   requiresCompletedChallengeId String? @map("requires_completed_challenge_id")
   isActive                    Boolean  @default(true) @map("is_active")
   createdById                 String?  @map("created_by")
