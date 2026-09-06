@@ -12,6 +12,8 @@ import {
   Crown,
   Loader2,
   ArrowLeft,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
 interface UserInfo {
@@ -28,6 +30,11 @@ interface EnrollmentLeaderboardItem {
   streakCount: number;
   longestStreak: number;
   status: string;
+  score: number;
+  questionsSolved: number;
+  easyCount: number;
+  mediumCount: number;
+  hardCount: number;
   user: UserInfo;
   challenge: { id: string; name: string; totalDays: number };
 }
@@ -35,6 +42,12 @@ interface EnrollmentLeaderboardItem {
 interface CampusRankingItem {
   id: string;
   name: string;
+  region?: string;
+  totalScore: number;
+  totalQuestionsSolved: number;
+  easyCount: number;
+  mediumCount: number;
+  hardCount: number;
   totalStreak: number;
   studentCount: number;
 }
@@ -240,9 +253,31 @@ export default function LeaderboardPage() {
 
                 <div>
                   <h3 className="text-xl font-bold text-white">{c.name}</h3>
-                  <div className="flex items-center gap-2 text-xs text-amber-400 font-bold mt-1">
-                    <Flame className="w-4 h-4 fill-amber-400" />
-                    Total Campus Streak: {c.totalStreak} Days
+                  {c.region && <div className="text-xs text-gray-400 mt-0.5">{c.region}</div>}
+
+                  <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-[var(--color-border-dark)]">
+                    <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                      <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Total Score</div>
+                      <div className="text-base font-black text-[var(--color-accent-cyan)] flex items-center gap-1 mt-0.5">
+                        <Sparkles className="w-3.5 h-3.5" /> {c.totalScore} pts
+                      </div>
+                    </div>
+                    <div className="bg-white/[0.02] p-2.5 rounded-xl border border-white/5">
+                      <div className="text-[10px] text-gray-400 font-bold uppercase tracking-wider">Questions Solved</div>
+                      <div className="text-base font-black text-emerald-400 flex items-center gap-1 mt-0.5">
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {c.totalQuestionsSolved}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-xs text-amber-400 font-bold mt-3 pt-2 border-t border-white/5">
+                    <span className="flex items-center gap-1.5">
+                      <Flame className="w-4 h-4 fill-amber-400" />
+                      Total Streak: {c.totalStreak} Days
+                    </span>
+                    <span className="text-[10px] text-gray-400 font-medium">
+                      {c.easyCount}E • {c.mediumCount}M • {c.hardCount}H
+                    </span>
                   </div>
                 </div>
               </div>
@@ -264,6 +299,8 @@ export default function LeaderboardPage() {
                       <th className="p-4">Student</th>
                       <th className="p-4">Campus</th>
                       <th className="p-4">Challenge Track</th>
+                      <th className="p-4">Score</th>
+                      <th className="p-4">Questions Solved</th>
                       <th className="p-4">Current Streak</th>
                       <th className="p-4">Progress Day</th>
                     </tr>
@@ -284,6 +321,21 @@ export default function LeaderboardPage() {
                         </td>
                         <td className="p-4 font-semibold text-gray-200">
                           {item.challenge.name}
+                        </td>
+                        <td className="p-4">
+                          <span className="inline-flex items-center gap-1 text-sm font-black text-[var(--color-primary-cyan)]">
+                            <Sparkles className="w-3.5 h-3.5 text-[var(--color-accent-cyan)]" /> {item.score} pts
+                          </span>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex flex-col">
+                            <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-400">
+                              <CheckCircle2 className="w-3.5 h-3.5" /> {item.questionsSolved} Solved
+                            </span>
+                            <span className="text-[10px] text-gray-400 font-medium mt-0.5">
+                              {item.easyCount} Easy • {item.mediumCount} Med • {item.hardCount} Hard
+                            </span>
+                          </div>
                         </td>
                         <td className="p-4">
                           <span className="inline-flex items-center gap-1 text-sm font-black text-amber-400">

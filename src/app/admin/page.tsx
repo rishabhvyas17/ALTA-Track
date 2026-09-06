@@ -112,6 +112,7 @@ interface CampusStatsData {
     streakCount: number;
     currentDay: number;
     status: string;
+    questionsSolved?: number;
   }[];
   recentPendingSubmissions: PendingSubmission[];
 }
@@ -607,9 +608,14 @@ export default function CampusAdminDashboard() {
                       </p>
                     </div>
                   </div>
-                  <span className="font-black text-orange-400 text-sm flex items-center gap-1">
-                    {st.streakCount} <Flame className="w-3.5 h-3.5 fill-orange-400 inline" />
-                  </span>
+                  <div className="text-right">
+                    <span className="font-black text-orange-400 text-sm flex items-center justify-end gap-1">
+                      {st.streakCount} <Flame className="w-3.5 h-3.5 fill-orange-400 inline" />
+                    </span>
+                    <span className="text-[10px] text-emerald-400 font-semibold block">
+                      {st.questionsSolved ?? 0} solved
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

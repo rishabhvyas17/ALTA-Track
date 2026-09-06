@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { calculateScore } from "@/lib/scoring";
 
 export async function GET() {
   try {
@@ -24,15 +25,11 @@ export async function GET() {
       enrollmentsCount: c._count.enrollments,
     }));
 
-    // Fetch active enrollments with highest streak for leaderboard
+    // Fetch active enrollments for leaderboard
     const topEnrollments = await prisma.enrollment.findMany({
       where: {
         status: "ACTIVE",
       },
-      orderBy: {
-        streakCount: "desc",
-      },
-      take: 5,
       include: {
         user: {
           select: {
@@ -43,15 +40,34 @@ export async function GET() {
             },
           },
         },
+        submissions: {
+          where: { status: "APPROVED" },
+          select: {
+            problem: {
+              select: { difficulty: true },
+            },
+          },
+        },
       },
     });
 
-    const leaderboard = topEnrollments.map((e) => ({
-      id: e.user.id,
-      name: e.user.name,
-      streakCount: e.streakCount,
-      campus: e.user.campus,
-    }));
+    const leaderboard = topEnrollments
+      .map((e) => {
+        const scoreData = calculateScore(e.submissions);
+        return {
+          id: e.user.id,
+          name: e.user.name,
+          streakCount: e.streakCount,
+          totalScore: scoreData.score,
+          questionsSolved: scoreData.questionsSolved,
+          campus: e.user.campus,
+        };
+      })
+      .sort((a, b) => {
+        if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+        return b.streakCount - a.streakCount;
+      })
+      .slice(0, 5);
 
     return NextResponse.json({
       tracks,

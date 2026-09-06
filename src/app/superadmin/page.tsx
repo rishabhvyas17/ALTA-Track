@@ -27,6 +27,8 @@ import {
   School,
   FileQuestion,
   RefreshCw,
+  Linkedin,
+  Github,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -105,7 +107,8 @@ interface SuperAdminStats {
     difficulty: string;
     submittedAt: string;
     status: string;
-    linkedinPostUrl: string;
+    linkedinPostUrl?: string | null;
+    githubLink?: string | null;
   }>;
 }
 
@@ -634,14 +637,33 @@ export default function SuperAdminDashboard() {
                         )}
                       </td>
                       <td className="p-3.5 pr-6 text-right">
-                        <a
-                          href={act.linkedinPostUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-[11px] text-[#3bc3e2] hover:underline"
-                        >
-                          View Post <ExternalLink className="w-3 h-3" />
-                        </a>
+                        <div className="flex items-center justify-end gap-2 flex-wrap">
+                          {act.linkedinPostUrl && (
+                            <a
+                              href={act.linkedinPostUrl}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] text-[#3bc3e2] hover:underline"
+                              title="LinkedIn Post Proof"
+                            >
+                              <Linkedin className="w-3 h-3" /> Post <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                          {act.githubLink && (
+                            <a
+                              href={act.githubLink}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-1 text-[11px] text-gray-300 hover:text-white hover:underline"
+                              title="GitHub Code Proof"
+                            >
+                              <Github className="w-3 h-3" /> Code <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                          {!act.linkedinPostUrl && !act.githubLink && (
+                            <span className="text-[11px] text-gray-500">No link</span>
+                          )}
+                        </div>
                       </td>
                     </tr>
                   ))}

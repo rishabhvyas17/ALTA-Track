@@ -28,6 +28,8 @@ import {
   HelpCircle,
   Mail,
   UserCheck,
+  Linkedin,
+  Github,
 } from "lucide-react";
 import {
   ResponsiveContainer,
@@ -84,6 +86,7 @@ interface CampusMetric {
     status: string;
     submittedAt: string;
     linkedinPostUrl: string | null;
+    githubLink?: string | null;
   }[];
 }
 
@@ -146,6 +149,7 @@ interface StatsApiResponse {
     submittedAt: string;
     status: string;
     linkedinPostUrl: string | null;
+    githubLink?: string | null;
   }[];
 }
 
@@ -492,9 +496,21 @@ export default function SuperAdminStatsPage() {
                             href={sub.linkedinPostUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-400 hover:text-white"
+                            className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-sky-400 hover:text-white"
+                            title="LinkedIn Post Proof"
                           >
-                            <ExternalLink className="w-3.5 h-3.5" />
+                            <Linkedin className="w-3.5 h-3.5" />
+                          </a>
+                        )}
+                        {sub.githubLink && (
+                          <a
+                            href={sub.githubLink}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1 rounded-lg bg-white/5 hover:bg-white/10 text-gray-300 hover:text-white"
+                            title="GitHub Code Proof"
+                          >
+                            <Github className="w-3.5 h-3.5" />
                           </a>
                         )}
                       </div>
@@ -906,18 +922,33 @@ export default function SuperAdminStatsPage() {
                         </span>
                       </td>
                       <td className="p-3">
-                        {act.linkedinPostUrl ? (
-                          <a
-                            href={act.linkedinPostUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 text-cyan-400 hover:underline text-[11px]"
-                          >
-                            LinkedIn Proof <ExternalLink className="w-3 h-3" />
-                          </a>
-                        ) : (
-                          <span className="text-gray-500 text-[11px]">GitHub / Internal</span>
-                        )}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {act.linkedinPostUrl && (
+                            <a
+                              href={act.linkedinPostUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-cyan-400 hover:underline text-[11px]"
+                              title="LinkedIn Proof"
+                            >
+                              <Linkedin className="w-3 h-3" /> Post <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                          {act.githubLink && (
+                            <a
+                              href={act.githubLink}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 text-gray-300 hover:text-white hover:underline text-[11px]"
+                              title="GitHub Code Proof"
+                            >
+                              <Github className="w-3 h-3" /> Code <ExternalLink className="w-2.5 h-2.5" />
+                            </a>
+                          )}
+                          {!act.linkedinPostUrl && !act.githubLink && (
+                            <span className="text-gray-500 text-[11px]">No link</span>
+                          )}
+                        </div>
                       </td>
                       <td className="p-3 pr-4 text-right">
                         <span

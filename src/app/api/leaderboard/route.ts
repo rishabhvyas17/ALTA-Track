@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { calculateScore } from "@/lib/scoring";
 
 export async function GET(request: NextRequest) {
   try {
@@ -13,7 +14,7 @@ export async function GET(request: NextRequest) {
     if (campusId) whereClause.user = { ...whereClause.user, campusId };
     if (year) whereClause.user = { ...whereClause.user, year };
 
-    const enrollments = await prisma.enrollment.findMany({
+    const rawEnrollments = await prisma.enrollment.findMany({
       where: whereClause,
       include: {
         user: {
@@ -28,40 +29,104 @@ export async function GET(request: NextRequest) {
         challenge: {
           select: { id: true, name: true, totalDays: true },
         },
+        submissions: {
+          where: { status: "APPROVED" },
+          select: {
+            id: true,
+            dayNumber: true,
+            problem: {
+              select: {
+                difficulty: true,
+              },
+            },
+          },
+        },
       },
-      orderBy: [
-        { currentDay: "desc" },
-        { streakCount: "desc" },
-        { completedAt: "asc" },
-        { updatedAt: "asc" },
-      ],
+    });
+
+    // Calculate score & questions solved for each student
+    const individualRankings = rawEnrollments.map((e) => {
+      const scoreData = calculateScore(e.submissions);
+      return {
+        id: e.id,
+        currentDay: e.currentDay,
+        streakCount: e.streakCount,
+        longestStreak: e.longestStreak,
+        status: e.status,
+        completedAt: e.completedAt,
+        updatedAt: e.updatedAt,
+        score: scoreData.score,
+        questionsSolved: scoreData.questionsSolved,
+        easyCount: scoreData.easy,
+        mediumCount: scoreData.medium,
+        hardCount: scoreData.hard,
+        user: e.user,
+        challenge: e.challenge,
+      };
+    });
+
+    // Rank sorting: Total Score (desc) -> Streak Count (desc) -> Current Day (desc) -> Earliest Updated (asc)
+    individualRankings.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      if (b.streakCount !== a.streakCount) return b.streakCount - a.streakCount;
+      if (b.currentDay !== a.currentDay) return b.currentDay - a.currentDay;
+      return new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
     });
 
     // Grouping stats for campus-wise leaderboard view
-    const campusAggregates: Record<string, { id: string; name: string; totalStreak: number; studentCount: number }> = {};
+    const campusAggregates: Record<
+      string,
+      {
+        id: string;
+        name: string;
+        region?: string;
+        totalScore: number;
+        totalQuestionsSolved: number;
+        easyCount: number;
+        mediumCount: number;
+        hardCount: number;
+        totalStreak: number;
+        studentCount: number;
+      }
+    > = {};
 
-    enrollments.forEach((e) => {
+    individualRankings.forEach((e) => {
       if (e.user.campus) {
         const cId = e.user.campus.id;
         if (!campusAggregates[cId]) {
           campusAggregates[cId] = {
             id: cId,
             name: e.user.campus.name,
+            region: e.user.campus.region,
+            totalScore: 0,
+            totalQuestionsSolved: 0,
+            easyCount: 0,
+            mediumCount: 0,
+            hardCount: 0,
             totalStreak: 0,
             studentCount: 0,
           };
         }
+        campusAggregates[cId].totalScore += e.score;
+        campusAggregates[cId].totalQuestionsSolved += e.questionsSolved;
+        campusAggregates[cId].easyCount += e.easyCount;
+        campusAggregates[cId].mediumCount += e.mediumCount;
+        campusAggregates[cId].hardCount += e.hardCount;
         campusAggregates[cId].totalStreak += e.streakCount;
         campusAggregates[cId].studentCount += 1;
       }
     });
 
-    const campusRankings = Object.values(campusAggregates).sort(
-      (a, b) => b.totalStreak - a.totalStreak
-    );
+    const campusRankings = Object.values(campusAggregates).sort((a, b) => {
+      if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
+      if (b.totalQuestionsSolved !== a.totalQuestionsSolved) {
+        return b.totalQuestionsSolved - a.totalQuestionsSolved;
+      }
+      return b.totalStreak - a.totalStreak;
+    });
 
     return NextResponse.json({
-      individualRankings: enrollments,
+      individualRankings,
       campusRankings,
     });
   } catch (error) {

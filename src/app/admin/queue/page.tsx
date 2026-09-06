@@ -17,7 +17,7 @@ import {
 interface QueueSubmission {
   id: string;
   dayNumber: number;
-  linkedinPostUrl: string;
+  linkedinPostUrl?: string | null;
   supportingLink: string | null;
   githubLink: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
@@ -204,16 +204,18 @@ export default function VerificationQueuePage() {
                     </td>
 
                     <td className="p-4 space-y-1">
-                      <div>
-                        <a
-                          href={s.linkedinPostUrl}
-                          target="_blank"
-                          rel="noreferrer"
-                          className="inline-flex items-center gap-1 text-xs text-[var(--color-primary-cyan)] hover:underline font-semibold"
-                        >
-                          LinkedIn Post <ExternalLink className="w-3 h-3" />
-                        </a>
-                      </div>
+                      {s.linkedinPostUrl && (
+                        <div>
+                          <a
+                            href={s.linkedinPostUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-flex items-center gap-1 text-xs text-[var(--color-primary-cyan)] hover:underline font-semibold"
+                          >
+                            LinkedIn Post <ExternalLink className="w-3 h-3" />
+                          </a>
+                        </div>
+                      )}
                       {s.supportingLink && (
                         <div>
                           <a

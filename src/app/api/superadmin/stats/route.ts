@@ -172,6 +172,7 @@ export async function GET() {
         status: s.status,
         submittedAt: s.submittedAt,
         linkedinPostUrl: s.linkedinPostUrl,
+        githubLink: s.githubLink,
       }));
 
       return {
@@ -243,6 +244,7 @@ export async function GET() {
       submittedAt: s.submittedAt,
       status: s.status,
       linkedinPostUrl: s.linkedinPostUrl,
+      githubLink: s.githubLink,
     }));
 
     return NextResponse.json({

@@ -295,13 +295,22 @@ export default function StudentDashboardPage() {
     setTimeout(() => setCopiedTemplate(false), 2500);
   };
 
-  // Handle Proof Submit for ANY problem
+  // Handle Proof Submit for ANY problem (LinkedIn OR GitHub link allowed)
   const handleSubmitProof = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!data?.enrollment || !activeProblemForProof) return;
 
-    if (!linkedinUrl.trim() && !githubUrl.trim()) {
-      setProofError("Please provide either your LinkedIn post URL or GitHub solution link.");
+    const cleanUrl = (url: string) => {
+      const t = url.trim();
+      if (!t) return undefined;
+      return /^https?:\/\//i.test(t) ? t : `https://${t}`;
+    };
+
+    const finalLinkedin = cleanUrl(linkedinUrl);
+    const finalGithub = cleanUrl(githubUrl);
+
+    if (!finalLinkedin && !finalGithub) {
+      setProofError("Please provide either your LinkedIn post link or GitHub code link as proof.");
       return;
     }
 
@@ -317,8 +326,8 @@ export default function StudentDashboardPage() {
           enrollmentId: data.enrollment.id,
           dayNumber: activeProblemForProof.dayNumber,
           problemId: activeProblemForProof.id,
-          linkedinPostUrl: linkedinUrl.trim() || undefined,
-          githubLink: githubUrl.trim() || undefined,
+          linkedinPostUrl: finalLinkedin,
+          githubLink: finalGithub,
         }),
       });
 
@@ -620,6 +629,11 @@ export default function StudentDashboardPage() {
                           / {totalProblemsCount} ({progressPercent}%)
                         </span>
                       </div>
+                      <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+                        {data?.submissions?.filter((s: any) => s.status === "PENDING").length
+                          ? `${data.submissions.filter((s: any) => s.status === "PENDING").length} pending verification`
+                          : `${approvedCount} verified solved`}
+                      </span>
                     </div>
                   </div>
 
@@ -1218,6 +1232,8 @@ export default function StudentDashboardPage() {
                           <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                             <th className="p-3.5 pl-4">Rank</th>
                             <th className="p-3.5">Partner Engineering Campus</th>
+                            <th className="p-3.5">Total Score</th>
+                            <th className="p-3.5">Questions Solved</th>
                             <th className="p-3.5">Enrolled Students</th>
                             <th className="p-3.5 pr-4 text-right">Aggregated Streak Score</th>
                           </tr>
@@ -1245,6 +1261,20 @@ export default function StudentDashboardPage() {
                                     )}
                                   </div>
                                 </td>
+                                <td className="p-3.5 font-black text-sky-700">
+                                  {c.totalScore ?? 0} pts
+                                </td>
+                                <td className="p-3.5">
+                                  <div className="flex flex-col">
+                                    <span className="font-bold text-emerald-700 inline-flex items-center gap-1">
+                                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                      {c.totalQuestionsSolved ?? 0} Solved
+                                    </span>
+                                    <span className="text-[10px] text-slate-400 font-medium">
+                                      {c.easyCount ?? 0}E • {c.mediumCount ?? 0}M • {c.hardCount ?? 0}H
+                                    </span>
+                                  </div>
+                                </td>
                                 <td className="p-3.5 font-semibold text-slate-600">{c.studentCount} students</td>
                                 <td className="p-3.5 pr-4 text-right font-black text-orange-600 text-sm">
                                   {c.totalStreak} 🔥
@@ -1264,13 +1294,15 @@ export default function StudentDashboardPage() {
                             <th className="p-3.5">Student</th>
                             <th className="p-3.5">Campus</th>
                             <th className="p-3.5">Track & Progress</th>
+                            <th className="p-3.5">Score</th>
+                            <th className="p-3.5">Questions Solved</th>
                             <th className="p-3.5 pr-4 text-right">Daily Streak</th>
                           </tr>
                         </thead>
                         <tbody className="divide-y divide-slate-100 text-xs">
                           {leaderboardIndividual.length === 0 ? (
                             <tr>
-                              <td colSpan={5} className="p-12 text-center text-slate-500">
+                              <td colSpan={7} className="p-12 text-center text-slate-500">
                                 <AlertCircle className="w-8 h-8 text-slate-300 mx-auto mb-2" />
                                 <p className="font-bold text-slate-700 text-sm">No students found for this filter</p>
                                 <p className="text-xs text-slate-400 mt-0.5">
@@ -1332,6 +1364,23 @@ export default function StudentDashboardPage() {
                                     <span className="font-bold text-sky-700">{item.challenge?.name}</span>
                                     <span className="text-slate-400 ml-1.5 font-medium">Day {item.currentDay}</span>
                                   </td>
+                                  <td className="p-3.5 font-black text-sky-700">
+                                    <span className="inline-flex items-center gap-1">
+                                      <Sparkles className="w-3.5 h-3.5 text-sky-500" />
+                                      {item.score ?? 0} pts
+                                    </span>
+                                  </td>
+                                  <td className="p-3.5">
+                                    <div className="flex flex-col">
+                                      <span className="font-bold text-emerald-700 inline-flex items-center gap-1">
+                                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                        {item.questionsSolved ?? 0} Solved
+                                      </span>
+                                      <span className="text-[10px] text-slate-400 font-medium">
+                                        {item.easyCount ?? 0}E • {item.mediumCount ?? 0}M • {item.hardCount ?? 0}H
+                                      </span>
+                                    </div>
+                                  </td>
                                   <td className="p-3.5 pr-4 text-right">
                                     <span className="font-black text-orange-600 text-sm inline-flex items-center gap-1">
                                       {item.streakCount} <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500" />
@@ -1350,7 +1399,7 @@ export default function StudentDashboardPage() {
                   <div className="p-3 rounded-xl bg-slate-50 border border-slate-200 flex items-center gap-2 text-[11px] text-slate-500">
                     <HelpCircle className="w-4 h-4 text-sky-600 shrink-0" />
                     <span>
-                      <strong>Leaderboard Policy:</strong> Rankings prioritize the highest consecutive daily streak count, followed by current day completed in the challenge track. Submissions approved by your campus admin count towards your streak.
+                      <strong>Leaderboard Policy:</strong> Rankings prioritize total score earned from verified questions solved (Easy: 1 pt, Medium: 2 pts, Hard: 3 pts), followed by daily streak count and challenge progress. Submissions approved by your campus admin earn points and advance your streak.
                     </span>
                   </div>
                 </div>
@@ -1412,9 +1461,12 @@ export default function StudentDashboardPage() {
                   </button>
                 )}
               </div>
-              <p className="text-[11px] text-slate-500">
-                💡 <strong className="text-slate-700">Simple Proof:</strong> Provide either your LinkedIn post link OR your GitHub solution repository/code URL.
-              </p>
+              <div className="p-3 rounded-xl bg-sky-50 border border-sky-200/70 flex items-start gap-2.5">
+                <span className="text-base">💡</span>
+                <p className="text-xs text-sky-900 leading-relaxed font-medium">
+                  <strong className="font-bold text-sky-950">Proof Rule:</strong> Submit either your <strong>LinkedIn post link</strong> OR your <strong>GitHub code link</strong> (any one is allowed, or both).
+                </p>
+              </div>
             </div>
 
             {/* Form */}
@@ -1433,29 +1485,35 @@ export default function StudentDashboardPage() {
 
               {/* LinkedIn Post URL */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Linkedin className="w-3.5 h-3.5 text-sky-600" /> LinkedIn Post URL
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <Linkedin className="w-3.5 h-3.5 text-sky-600" /> LinkedIn Post URL
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-semibold">(Allowed as proof)</span>
+                </div>
                 <input
                   type="url"
-                  placeholder="https://www.linkedin.com/posts/..."
+                  placeholder="https://www.linkedin.com/posts/... or linkedin.com/..."
                   value={linkedinUrl}
                   onChange={(e) => setLinkedinUrl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-sky-500"
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-sky-500 transition-colors"
                 />
               </div>
 
               {/* GitHub Repo/Code URL */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1 flex items-center gap-1.5">
-                  <Github className="w-3.5 h-3.5 text-slate-800" /> GitHub Solution Link (Code URL)
-                </label>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-xs font-bold text-slate-700 flex items-center gap-1.5">
+                    <Github className="w-3.5 h-3.5 text-slate-800" /> GitHub Solution Link (Code URL)
+                  </label>
+                  <span className="text-[10px] text-slate-400 font-semibold">(Allowed as proof)</span>
+                </div>
                 <input
                   type="url"
-                  placeholder="https://github.com/username/repo/blob/..."
+                  placeholder="https://github.com/username/repo/... or github.com/..."
                   value={githubUrl}
                   onChange={(e) => setGithubUrl(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-sky-500"
+                  className="w-full px-3 py-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-900 focus:outline-hidden focus:bg-white focus:border-sky-500 transition-colors"
                 />
               </div>
 

@@ -3,11 +3,19 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { z } from "zod";
 
+function normalizeUrl(url: any): string | undefined {
+  if (!url || typeof url !== "string") return undefined;
+  const trimmed = url.trim();
+  if (!trimmed) return undefined;
+  if (/^https?:\/\//i.test(trimmed)) return trimmed;
+  return `https://${trimmed}`;
+}
+
 const submitSchema = z
   .object({
-    enrollmentId: z.string().min(1),
-    dayNumber: z.number().min(1),
-    problemId: z.string().min(1),
+    enrollmentId: z.string().min(1, "Enrollment ID is required"),
+    dayNumber: z.number().min(1, "Day number must be at least 1"),
+    problemId: z.string().min(1, "Problem ID is required"),
     linkedinPostUrl: z
       .string()
       .url("Must be a valid LinkedIn post URL")
@@ -34,8 +42,7 @@ const submitSchema = z
       Boolean(data.supportingLink && data.supportingLink.trim().length > 0),
     {
       message:
-        "Please provide either a LinkedIn post link or a GitHub link as proof.",
-      path: ["linkedinPostUrl"],
+        "Please provide either a LinkedIn post link or a GitHub code link as proof.",
     }
   );
 
@@ -44,7 +51,16 @@ export async function POST(request: NextRequest) {
     const auth = await requireRole("STUDENT");
 
     const body = await request.json();
-    const validated = submitSchema.parse(body);
+
+    // Normalize URLs before validation so students can type 'linkedin.com/...' or 'github.com/...'
+    const normalizedBody = {
+      ...body,
+      linkedinPostUrl: normalizeUrl(body.linkedinPostUrl) || "",
+      githubLink: normalizeUrl(body.githubLink) || "",
+      supportingLink: normalizeUrl(body.supportingLink) || "",
+    };
+
+    const validated = submitSchema.parse(normalizedBody);
 
     // Fetch enrollment
     const enrollment = await prisma.enrollment.findUnique({

@@ -44,6 +44,8 @@ interface LeaderboardUser {
   id: string;
   name: string;
   totalScore: number;
+  questionsSolved?: number;
+  streakCount?: number;
   campus: { name: string };
 }
 
@@ -521,7 +523,12 @@ export default function LandingPage() {
                           </div>
                         </td>
                         <td className="p-4 text-right">
-                          <span className="text-[#3ccc8b] font-black">{user.totalScore} pts</span>
+                          <div className="flex flex-col items-end">
+                            <span className="text-[#3ccc8b] font-black">{user.totalScore ?? 0} pts</span>
+                            <span className="text-[11px] text-slate-400 font-medium">
+                              {user.questionsSolved ?? 0} solved • {user.streakCount ?? 0}d streak
+                            </span>
+                          </div>
                         </td>
                       </tr>
                     ))

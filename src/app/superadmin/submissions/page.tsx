@@ -5,16 +5,18 @@ import {
   FileText,
   CheckCircle2,
   XCircle,
-  Clock,
   ExternalLink,
   Search,
   Loader2,
+  Linkedin,
+  Github,
 } from "lucide-react";
 
 interface Submission {
   id: string;
   dayNumber: number;
-  linkedinPostUrl: string;
+  linkedinPostUrl: string | null;
+  githubLink: string | null;
   supportingLink: string | null;
   status: "PENDING" | "APPROVED" | "REJECTED";
   submittedAt: string;
@@ -147,14 +149,33 @@ export default function SuperAdminSubmissionsPage() {
                   </td>
                   <td className="p-4 font-semibold text-white">{s.problem.title}</td>
                   <td className="p-4">
-                    <a
-                      href={s.linkedinPostUrl}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center gap-1 text-xs text-[var(--color-primary-cyan)] hover:underline"
-                    >
-                      LinkedIn <ExternalLink className="w-3 h-3" />
-                    </a>
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {s.linkedinPostUrl && (
+                        <a
+                          href={s.linkedinPostUrl}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-[var(--color-primary-cyan)] hover:underline"
+                          title="LinkedIn Post Proof"
+                        >
+                          <Linkedin className="w-3.5 h-3.5" /> LinkedIn <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      )}
+                      {s.githubLink && (
+                        <a
+                          href={s.githubLink}
+                          target="_blank"
+                          rel="noreferrer"
+                          className="inline-flex items-center gap-1 text-xs text-gray-300 hover:text-white hover:underline"
+                          title="GitHub Code Proof"
+                        >
+                          <Github className="w-3.5 h-3.5" /> GitHub <ExternalLink className="w-2.5 h-2.5" />
+                        </a>
+                      )}
+                      {!s.linkedinPostUrl && !s.githubLink && (
+                        <span className="text-xs text-gray-500">No proof link</span>
+                      )}
+                    </div>
                   </td>
                   <td className="p-4">
                     <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-white/5 border border-white/10 text-gray-300">

@@ -234,17 +234,27 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Top students of this campus
-    const topStudents = enrollments.slice(0, 10).map((e) => ({
-      id: e.user.id,
-      name: e.user.name,
-      email: e.user.email,
-      year: e.user.year,
-      challengeName: e.challenge.name,
-      streakCount: e.streakCount,
-      currentDay: e.currentDay,
-      status: e.status,
-    }));
+    // Top students of this campus (ranked by questions solved, then streak)
+    const topStudents = enrollments
+      .map((e) => {
+        const approvedCount = e.submissions.filter((s) => s.status === "APPROVED").length;
+        return {
+          id: e.user.id,
+          name: e.user.name,
+          email: e.user.email,
+          year: e.user.year,
+          challengeName: e.challenge.name,
+          streakCount: e.streakCount,
+          currentDay: e.currentDay,
+          status: e.status,
+          questionsSolved: approvedCount,
+        };
+      })
+      .sort((a, b) => {
+        if (b.questionsSolved !== a.questionsSolved) return b.questionsSolved - a.questionsSolved;
+        return b.streakCount - a.streakCount;
+      })
+      .slice(0, 10);
 
     return NextResponse.json({
       campus: {
