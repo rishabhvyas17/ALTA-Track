@@ -37,18 +37,47 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ error: "Campus not found" }, { status: 404 });
     }
 
-    // Check email uniqueness
+    // Check if user already exists
     const existingUser = await prisma.user.findUnique({
       where: { email: parsed.data.email },
     });
+
+    const passwordHash = await hashPassword(parsed.data.password);
+
     if (existingUser) {
+      if (existingUser.role === "SUPER_ADMIN") {
+        return NextResponse.json(
+          { error: "This email belongs to a Super Admin account." },
+          { status: 400 }
+        );
+      }
+
+      // If user is a student or existing admin, assign them as Campus Admin for this campus
+      const updatedAdmin = await prisma.user.update({
+        where: { id: existingUser.id },
+        data: {
+          role: "CAMPUS_ADMIN",
+          campusId: id,
+          name: parsed.data.name || existingUser.name,
+          passwordHash,
+        },
+      });
+
       return NextResponse.json(
-        { error: "An account with this email already exists" },
-        { status: 409 }
+        {
+          message: existingUser.role === "STUDENT"
+            ? `Student account for ${updatedAdmin.name} (${updatedAdmin.email}) has been granted Campus Admin privileges for this campus!`
+            : `Updated Campus Admin credentials for ${updatedAdmin.name}.`,
+          admin: {
+            id: updatedAdmin.id,
+            name: updatedAdmin.name,
+            email: updatedAdmin.email,
+          },
+        },
+        { status: 200 }
       );
     }
 
-    const passwordHash = await hashPassword(parsed.data.password);
     const admin = await prisma.user.create({
       data: {
         name: parsed.data.name,
@@ -61,6 +90,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
 
     return NextResponse.json(
       {
+        message: `Campus Admin account created for ${admin.email}!`,
         admin: {
           id: admin.id,
           name: admin.name,
@@ -136,18 +166,46 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         );
       }
 
-      // Check email uniqueness
+      // Check if user already exists
       const existingUser = await prisma.user.findUnique({
         where: { email: parsed.data.email },
       });
+
+      const passwordHash = await hashPassword(parsed.data.password);
+
       if (existingUser) {
+        if (existingUser.role === "SUPER_ADMIN") {
+          return NextResponse.json(
+            { error: "This email belongs to a Super Admin account." },
+            { status: 400 }
+          );
+        }
+
+        const updatedAdmin = await prisma.user.update({
+          where: { id: existingUser.id },
+          data: {
+            role: "CAMPUS_ADMIN",
+            campusId: id,
+            name: parsed.data.name || existingUser.name,
+            passwordHash,
+          },
+        });
+
         return NextResponse.json(
-          { error: "An account with this email already exists" },
-          { status: 409 }
+          {
+            message: existingUser.role === "STUDENT"
+              ? `Student account for ${updatedAdmin.name} (${updatedAdmin.email}) has been granted Campus Admin privileges for this campus!`
+              : `Updated Campus Admin credentials for ${updatedAdmin.name}.`,
+            admin: {
+              id: updatedAdmin.id,
+              name: updatedAdmin.name,
+              email: updatedAdmin.email,
+            },
+          },
+          { status: 200 }
         );
       }
 
-      const passwordHash = await hashPassword(parsed.data.password);
       const admin = await prisma.user.create({
         data: {
           name: parsed.data.name,
@@ -160,6 +218,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
 
       return NextResponse.json(
         {
+          message: `Campus Admin account created for ${admin.email}!`,
           admin: {
             id: admin.id,
             name: admin.name,

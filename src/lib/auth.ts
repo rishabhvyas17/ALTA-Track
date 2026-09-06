@@ -100,7 +100,12 @@ export async function requireSession(): Promise<TokenPayload> {
  * Check if a user has the required role
  */
 export function hasRole(session: TokenPayload, ...roles: Role[]): boolean {
-  return roles.includes(session.role);
+  if (roles.includes(session.role)) return true;
+  // A Campus Admin is also a student from that campus, so they have STUDENT permissions
+  if (roles.includes("STUDENT") && session.role === "CAMPUS_ADMIN") {
+    return true;
+  }
+  return false;
 }
 
 /**

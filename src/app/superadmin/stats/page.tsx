@@ -168,6 +168,13 @@ export default function SuperAdminStatsPage() {
 
   useEffect(() => {
     fetchStats();
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const campusId = params.get("campusId");
+      if (campusId) {
+        setSelectedCampusId(campusId);
+      }
+    }
   }, []);
 
   const fetchStats = async () => {

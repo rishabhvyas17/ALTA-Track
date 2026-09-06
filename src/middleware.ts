@@ -59,9 +59,9 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Student routes
+  // Student routes (accessible to students, campus admins, and super admins)
   if (pathname.startsWith("/dashboard") || pathname.startsWith("/leaderboard") || pathname.startsWith("/rules") || pathname.startsWith("/onboarding")) {
-    if (role !== "STUDENT" && role !== "SUPER_ADMIN") {
+    if (role !== "STUDENT" && role !== "CAMPUS_ADMIN" && role !== "SUPER_ADMIN") {
       return NextResponse.redirect(
         new URL(roleHomePaths[role] || "/", request.url)
       );

@@ -12,6 +12,9 @@ import {
   X,
   UserPlus,
   ShieldCheck,
+  AlertCircle,
+  CheckCircle2,
+  UserCheck,
 } from "lucide-react";
 
 interface AdminUser {
@@ -42,6 +45,8 @@ export default function CampusesPage() {
   const [campusName, setCampusName] = useState("");
   const [campusRegion, setCampusRegion] = useState("");
   const [creatingCampus, setCreatingCampus] = useState(false);
+  const [campusModalError, setCampusModalError] = useState("");
+  const [campusModalSuccess, setCampusModalSuccess] = useState("");
 
   // Create Admin Account Modal State
   const [selectedCampusForAdmin, setSelectedCampusForAdmin] =
@@ -50,6 +55,8 @@ export default function CampusesPage() {
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
   const [creatingAdmin, setCreatingAdmin] = useState(false);
+  const [adminModalError, setAdminModalError] = useState("");
+  const [adminModalSuccess, setAdminModalSuccess] = useState("");
 
   useEffect(() => {
     fetchCampuses();
@@ -69,10 +76,19 @@ export default function CampusesPage() {
     }
   };
 
+  const openCreateCampusModal = () => {
+    setShowCreateCampusModal(true);
+    setCampusName("");
+    setCampusRegion("");
+    setCampusModalError("");
+    setCampusModalSuccess("");
+  };
+
   const handleCreateCampus = async (e: React.FormEvent) => {
     e.preventDefault();
     setCreatingCampus(true);
-    setError("");
+    setCampusModalError("");
+    setCampusModalSuccess("");
 
     try {
       const res = await fetch("/api/superadmin/campuses", {
@@ -87,24 +103,39 @@ export default function CampusesPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create campus");
 
-      setSuccess(`Campus "${campusName}" created!`);
-      setShowCreateCampusModal(false);
-      setCampusName("");
-      setCampusRegion("");
+      const successMsg = `Campus "${campusName}" created successfully!`;
+      setCampusModalSuccess(successMsg);
+      setSuccess(successMsg);
       fetchCampuses();
+      setTimeout(() => {
+        setShowCreateCampusModal(false);
+        setCampusName("");
+        setCampusRegion("");
+        setCampusModalSuccess("");
+      }, 1200);
       setTimeout(() => setSuccess(""), 4000);
     } catch (err: any) {
-      setError(err.message || "Failed to create campus");
+      setCampusModalError(err.message || "Failed to create campus");
     } finally {
       setCreatingCampus(false);
     }
+  };
+
+  const openAdminModal = (campus: Campus) => {
+    setSelectedCampusForAdmin(campus);
+    setAdminName("");
+    setAdminEmail("");
+    setAdminPassword("");
+    setAdminModalError("");
+    setAdminModalSuccess("");
   };
 
   const handleCreateAdmin = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedCampusForAdmin) return;
     setCreatingAdmin(true);
-    setError("");
+    setAdminModalError("");
+    setAdminModalSuccess("");
 
     try {
       const res = await fetch(
@@ -123,15 +154,21 @@ export default function CampusesPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Failed to create admin account");
 
-      setSuccess(`Campus Admin account created for ${adminEmail}!`);
-      setSelectedCampusForAdmin(null);
-      setAdminName("");
-      setAdminEmail("");
-      setAdminPassword("");
+      const successMsg =
+        data.message || `Campus Admin privileges granted to ${adminEmail}!`;
+      setAdminModalSuccess(successMsg);
+      setSuccess(successMsg);
       fetchCampuses();
-      setTimeout(() => setSuccess(""), 4000);
+      setTimeout(() => {
+        setSelectedCampusForAdmin(null);
+        setAdminName("");
+        setAdminEmail("");
+        setAdminPassword("");
+        setAdminModalSuccess("");
+      }, 1500);
+      setTimeout(() => setSuccess(""), 5000);
     } catch (err: any) {
-      setError(err.message || "Failed to create admin account");
+      setAdminModalError(err.message || "Failed to assign admin account");
     } finally {
       setCreatingAdmin(false);
     }
@@ -155,12 +192,12 @@ export default function CampusesPage() {
             Campus Management
           </h1>
           <p className="text-xs text-slate-300 font-medium mt-1">
-            Manage partner institution campuses and provision Campus Admin accounts.
+            Manage partner institution campuses, inspect statistics, and provision Campus Admin accounts.
           </p>
         </div>
 
         <button
-          onClick={() => setShowCreateCampusModal(true)}
+          onClick={openCreateCampusModal}
           className="alta-button flex items-center gap-2 cursor-pointer self-start sm:self-auto text-sm font-extrabold"
         >
           <Plus className="w-5 h-5" /> Add Campus
@@ -173,7 +210,7 @@ export default function CampusesPage() {
           ℹ️
         </div>
         <div>
-          <span className="font-bold text-white">Partner Institutions Architecture:</span> The platform strictly collaborates with <span className="text-[#3bc3e2] font-semibold">SAGE University, ADYPU, IITM, VGU, and DRK Institute</span>. Each partner college assigns campus admins who verify student LinkedIn problem proofs daily to ensure fair streak progression.
+          <span className="font-bold text-white">Partner Institutions Architecture:</span> The platform strictly collaborates with <span className="text-[#3bc3e2] font-semibold">SAGE University, ADYPU, IITM, VGU, and DRK Institute</span>. Each partner college assigns campus admins who verify student LinkedIn problem proofs daily to ensure fair streak progression. Click any campus to review detailed problem statistics.
         </div>
       </div>
 
@@ -196,7 +233,7 @@ export default function CampusesPage() {
           return (
             <div
               key={campus.id}
-              className="alta-card p-6 flex flex-col justify-between space-y-6 border border-white/10 hover:border-[#3bc3e2]/60 transition-all duration-300 bg-[#0c1b48]/90"
+              className="alta-card p-6 flex flex-col justify-between space-y-6 border border-white/10 hover:border-[#3bc3e2]/60 transition-all duration-300 bg-[#0c1b48]/90 group"
             >
               <div className="space-y-4">
                 <div className="flex items-start justify-between gap-2">
@@ -208,20 +245,28 @@ export default function CampusesPage() {
                   </span>
                 </div>
 
-                <div>
-                  <h3 className="text-xl font-black text-white group-hover:text-[#3bc3e2] transition-colors">
-                    {campus.name}
+                <Link
+                  href={`/superadmin/campuses/${campus.id}`}
+                  className="block group/link"
+                >
+                  <h3 className="text-xl font-black text-white group-hover/link:text-[#3bc3e2] transition-colors flex items-center justify-between">
+                    <span>{campus.name}</span>
+                    <ChevronRight className="w-5 h-5 text-slate-500 group-hover/link:text-[#3bc3e2] group-hover/link:translate-x-1 transition-all shrink-0" />
                   </h3>
-                  <div className="flex items-center gap-4 text-xs font-bold text-slate-300 mt-2">
-                    <span className="flex items-center gap-1.5 text-[#3bc3e2]">
-                      <Users className="w-4 h-4" />
-                      {campus._count?.users || 0} Students
-                    </span>
-                    <span className="flex items-center gap-1.5 text-[#3ccc8b]">
-                      <ShieldCheck className="w-4 h-4" />
-                      {admins.length} Admins
-                    </span>
-                  </div>
+                  <p className="text-[11px] text-[#3bc3e2] font-semibold mt-1 opacity-90 group-hover/link:underline">
+                    View detailed statistics &rarr;
+                  </p>
+                </Link>
+
+                <div className="flex items-center gap-4 text-xs font-bold text-slate-300 pt-1">
+                  <span className="flex items-center gap-1.5 text-[#3bc3e2]">
+                    <Users className="w-4 h-4" />
+                    {campus._count?.users || 0} Students
+                  </span>
+                  <span className="flex items-center gap-1.5 text-[#3ccc8b]">
+                    <ShieldCheck className="w-4 h-4" />
+                    {admins.length} Admins
+                  </span>
                 </div>
 
                 {/* Assigned Admins */}
@@ -232,11 +277,11 @@ export default function CampusesPage() {
                   {admins.length === 0 ? (
                     <p className="text-xs text-amber-400 font-semibold italic">No admin assigned yet</p>
                   ) : (
-                    <div className="space-y-1.5">
+                    <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
                       {admins.map((adm) => (
                         <div key={adm.id} className="text-xs text-slate-200 flex items-center justify-between font-semibold">
-                          <span>{adm.name}</span>
-                          <span className="text-slate-400 text-[11px]">{adm.email}</span>
+                          <span className="truncate max-w-[120px]">{adm.name}</span>
+                          <span className="text-slate-400 text-[11px] truncate max-w-[150px]">{adm.email}</span>
                         </div>
                       ))}
                     </div>
@@ -247,7 +292,8 @@ export default function CampusesPage() {
               {/* Action Buttons */}
               <div className="pt-4 border-t border-white/10 flex items-center justify-between gap-2">
                 <button
-                  onClick={() => setSelectedCampusForAdmin(campus)}
+                  type="button"
+                  onClick={() => openAdminModal(campus)}
                   className="px-3 py-2 rounded-xl bg-[#3bc3e2]/15 hover:bg-[#3bc3e2]/25 text-[#3bc3e2] text-xs font-bold border border-[#3bc3e2]/30 transition-all flex items-center gap-1.5 cursor-pointer"
                 >
                   <UserPlus className="w-3.5 h-3.5" /> + Admin Account
@@ -255,9 +301,9 @@ export default function CampusesPage() {
 
                 <Link
                   href={`/superadmin/campuses/${campus.id}`}
-                  className="text-xs font-bold text-slate-300 hover:text-white transition-colors flex items-center gap-1"
+                  className="px-3.5 py-2 rounded-xl bg-white/[0.05] hover:bg-[#3bc3e2]/15 border border-white/10 hover:border-[#3bc3e2]/40 text-xs font-bold text-slate-200 hover:text-white transition-all flex items-center gap-1.5"
                 >
-                  Details <ChevronRight className="w-3.5 h-3.5 text-[#3bc3e2]" />
+                  Statistics <ChevronRight className="w-3.5 h-3.5 text-[#3bc3e2]" />
                 </Link>
               </div>
             </div>
@@ -268,7 +314,7 @@ export default function CampusesPage() {
       {/* Create Campus Modal */}
       {showCreateCampusModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-[#3bc3e2]/40 bg-[#071130]">
+          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-5 relative border border-[#3bc3e2]/40 bg-[#071130]">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <h3 className="text-xl font-bold text-white flex items-center gap-2">
                 <Building className="w-5 h-5 text-[#3bc3e2]" /> Add New Campus
@@ -280,6 +326,21 @@ export default function CampusesPage() {
                 <X className="w-5 h-5" />
               </button>
             </div>
+
+            {/* In-Modal Error & Success Messages */}
+            {campusModalError && (
+              <div className="p-3.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-200 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div className="flex-1 font-medium">{campusModalError}</div>
+              </div>
+            )}
+
+            {campusModalSuccess && (
+              <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex-1 font-medium">{campusModalSuccess}</div>
+              </div>
+            )}
 
             <form onSubmit={handleCreateCampus} className="space-y-4">
               <div>
@@ -338,7 +399,7 @@ export default function CampusesPage() {
       {/* Create Campus Admin Account Modal */}
       {selectedCampusForAdmin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-6 relative border border-[#3bc3e2]/40 bg-[#071130]">
+          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-5 relative border border-[#3bc3e2]/40 bg-[#071130]">
             <div className="flex items-center justify-between border-b border-white/10 pb-4">
               <div>
                 <h3 className="text-lg font-bold text-white flex items-center gap-2">
@@ -356,6 +417,28 @@ export default function CampusesPage() {
               </button>
             </div>
 
+            {/* In-Modal Error & Success Messages */}
+            {adminModalError && (
+              <div className="p-3.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-200 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div className="flex-1 font-medium">{adminModalError}</div>
+              </div>
+            )}
+
+            {adminModalSuccess && (
+              <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-xs flex items-start gap-2.5">
+                <UserCheck className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex-1 font-medium">{adminModalSuccess}</div>
+              </div>
+            )}
+
+            <div className="p-3 rounded-lg bg-[#3bc3e2]/10 border border-[#3bc3e2]/25 text-[11px] text-slate-300 flex items-start gap-2">
+              <span className="text-[#3bc3e2] font-bold shrink-0">💡 Student Admin:</span>
+              <span>
+                If this email belongs to an existing student at this campus, they will be granted Campus Admin review rights while keeping their student practice dashboard and challenge progress active!
+              </span>
+            </div>
+
             <form onSubmit={handleCreateAdmin} className="space-y-4">
               <div>
                 <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
@@ -364,7 +447,7 @@ export default function CampusesPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dr. Rajesh Sharma"
+                  placeholder="e.g. Dr. Rajesh Sharma or Student Lead"
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
                   className="alta-input w-full"
@@ -373,12 +456,12 @@ export default function CampusesPage() {
 
               <div>
                 <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
-                  Admin Email Address
+                  Admin / Student Email Address
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="admin@campus.edu"
+                  placeholder="student@campus.edu or admin@campus.edu"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   className="alta-input w-full"
@@ -416,7 +499,7 @@ export default function CampusesPage() {
                   {creatingAdmin ? (
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
-                    "Provision Account"
+                    "Assign Admin Account"
                   )}
                 </button>
               </div>
@@ -427,3 +510,4 @@ export default function CampusesPage() {
     </div>
   );
 }
+
