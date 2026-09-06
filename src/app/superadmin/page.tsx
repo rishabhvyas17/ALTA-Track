@@ -70,6 +70,7 @@ interface SuperAdminStats {
     id: string;
     name: string;
     region: string;
+    admins?: Array<{ id: string; name: string; email: string; year?: number | null }>;
     studentCount: number;
     enrolledCount: number;
     activeStreakCount: number;
@@ -351,11 +352,90 @@ export default function SuperAdminDashboard() {
       {/* TAB 1: 5-CAMPUS MATRIX */}
       {activeTab === "campuses" && (
         <div className="space-y-6">
+          {/* Partner Campus Cards with Admin Details */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {campusMetrics.map((c) => (
+              <div
+                key={c.id}
+                className="alta-card p-5 space-y-4 border border-white/10 hover:border-[#3bc3e2]/50 transition-all bg-[#0b1842]/90 flex flex-col justify-between"
+              >
+                <div className="space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#3bc3e2]/10 border border-[#3bc3e2]/30 text-[10px] font-bold text-[#3bc3e2] truncate max-w-[170px]">
+                      {c.region || "Official Campus"}
+                    </span>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-[11px] font-extrabold text-emerald-400 flex items-center gap-1">
+                      <ShieldCheck className="w-3.5 h-3.5" /> {c.admins?.length || 0} Admins
+                    </span>
+                  </div>
+
+                  <Link href={`/superadmin/campuses/${c.id}`} className="block group/title">
+                    <h3 className="text-base font-black text-white group-hover/title:text-[#3bc3e2] transition-colors flex items-center justify-between">
+                      {c.name}
+                      <ChevronRight className="w-4 h-4 text-slate-500 group-hover/title:text-[#3bc3e2] group-hover/title:translate-x-0.5 transition-all" />
+                    </h3>
+                  </Link>
+
+                  <div className="flex items-center gap-3 text-xs font-bold text-slate-300">
+                    <span className="flex items-center gap-1 text-[#3bc3e2]">
+                      <Users className="w-3.5 h-3.5" /> {c.studentCount} Students
+                    </span>
+                    <span className="flex items-center gap-1 text-orange-400">
+                      <Flame className="w-3.5 h-3.5 fill-orange-400" /> {c.activeStreakCount} Streaks
+                    </span>
+                  </div>
+
+                  {/* Assigned Admins Roster */}
+                  <div className="pt-2.5 border-t border-white/10 text-xs">
+                    <span className="text-[10px] font-black uppercase text-slate-400 block mb-1">
+                      Assigned Campus Admins:
+                    </span>
+                    {c.admins && c.admins.length > 0 ? (
+                      <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
+                        {c.admins.map((adm) => (
+                          <div key={adm.id} className="text-[11px] text-slate-200 flex items-center justify-between font-semibold">
+                            <div className="flex items-center gap-1.5 truncate max-w-[150px]">
+                              <span className="truncate">{adm.name}</span>
+                              <span
+                                className={`px-1.5 py-0.2 text-[9px] font-black rounded ${
+                                  adm.year
+                                    ? "bg-[#3bc3e2]/20 text-[#3bc3e2] border border-[#3bc3e2]/30"
+                                    : "bg-slate-700/60 text-slate-300"
+                                }`}
+                              >
+                                {adm.year ? `Y${adm.year}` : "All"}
+                              </span>
+                            </div>
+                            <span className="text-slate-400 text-[10px] truncate max-w-[120px]">{adm.email}</span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <span className="text-[11px] text-amber-400 italic font-semibold">No admin assigned yet</span>
+                    )}
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between">
+                  <span className="text-[11px] text-slate-400 font-semibold">
+                    {c.approvedSubmissions} Solved
+                  </span>
+                  <Link
+                    href={`/superadmin/campuses/${c.id}`}
+                    className="text-xs font-bold text-[#3bc3e2] hover:underline flex items-center gap-1"
+                  >
+                    Manage Campus &rarr;
+                  </Link>
+                </div>
+              </div>
+            ))}
+          </div>
+
           <div className="alta-card overflow-hidden">
             <div className="p-5 border-b border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-white/[0.01]">
               <div>
                 <h2 className="text-lg font-black text-white flex items-center gap-2">
-                  <School className="w-5 h-5 text-[#3bc3e2]" /> The 5 Official Partner Campuses
+                  <School className="w-5 h-5 text-[#3bc3e2]" /> The 5 Official Partner Campuses Benchmark
                 </h2>
                 <p className="text-xs text-slate-400 mt-0.5">
                   Real-time side-by-side performance benchmarks for partner engineering institutes.
@@ -366,7 +446,7 @@ export default function SuperAdminDashboard() {
                 href="/superadmin/campuses"
                 className="text-xs font-bold text-[#3bc3e2] hover:underline flex items-center gap-1"
               >
-                Manage Campus Admins <ArrowUpRight className="w-3.5 h-3.5" />
+                Provision Admins <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </div>
 
@@ -376,6 +456,7 @@ export default function SuperAdminDashboard() {
                   <tr className="border-b border-white/10 bg-white/[0.02] text-xs font-bold text-slate-400 uppercase tracking-wider">
                     <th className="p-4 pl-6">Campus</th>
                     <th className="p-4">Region</th>
+                    <th className="p-4">Admins</th>
                     <th className="p-4">Students</th>
                     <th className="p-4">Active Streaks</th>
                     <th className="p-4">Avg Streak</th>
@@ -388,12 +469,37 @@ export default function SuperAdminDashboard() {
                   {campusMetrics.map((c) => (
                     <tr key={c.id} className="hover:bg-white/[0.02] transition-colors">
                       <td className="p-4 pl-6">
-                        <div className="font-extrabold text-white text-sm">
+                        <Link href={`/superadmin/campuses/${c.id}`} className="font-extrabold text-white text-sm hover:text-[#3bc3e2] transition-colors">
                           {c.name}
-                        </div>
+                        </Link>
                       </td>
                       <td className="p-4 text-slate-300 font-medium">
                         {c.region}
+                      </td>
+                      <td className="p-4">
+                        <div className="space-y-1">
+                          <span className="px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 font-bold flex items-center gap-1.5 w-fit">
+                            <ShieldCheck className="w-3.5 h-3.5" />
+                            {c.admins?.length || 0} Admins
+                          </span>
+                          {c.admins && c.admins.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {c.admins.map((a) => (
+                                <span
+                                  key={a.id}
+                                  className={`text-[9px] px-1 py-0.2 rounded font-bold ${
+                                    a.year
+                                      ? "bg-[#3bc3e2]/20 text-[#3bc3e2] border border-[#3bc3e2]/30"
+                                      : "bg-slate-800 text-slate-300"
+                                  }`}
+                                  title={`${a.name} (${a.year ? `Year ${a.year}` : "All Years"})`}
+                                >
+                                  {a.year ? `Y${a.year}` : "All"}
+                                </span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
                       </td>
                       <td className="p-4">
                         <span className="font-bold text-white text-sm">

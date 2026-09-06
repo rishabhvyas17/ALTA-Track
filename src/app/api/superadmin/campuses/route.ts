@@ -16,7 +16,9 @@ export async function GET() {
       orderBy: { name: "asc" },
       include: {
         _count: {
-          select: { users: true },
+          select: {
+            users: { where: { role: "STUDENT" } },
+          },
         },
         users: {
           where: { role: "CAMPUS_ADMIN" },
@@ -24,6 +26,7 @@ export async function GET() {
             id: true,
             name: true,
             email: true,
+            role: true,
           },
         },
       },

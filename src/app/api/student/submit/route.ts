@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { parseRules } from "@/lib/rules";
 import { z } from "zod";
 
 function normalizeUrl(url: any): string | undefined {
@@ -30,19 +31,25 @@ const submitSchema = z
       .nullable(),
     githubLink: z
       .string()
-      .url("Must be a valid GitHub URL")
+      .url("Must be a valid URL")
       .optional()
       .or(z.literal(""))
       .nullable(),
   })
   .refine(
-    (data) =>
-      Boolean(data.linkedinPostUrl && data.linkedinPostUrl.trim().length > 0) ||
-      Boolean(data.githubLink && data.githubLink.trim().length > 0) ||
-      Boolean(data.supportingLink && data.supportingLink.trim().length > 0),
+    (data) => {
+      const hasLinkedIn =
+        typeof data.linkedinPostUrl === "string" &&
+        data.linkedinPostUrl.trim().length > 0;
+      const hasGithub =
+        typeof data.githubLink === "string" &&
+        data.githubLink.trim().length > 0;
+      return hasLinkedIn || hasGithub;
+    },
     {
       message:
-        "Please provide either a LinkedIn post link or a GitHub code link as proof.",
+        "Please provide at least one proof link: either a LinkedIn post URL or a GitHub code repository URL.",
+      path: ["linkedinPostUrl"],
     }
   );
 
@@ -75,7 +82,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Check if already submitted for this day
+    // Check if the student has already submitted ANY problem today in this enrollment
+    const startOfToday = new Date();
+    startOfToday.setHours(0, 0, 0, 0);
+
+    const endOfToday = new Date();
+    endOfToday.setHours(23, 59, 59, 999);
+
+    const alreadySubmittedToday = await prisma.submission.findFirst({
+      where: {
+        enrollmentId: validated.enrollmentId,
+        submittedAt: {
+          gte: startOfToday,
+          lte: endOfToday,
+        },
+      },
+    });
+
+    const isFirstSubmissionToday = !alreadySubmittedToday;
+
+    // Check if already submitted for this specific day problem
     const existingSubmission = await prisma.submission.findUnique({
       where: {
         enrollmentId_dayNumber: {
@@ -114,8 +140,56 @@ export async function POST(request: NextRequest) {
         },
       });
 
-      // Update enrollment progress
-      const newStreak = enrollment.streakCount + 1;
+      // Streaks increase strictly on the basis of calendar days.
+      // If student already submitted a problem today, streak count does not increase again.
+      let newStreak = enrollment.streakCount;
+      let graceDaysUsed = enrollment.graceDaysUsedThisMonth;
+      let status = enrollment.status;
+
+      if (isFirstSubmissionToday) {
+        // Find most recent submission before today
+        const lastSubmissionBeforeToday = await prisma.submission.findFirst({
+          where: {
+            enrollmentId: validated.enrollmentId,
+            id: { not: submission.id },
+            submittedAt: { lt: startOfToday },
+          },
+          orderBy: { submittedAt: "desc" },
+        });
+
+        if (!lastSubmissionBeforeToday) {
+          // First submission ever for this challenge track
+          newStreak = 1;
+          status = "ACTIVE";
+        } else {
+          const prevDate = new Date(lastSubmissionBeforeToday.submittedAt);
+          prevDate.setHours(0, 0, 0, 0);
+          const diffMs = startOfToday.getTime() - prevDate.getTime();
+          const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+
+          if (diffDays === 1) {
+            // Consecutive day
+            newStreak = (enrollment.streakCount > 0 ? enrollment.streakCount : 0) + 1;
+            status = "ACTIVE";
+          } else {
+            // Gap of missed days
+            const rules = parseRules(enrollment.challenge.rules);
+            const missedDays = diffDays - 1;
+            const availableGrace = Math.max(0, rules.graceDaysPerMonth - enrollment.graceDaysUsedThisMonth);
+
+            if (missedDays <= availableGrace && enrollment.status !== "BROKEN") {
+              graceDaysUsed += missedDays;
+              newStreak = (enrollment.streakCount > 0 ? enrollment.streakCount : 0) + 1;
+              status = "ACTIVE";
+            } else {
+              // Grace days exhausted, streak restarts from 1
+              newStreak = 1;
+              status = "ACTIVE";
+            }
+          }
+        }
+      }
+
       const newLongest = Math.max(enrollment.longestStreak, newStreak);
       const isChallengeCompleted = validated.dayNumber >= enrollment.challenge.totalDays;
 
@@ -124,10 +198,11 @@ export async function POST(request: NextRequest) {
         data: {
           streakCount: newStreak,
           longestStreak: newLongest,
+          graceDaysUsedThisMonth: graceDaysUsed,
           currentDay: isChallengeCompleted
             ? enrollment.currentDay
             : Math.max(enrollment.currentDay, validated.dayNumber + 1),
-          status: isChallengeCompleted ? "COMPLETED" : "ACTIVE",
+          status: isChallengeCompleted ? "COMPLETED" : status,
           completedAt: isChallengeCompleted ? new Date() : null,
         },
       });

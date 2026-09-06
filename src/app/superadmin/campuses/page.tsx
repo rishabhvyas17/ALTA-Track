@@ -22,6 +22,7 @@ interface AdminUser {
   name: string;
   email: string;
   role: string;
+  year?: number | null;
 }
 
 interface Campus {
@@ -54,6 +55,7 @@ export default function CampusesPage() {
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [adminYear, setAdminYear] = useState("");
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [adminModalError, setAdminModalError] = useState("");
   const [adminModalSuccess, setAdminModalSuccess] = useState("");
@@ -126,6 +128,7 @@ export default function CampusesPage() {
     setAdminName("");
     setAdminEmail("");
     setAdminPassword("");
+    setAdminYear("");
     setAdminModalError("");
     setAdminModalSuccess("");
   };
@@ -147,6 +150,7 @@ export default function CampusesPage() {
             name: adminName,
             email: adminEmail,
             password: adminPassword,
+            year: adminYear ? Number(adminYear) : null,
           }),
         }
       );
@@ -164,6 +168,7 @@ export default function CampusesPage() {
         setAdminName("");
         setAdminEmail("");
         setAdminPassword("");
+        setAdminYear("");
         setAdminModalSuccess("");
       }, 1500);
       setTimeout(() => setSuccess(""), 5000);
@@ -229,7 +234,10 @@ export default function CampusesPage() {
       {/* Campuses Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {campuses.map((campus) => {
-          const admins = campus.users?.filter((u) => u.role === "CAMPUS_ADMIN") || [];
+          const admins =
+            campus.users?.filter((u) => !u.role || u.role === "CAMPUS_ADMIN") ||
+            campus.users ||
+            [];
           return (
             <div
               key={campus.id}
@@ -280,8 +288,13 @@ export default function CampusesPage() {
                     <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
                       {admins.map((adm) => (
                         <div key={adm.id} className="text-xs text-slate-200 flex items-center justify-between font-semibold">
-                          <span className="truncate max-w-[120px]">{adm.name}</span>
-                          <span className="text-slate-400 text-[11px] truncate max-w-[150px]">{adm.email}</span>
+                          <div className="flex items-center gap-1.5 truncate max-w-[150px]">
+                            <span className="truncate">{adm.name}</span>
+                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold ${adm.year ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "bg-slate-500/20 text-slate-300"}`}>
+                              {adm.year ? `Y${adm.year}` : "All"}
+                            </span>
+                          </div>
+                          <span className="text-slate-400 text-[11px] truncate max-w-[130px]">{adm.email}</span>
                         </div>
                       ))}
                     </div>
@@ -433,9 +446,9 @@ export default function CampusesPage() {
             )}
 
             <div className="p-3 rounded-lg bg-[#3bc3e2]/10 border border-[#3bc3e2]/25 text-[11px] text-slate-300 flex items-start gap-2">
-              <span className="text-[#3bc3e2] font-bold shrink-0">💡 Student Admin:</span>
+              <span className="text-[#3bc3e2] font-bold shrink-0">💡 Dedicated Role:</span>
               <span>
-                If this email belongs to an existing student at this campus, they will be granted Campus Admin review rights while keeping their student practice dashboard and challenge progress active!
+                Campus Admin accounts are dedicated faculty/coordinator credentials separate from student accounts. Campus Admins verify daily DSA problem submissions and oversee campus participation.
               </span>
             </div>
 
@@ -447,7 +460,7 @@ export default function CampusesPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Dr. Rajesh Sharma or Student Lead"
+                  placeholder="e.g. Dr. Rajesh Sharma"
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
                   className="alta-input w-full"
@@ -456,12 +469,12 @@ export default function CampusesPage() {
 
               <div>
                 <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
-                  Admin / Student Email Address
+                  Admin Email Address
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="student@campus.edu or admin@campus.edu"
+                  placeholder="admin@campus.edu"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   className="alta-input w-full"
@@ -481,6 +494,26 @@ export default function CampusesPage() {
                   onChange={(e) => setAdminPassword(e.target.value)}
                   className="alta-input w-full"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Assigned Year Cohort
+                </label>
+                <select
+                  value={adminYear}
+                  onChange={(e) => setAdminYear(e.target.value)}
+                  className="alta-input w-full"
+                >
+                  <option value="">All Years (General Campus Admin)</option>
+                  <option value="1">1st Year Students Only</option>
+                  <option value="2">2nd Year Students Only</option>
+                  <option value="3">3rd Year Students Only</option>
+                  <option value="4">4th Year Students Only</option>
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  This admin will exclusively verify daily problem submissions from students in the selected year.
+                </p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">

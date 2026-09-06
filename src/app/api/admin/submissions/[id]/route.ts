@@ -19,6 +19,39 @@ export async function PUT(
     const body = await request.json();
     const { status, rejectionReason } = reviewSchema.parse(body);
 
+    // If campus admin, verify submission belongs to their campus and assigned year cohort
+    if (auth.role === "CAMPUS_ADMIN") {
+      const existing = await prisma.submission.findUnique({
+        where: { id },
+        include: {
+          enrollment: {
+            include: { user: { select: { campusId: true, year: true } } },
+          },
+        },
+      });
+
+      if (!existing || existing.enrollment.user.campusId !== auth.campusId) {
+        return NextResponse.json(
+          { error: "Submission not found or unauthorized for this campus." },
+          { status: 403 }
+        );
+      }
+
+      const adminRecord = await prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: { year: true },
+      });
+
+      if (adminRecord?.year && existing.enrollment.user.year !== adminRecord.year) {
+        return NextResponse.json(
+          {
+            error: `You are assigned to Year ${adminRecord.year} students only and cannot review Year ${existing.enrollment.user.year || "unknown"} submissions.`,
+          },
+          { status: 403 }
+        );
+      }
+    }
+
     const submission = await prisma.submission.update({
       where: { id },
       data: {

@@ -6,9 +6,28 @@ export async function GET() {
   try {
     const auth = await requireRole("CAMPUS_ADMIN", "SUPER_ADMIN");
 
-    let campusFilter = {};
+    let campusFilter: any = {};
+    let adminAssignedYear: number | null = null;
+
     if (auth.role === "CAMPUS_ADMIN" && auth.campusId) {
-      campusFilter = { enrollment: { user: { campusId: auth.campusId } } };
+      const adminRecord = await prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: { year: true },
+      });
+      adminAssignedYear = adminRecord?.year ?? null;
+
+      if (adminAssignedYear) {
+        campusFilter = {
+          enrollment: {
+            user: {
+              campusId: auth.campusId,
+              year: adminAssignedYear,
+            },
+          },
+        };
+      } else {
+        campusFilter = { enrollment: { user: { campusId: auth.campusId } } };
+      }
     }
 
     const submissions = await prisma.submission.findMany({
@@ -35,7 +54,7 @@ export async function GET() {
       orderBy: { submittedAt: "desc" },
     });
 
-    return NextResponse.json({ submissions });
+    return NextResponse.json({ submissions, adminAssignedYear });
   } catch (error: any) {
     const message = error instanceof Error ? error.message : "Server error";
     if (message === "Unauthorized" || message === "Forbidden") {

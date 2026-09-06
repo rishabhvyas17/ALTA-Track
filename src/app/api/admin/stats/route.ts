@@ -43,7 +43,15 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Campus not found" }, { status: 404 });
     }
 
-    const students = campus.users.filter((u) => u.role === "STUDENT");
+    const currentAdminUser = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { year: true },
+    });
+    const adminAssignedYear = currentAdminUser?.year ?? null;
+
+    const students = adminAssignedYear
+      ? campus.users.filter((u) => u.role === "STUDENT" && u.year === adminAssignedYear)
+      : campus.users.filter((u) => u.role === "STUDENT");
     const admins = campus.users.filter((u) => u.role === "CAMPUS_ADMIN");
     const studentIds = students.map((s) => s.id);
 
@@ -280,6 +288,7 @@ export async function GET(request: NextRequest) {
       yearDistribution,
       allStudents: allStudentsRoster,
       topStudents,
+      adminAssignedYear,
       recentPendingSubmissions: pendingSubmissions.slice(0, 10).map((s) => ({
         id: s.id,
         dayNumber: s.dayNumber,

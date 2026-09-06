@@ -105,7 +105,7 @@ export async function GET() {
       const students = camp.users.filter((u) => u.role === "STUDENT");
       const admins = camp.users
         .filter((u) => u.role === "CAMPUS_ADMIN")
-        .map((a) => ({ id: a.id, name: a.name, email: a.email }));
+        .map((a) => ({ id: a.id, name: a.name, email: a.email, year: a.year }));
 
       const studentIds = new Set(students.map((u) => u.id));
       const campusEnrollments = allEnrollments.filter((e) => studentIds.has(e.userId));

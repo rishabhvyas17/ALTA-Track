@@ -14,6 +14,7 @@ export interface TokenPayload {
   userId: string;
   role: Role;
   campusId: string | null;
+  year?: number | null;
 }
 
 // ─── Password Hashing ──────────────────────────────────────────────────────
@@ -100,12 +101,7 @@ export async function requireSession(): Promise<TokenPayload> {
  * Check if a user has the required role
  */
 export function hasRole(session: TokenPayload, ...roles: Role[]): boolean {
-  if (roles.includes(session.role)) return true;
-  // A Campus Admin is also a student from that campus, so they have STUDENT permissions
-  if (roles.includes("STUDENT") && session.role === "CAMPUS_ADMIN") {
-    return true;
-  }
-  return false;
+  return roles.includes(session.role);
 }
 
 /**

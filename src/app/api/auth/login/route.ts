@@ -49,6 +49,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       role: user.role,
       campusId: user.campusId,
+      year: user.year,
     });
 
     return NextResponse.json({

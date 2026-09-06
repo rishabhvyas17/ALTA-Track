@@ -103,6 +103,7 @@ interface CampusStatsData {
     students: StudentRosterItem[];
   }[];
   allStudents: StudentRosterItem[];
+  adminAssignedYear?: number | null;
   topStudents: {
     id: string;
     name: string;
@@ -137,6 +138,9 @@ export default function CampusAdminDashboard() {
       if (!res.ok) throw new Error("Failed to load campus data");
       const json = await res.json();
       setData(json);
+      if (json.adminAssignedYear) {
+        setActiveYearTab(json.adminAssignedYear);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -214,20 +218,27 @@ export default function CampusAdminDashboard() {
       <div className="alta-card p-6 border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-[var(--color-surface-card)] to-blue-950/30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex items-center gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-[11px] font-black uppercase tracking-wider">
-                Partner Campus Hub
+                {data.adminAssignedYear ? `Year ${data.adminAssignedYear} Campus Coordinator` : "Campus Admin (All Cohorts)"}
               </span>
               <span className="text-xs text-gray-400 font-medium">
                 {campus.region || "Institutional Dashboard"}
               </span>
+              {data.adminAssignedYear && (
+                <span className="px-2 py-0.5 rounded-md bg-white/10 text-cyan-200 text-[10px] font-bold border border-cyan-400/30">
+                  Scoped: Year {data.adminAssignedYear} Students Only
+                </span>
+              )}
             </div>
             <h1 className="text-2xl sm:text-3xl font-black text-white mt-1.5 flex items-center gap-2">
               <Building2 className="w-7 h-7 text-[var(--color-accent-cyan)]" />
               {campus.name}
             </h1>
             <p className="text-xs text-[var(--color-neutral-silver)] mt-1">
-              Local verification console, student tracking, and year-wise cohort analytics.
+              {data.adminAssignedYear
+                ? `Overseeing and verifying daily DSA solutions for ${data.adminAssignedYear === 1 ? "1st" : data.adminAssignedYear === 2 ? "2nd" : data.adminAssignedYear === 3 ? "3rd" : "4th"} year engineering students.`
+                : "Local verification console, student tracking, and year-wise cohort analytics across all batches."}
             </p>
           </div>
 
@@ -337,9 +348,16 @@ export default function CampusAdminDashboard() {
               }`}
             >
               <div className="flex items-center justify-between">
-                <span className="text-xs font-black text-white bg-white/5 px-2.5 py-0.5 rounded-md">
-                  {yd.label}
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <span className="text-xs font-black text-white bg-white/5 px-2.5 py-0.5 rounded-md">
+                    {yd.label}
+                  </span>
+                  {data.adminAssignedYear === yd.year && (
+                    <span className="text-[10px] font-black text-cyan-300 bg-cyan-500/20 px-1.5 py-0.5 rounded border border-cyan-400/30">
+                      ★ Your Cohort
+                    </span>
+                  )}
+                </div>
                 <span className="text-[11px] font-bold text-cyan-400">
                   {yd.totalStudents} Students
                 </span>
@@ -479,13 +497,16 @@ export default function CampusAdminDashboard() {
                 <button
                   key={yr}
                   onClick={() => setActiveYearTab(yr)}
-                  className={`px-3 py-1 rounded-lg cursor-pointer transition-all ${
+                  className={`px-3 py-1 rounded-lg cursor-pointer transition-all flex items-center gap-1 ${
                     activeYearTab === yr
                       ? "bg-cyan-500 text-slate-950 font-black shadow-sm"
                       : "text-gray-400 hover:text-white"
                   }`}
                 >
-                  {yr === "ALL" ? "All Years" : `Year ${yr}`}
+                  <span>{yr === "ALL" ? "All Years" : `Year ${yr}`}</span>
+                  {data.adminAssignedYear === yr && (
+                    <span className="w-1.5 h-1.5 rounded-full bg-cyan-300 animate-pulse" />
+                  )}
                 </button>
               ))}
             </div>

@@ -31,7 +31,7 @@ interface CampusDetails {
   name: string;
   region: string;
   createdAt: string;
-  admins: { id: string; name: string; email: string; createdAt?: string }[];
+  admins: { id: string; name: string; email: string; year?: number | null; createdAt?: string }[];
   studentCount: number;
   activeStreakCount: number;
   avgStreak: number;
@@ -78,6 +78,7 @@ export default function CampusDetailsPage() {
   const [adminName, setAdminName] = useState("");
   const [adminEmail, setAdminEmail] = useState("");
   const [adminPassword, setAdminPassword] = useState("");
+  const [adminYear, setAdminYear] = useState("");
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [modalError, setModalError] = useState("");
   const [modalSuccess, setModalSuccess] = useState("");
@@ -151,6 +152,7 @@ export default function CampusDetailsPage() {
           name: adminName,
           email: adminEmail,
           password: adminPassword,
+          year: adminYear ? Number(adminYear) : null,
         }),
       });
 
@@ -166,6 +168,7 @@ export default function CampusDetailsPage() {
         setAdminName("");
         setAdminEmail("");
         setAdminPassword("");
+        setAdminYear("");
         setModalSuccess("");
       }, 1500);
     } catch (err: any) {
@@ -217,6 +220,10 @@ export default function CampusDetailsPage() {
           <button
             onClick={() => {
               setShowAddAdminModal(true);
+              setAdminName("");
+              setAdminEmail("");
+              setAdminPassword("");
+              setAdminYear("");
               setModalError("");
               setModalSuccess("");
             }}
@@ -265,11 +272,14 @@ export default function CampusDetailsPage() {
                 className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-semibold flex items-center gap-1.5"
               >
                 <UserCheck className="w-3 h-3" /> {adm.name} ({adm.email})
+                <span className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold ${adm.year ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "bg-white/10 text-slate-300"}`}>
+                  {adm.year ? `Year ${adm.year} Coordinator` : "All Years"}
+                </span>
               </span>
             ))
           ) : (
             <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 font-semibold flex items-center gap-1.5">
-              <AlertCircle className="w-3 h-3" /> No Admin Assigned (Click "+ Add Campus Admin" to assign a student or coordinator)
+              <AlertCircle className="w-3 h-3" /> No Admin Assigned (Click "+ Add Campus Admin" to provision a campus coordinator)
             </span>
           )}
         </div>
@@ -541,7 +551,7 @@ export default function CampusDetailsPage() {
             )}
 
             <div className="p-2.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-[11px] text-cyan-200">
-              💡 <strong>Student as Admin:</strong> If the person already registered as a student from this campus, enter their email below to grant them Campus Admin review privileges while preserving their student practice dashboard!
+              💡 <strong>Dedicated Role:</strong> Campus Admin accounts are dedicated faculty or college coordinator credentials separate from student accounts. Campus Admins verify daily DSA problem submissions and oversee campus cohorts.
             </div>
 
             <form onSubmit={handleCreateAdmin} className="space-y-4">
@@ -552,7 +562,7 @@ export default function CampusDetailsPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Student Lead / Professor"
+                  placeholder="e.g. Dr. Rajesh Sharma"
                   value={adminName}
                   onChange={(e) => setAdminName(e.target.value)}
                   className="alta-input w-full"
@@ -561,12 +571,12 @@ export default function CampusDetailsPage() {
 
               <div>
                 <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
-                  Email Address
+                  Admin Email Address
                 </label>
                 <input
                   type="email"
                   required
-                  placeholder="student@campus.edu or admin@campus.edu"
+                  placeholder="admin@campus.edu"
                   value={adminEmail}
                   onChange={(e) => setAdminEmail(e.target.value)}
                   className="alta-input w-full"
@@ -586,6 +596,26 @@ export default function CampusDetailsPage() {
                   onChange={(e) => setAdminPassword(e.target.value)}
                   className="alta-input w-full"
                 />
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Assigned Year Cohort
+                </label>
+                <select
+                  value={adminYear}
+                  onChange={(e) => setAdminYear(e.target.value)}
+                  className="alta-input w-full"
+                >
+                  <option value="">All Years (General Campus Admin)</option>
+                  <option value="1">1st Year Students Only</option>
+                  <option value="2">2nd Year Students Only</option>
+                  <option value="3">3rd Year Students Only</option>
+                  <option value="4">4th Year Students Only</option>
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  This admin will exclusively verify daily problem submissions from students in the selected year.
+                </p>
               </div>
 
               <div className="flex justify-end gap-3 pt-4 border-t border-white/10">

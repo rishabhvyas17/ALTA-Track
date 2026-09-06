@@ -40,6 +40,7 @@ interface QueueSubmission {
 
 export default function VerificationQueuePage() {
   const [submissions, setSubmissions] = useState<QueueSubmission[]>([]);
+  const [adminAssignedYear, setAdminAssignedYear] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("PENDING");
@@ -60,6 +61,7 @@ export default function VerificationQueuePage() {
       if (res.ok) {
         const data = await res.json();
         setSubmissions(data.submissions || []);
+        setAdminAssignedYear(data.adminAssignedYear ?? null);
       }
     } catch (err) {
       console.error(err);
@@ -161,6 +163,33 @@ export default function VerificationQueuePage() {
         </div>
       </div>
 
+      {/* Cohort Notification Banner */}
+      {adminAssignedYear ? (
+        <div className="flex items-center gap-3 p-3.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 text-xs text-cyan-200">
+          <div className="p-2 rounded-lg bg-cyan-500/20 text-cyan-300 font-extrabold shrink-0 flex items-center gap-1.5">
+            🎓 Year {adminAssignedYear} Cohort
+          </div>
+          <div>
+            <p className="font-bold text-white">Year-Specific Verification Queue</p>
+            <p className="text-cyan-300/80 text-[11px] mt-0.5">
+              You are signed in as the <strong className="text-cyan-200">Year {adminAssignedYear} Campus Coordinator</strong>. You have verification authority exclusively over daily problem submissions submitted by {adminAssignedYear === 1 ? "1st" : adminAssignedYear === 2 ? "2nd" : adminAssignedYear === 3 ? "3rd" : "4th"} year students.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-3 p-3.5 rounded-xl border border-blue-500/20 bg-blue-500/5 text-xs text-blue-200">
+          <div className="p-2 rounded-lg bg-blue-500/20 text-blue-300 font-extrabold shrink-0 flex items-center gap-1.5">
+            🏛️ All Cohorts
+          </div>
+          <div>
+            <p className="font-bold text-white">Campus-Wide General Queue</p>
+            <p className="text-blue-300/80 text-[11px] mt-0.5">
+              Showing student submissions across all academic years (1st through 4th year) on your campus.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Submissions Queue Cards / Table */}
       <div className="alta-card overflow-hidden">
         {filtered.length === 0 ? (
@@ -188,9 +217,14 @@ export default function VerificationQueuePage() {
                 {paginated.map((s) => (
                   <tr key={s.id} className="hover:bg-white/[0.02] transition-colors">
                     <td className="p-4 pl-6">
-                      <div className="font-bold text-white">{s.enrollment.user.name}</div>
-                      <div className="text-xs text-gray-400">
-                        {s.enrollment.user.email} (Year {s.enrollment.user.year})
+                      <div className="flex items-center gap-2">
+                        <span className="font-bold text-white">{s.enrollment.user.name}</span>
+                        <span className="px-1.5 py-0.5 rounded text-[10px] font-extrabold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">
+                          Year {s.enrollment.user.year}
+                        </span>
+                      </div>
+                      <div className="text-xs text-gray-400 mt-0.5">
+                        {s.enrollment.user.email}
                       </div>
                     </td>
 

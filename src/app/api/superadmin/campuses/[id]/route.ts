@@ -13,6 +13,7 @@ const createAdminSchema = z.object({
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
+  year: z.coerce.number().int().min(1).max(4).nullable().optional(),
 });
 
 type RouteParams = { params: Promise<{ id: string }> };
@@ -42,41 +43,29 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
       where: { email: parsed.data.email },
     });
 
-    const passwordHash = await hashPassword(parsed.data.password);
-
     if (existingUser) {
+      if (existingUser.role === "STUDENT") {
+        return NextResponse.json(
+          {
+            error:
+              "This email is registered to a student account. Campus Admin accounts must be separate from student accounts.",
+          },
+          { status: 409 }
+        );
+      }
       if (existingUser.role === "SUPER_ADMIN") {
         return NextResponse.json(
           { error: "This email belongs to a Super Admin account." },
           { status: 400 }
         );
       }
-
-      // If user is a student or existing admin, assign them as Campus Admin for this campus
-      const updatedAdmin = await prisma.user.update({
-        where: { id: existingUser.id },
-        data: {
-          role: "CAMPUS_ADMIN",
-          campusId: id,
-          name: parsed.data.name || existingUser.name,
-          passwordHash,
-        },
-      });
-
       return NextResponse.json(
-        {
-          message: existingUser.role === "STUDENT"
-            ? `Student account for ${updatedAdmin.name} (${updatedAdmin.email}) has been granted Campus Admin privileges for this campus!`
-            : `Updated Campus Admin credentials for ${updatedAdmin.name}.`,
-          admin: {
-            id: updatedAdmin.id,
-            name: updatedAdmin.name,
-            email: updatedAdmin.email,
-          },
-        },
-        { status: 200 }
+        { error: "An account with this email already exists." },
+        { status: 409 }
       );
     }
+
+    const passwordHash = await hashPassword(parsed.data.password);
 
     const admin = await prisma.user.create({
       data: {
@@ -85,6 +74,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
         passwordHash,
         role: "CAMPUS_ADMIN",
         campusId: id,
+        year: parsed.data.year ?? null,
       },
     });
 
@@ -95,6 +85,7 @@ export async function POST(request: NextRequest, { params }: RouteParams) {
           id: admin.id,
           name: admin.name,
           email: admin.email,
+          year: admin.year,
         },
       },
       { status: 201 }
@@ -122,6 +113,7 @@ export async function GET(request: NextRequest, { params }: RouteParams) {
             id: true,
             name: true,
             email: true,
+            year: true,
             createdAt: true,
           },
         },
@@ -171,40 +163,29 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
         where: { email: parsed.data.email },
       });
 
-      const passwordHash = await hashPassword(parsed.data.password);
-
       if (existingUser) {
+        if (existingUser.role === "STUDENT") {
+          return NextResponse.json(
+            {
+              error:
+                "This email is registered to a student account. Campus Admin accounts must be separate from student accounts.",
+            },
+            { status: 409 }
+          );
+        }
         if (existingUser.role === "SUPER_ADMIN") {
           return NextResponse.json(
             { error: "This email belongs to a Super Admin account." },
             { status: 400 }
           );
         }
-
-        const updatedAdmin = await prisma.user.update({
-          where: { id: existingUser.id },
-          data: {
-            role: "CAMPUS_ADMIN",
-            campusId: id,
-            name: parsed.data.name || existingUser.name,
-            passwordHash,
-          },
-        });
-
         return NextResponse.json(
-          {
-            message: existingUser.role === "STUDENT"
-              ? `Student account for ${updatedAdmin.name} (${updatedAdmin.email}) has been granted Campus Admin privileges for this campus!`
-              : `Updated Campus Admin credentials for ${updatedAdmin.name}.`,
-            admin: {
-              id: updatedAdmin.id,
-              name: updatedAdmin.name,
-              email: updatedAdmin.email,
-            },
-          },
-          { status: 200 }
+          { error: "An account with this email already exists." },
+          { status: 409 }
         );
       }
+
+      const passwordHash = await hashPassword(parsed.data.password);
 
       const admin = await prisma.user.create({
         data: {
@@ -213,6 +194,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
           passwordHash,
           role: "CAMPUS_ADMIN",
           campusId: id,
+          year: parsed.data.year ?? null,
         },
       });
 
@@ -223,6 +205,7 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
             id: admin.id,
             name: admin.name,
             email: admin.email,
+            year: admin.year,
           },
         },
         { status: 201 }
