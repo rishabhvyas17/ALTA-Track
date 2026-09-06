@@ -21,21 +21,6 @@ async function main() {
   // ─── Campuses ───────────────────────────────────────────────────────────
   const campuses = await Promise.all([
     prisma.campus.upsert({
-      where: { name: "IIT Delhi" },
-      update: {},
-      create: { name: "IIT Delhi", region: "North India" },
-    }),
-    prisma.campus.upsert({
-      where: { name: "NIT Trichy" },
-      update: {},
-      create: { name: "NIT Trichy", region: "South India" },
-    }),
-    prisma.campus.upsert({
-      where: { name: "BITS Pilani" },
-      update: {},
-      create: { name: "BITS Pilani", region: "West India" },
-    }),
-    prisma.campus.upsert({
       where: { name: "SAGE University" },
       update: {},
       create: { name: "SAGE University", region: "Indore, Madhya Pradesh" },
@@ -163,72 +148,96 @@ async function main() {
     },
   });
 
-  // Campus Admins
+  // Campus Admins for partner campuses
   const campusAdmin1 = await prisma.user.upsert({
-    where: { email: "admin.iitd@alta.org" },
+    where: { email: "admin.sage@alta.org" },
     update: {},
     create: {
-      name: "Rahul Sharma",
-      email: "admin.iitd@alta.org",
+      name: "Prof. Rahul Sharma",
+      email: "admin.sage@alta.org",
       passwordHash,
       role: "CAMPUS_ADMIN",
-      campusId: campuses[0].id,
+      campusId: campuses[0].id, // SAGE University
     },
   });
 
   const campusAdmin2 = await prisma.user.upsert({
-    where: { email: "admin.nitt@alta.org" },
+    where: { email: "admin.adypu@alta.org" },
     update: {},
     create: {
-      name: "Priya Nair",
-      email: "admin.nitt@alta.org",
+      name: "Dr. Priya Kulkarni",
+      email: "admin.adypu@alta.org",
       passwordHash,
       role: "CAMPUS_ADMIN",
-      campusId: campuses[1].id,
+      campusId: campuses[1].id, // ADYPU
     },
   });
 
-  // Students
+  // Students across official campuses
   const students = await Promise.all([
     prisma.user.upsert({
       where: { email: "student1@iitd.ac.in" },
-      update: {},
+      update: { campusId: campuses[0].id, year: 2 },
       create: {
         name: "Arjun Patel",
         email: "student1@iitd.ac.in",
         passwordHash,
         role: "STUDENT",
-        campusId: campuses[0].id,
+        campusId: campuses[0].id, // SAGE University
         year: 2,
       },
     }),
     prisma.user.upsert({
       where: { email: "student2@nitt.ac.in" },
-      update: {},
+      update: { campusId: campuses[1].id, year: 1 },
       create: {
-        name: "Sneha Reddy",
+        name: "Sneha Kulkarni",
         email: "student2@nitt.ac.in",
         passwordHash,
         role: "STUDENT",
-        campusId: campuses[1].id,
+        campusId: campuses[1].id, // ADYPU
         year: 1,
       },
     }),
     prisma.user.upsert({
       where: { email: "student3@bits.ac.in" },
-      update: {},
+      update: { campusId: campuses[2].id, year: 3 },
       create: {
-        name: "Vikram Singh",
+        name: "Vikram Malhotra",
         email: "student3@bits.ac.in",
         passwordHash,
         role: "STUDENT",
-        campusId: campuses[2].id,
+        campusId: campuses[2].id, // IITM
+        year: 3,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "ananya.vgu@alta.org" },
+      update: { campusId: campuses[3].id, year: 4 },
+      create: {
+        name: "Ananya Sharma",
+        email: "ananya.vgu@alta.org",
+        passwordHash,
+        role: "STUDENT",
+        campusId: campuses[3].id, // VGU
+        year: 4,
+      },
+    }),
+    prisma.user.upsert({
+      where: { email: "karthik.drk@alta.org" },
+      update: { campusId: campuses[4].id, year: 3 },
+      create: {
+        name: "Karthik Varma",
+        email: "karthik.drk@alta.org",
+        passwordHash,
+        role: "STUDENT",
+        campusId: campuses[4].id, // DRK Institute
         year: 3,
       },
     }),
   ]);
 
-  console.log(`✅ Created ${3 + students.length} users (1 super admin, 2 campus admins, ${students.length} students)`);
+  console.log(`✅ Created ${3 + students.length} users across the 5 partner campuses`);
 
   // ─── LinkedIn Post Templates ────────────────────────────────────────────
   await prisma.linkedInPostTemplate.upsert({

@@ -9,13 +9,74 @@ const updateCampusSchema = z.object({
 });
 
 const createAdminSchema = z.object({
-  action: z.literal("create_admin"),
+  action: z.literal("create_admin").optional(),
   name: z.string().min(2, "Name is required"),
   email: z.string().email("Invalid email"),
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
 type RouteParams = { params: Promise<{ id: string }> };
+
+export async function POST(request: NextRequest, { params }: RouteParams) {
+  try {
+    await requireRole("SUPER_ADMIN");
+    const { id } = await params;
+    const body = await request.json();
+
+    const parsed = createAdminSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.errors[0].message },
+        { status: 400 }
+      );
+    }
+
+    // Verify campus exists
+    const campus = await prisma.campus.findUnique({ where: { id } });
+    if (!campus) {
+      return NextResponse.json({ error: "Campus not found" }, { status: 404 });
+    }
+
+    // Check email uniqueness
+    const existingUser = await prisma.user.findUnique({
+      where: { email: parsed.data.email },
+    });
+    if (existingUser) {
+      return NextResponse.json(
+        { error: "An account with this email already exists" },
+        { status: 409 }
+      );
+    }
+
+    const passwordHash = await hashPassword(parsed.data.password);
+    const admin = await prisma.user.create({
+      data: {
+        name: parsed.data.name,
+        email: parsed.data.email,
+        passwordHash,
+        role: "CAMPUS_ADMIN",
+        campusId: id,
+      },
+    });
+
+    return NextResponse.json(
+      {
+        admin: {
+          id: admin.id,
+          name: admin.name,
+          email: admin.email,
+        },
+      },
+      { status: 201 }
+    );
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Server error";
+    if (message === "Unauthorized" || message === "Forbidden") {
+      return NextResponse.json({ error: message }, { status: 403 });
+    }
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
 
 export async function GET(request: NextRequest, { params }: RouteParams) {
   try {

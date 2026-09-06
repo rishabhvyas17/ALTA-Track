@@ -14,8 +14,17 @@ import {
   Loader2,
   Trash2,
   ListOrdered,
+  GraduationCap,
+  School,
+  HelpCircle,
 } from "lucide-react";
 import { renderRulesAsPlainText, ChallengeRules } from "@/lib/rules";
+
+interface CampusOption {
+  id: string;
+  name: string;
+  region: string;
+}
 
 interface Challenge {
   id: string;
@@ -24,6 +33,8 @@ interface Challenge {
   totalDays: number;
   isActive: boolean;
   requiresCompletedChallengeId: string | null;
+  eligibleYears?: number[] | null;
+  eligibleCampusIds?: string[] | null;
   rules: any;
   _count?: {
     problems: number;
@@ -45,6 +56,7 @@ export default function EditChallengePage({
   const [success, setSuccess] = useState("");
 
   const [allChallenges, setAllChallenges] = useState<Challenge[]>([]);
+  const [campuses, setCampuses] = useState<CampusOption[]>([]);
 
   // Form State
   const [name, setName] = useState("");
@@ -53,6 +65,8 @@ export default function EditChallengePage({
   const [isActive, setIsActive] = useState(true);
   const [requiresCompletedChallengeId, setRequiresCompletedChallengeId] =
     useState("");
+  const [eligibleYears, setEligibleYears] = useState<number[]>([1, 2, 3, 4]);
+  const [eligibleCampusIds, setEligibleCampusIds] = useState<string[]>([]);
 
   // Labeled Rules Form State
   const [graceDaysPerMonth, setGraceDaysPerMonth] = useState(1);
@@ -63,12 +77,10 @@ export default function EditChallengePage({
   const [linkedinRequired, setLinkedinRequired] = useState(true);
   const [requireHashtag, setRequireHashtag] = useState("#ALTAChallenge");
   const [requireCodeScreenshot, setRequireCodeScreenshot] = useState(true);
-  const [interviewEligibleAtDay, setInterviewEligibleAtDay] = useState(25);
-  const [goodiesEligibleAtDay, setGoodiesEligibleAtDay] = useState(30);
 
   useEffect(() => {
     fetchChallenge();
-    fetchOtherChallenges();
+    fetchOtherChallengesAndCampuses();
   }, [id]);
 
   const fetchChallenge = async () => {
@@ -91,6 +103,19 @@ export default function EditChallengePage({
         current.requiresCompletedChallengeId || ""
       );
 
+      // Set eligibility
+      if (Array.isArray(current.eligibleYears) && current.eligibleYears.length > 0) {
+        setEligibleYears(current.eligibleYears);
+      } else {
+        setEligibleYears([1, 2, 3, 4]);
+      }
+
+      if (Array.isArray(current.eligibleCampusIds) && current.eligibleCampusIds.length > 0) {
+        setEligibleCampusIds(current.eligibleCampusIds);
+      } else {
+        setEligibleCampusIds([]);
+      }
+
       // Parse rules
       const r = current.rules || {};
       setGraceDaysPerMonth(r.graceDaysPerMonth ?? 1);
@@ -98,24 +123,32 @@ export default function EditChallengePage({
       setMissedDayAction(r.missedDayAction ?? "restart_to_day_1");
       setLinkedinRequired(r.linkedinPostRequired ?? true);
       setRequireHashtag(r.requireHashtag ?? "#ALTAChallenge");
-      setRequireCodeScreenshot(r.requireCodeScreenshot ?? true);
-      setInterviewEligibleAtDay(r.interviewEligibleAtDay ?? 25);
-      setGoodiesEligibleAtDay(r.goodiesEligibleAtDay ?? 30);
+      setRequireCodeScreenshot(r.supportingLinkRequired ?? true);
     } catch (err: any) {
-      setError(err.message || "Failed to load challenge details");
+      setError(err.message || "Failed to load challenge");
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchOtherChallenges = async () => {
+  const fetchOtherChallengesAndCampuses = async () => {
     try {
-      const res = await fetch("/api/superadmin/challenges");
-      if (res.ok) {
-        const data = await res.json();
+      const [chRes, campRes] = await Promise.all([
+        fetch("/api/superadmin/challenges"),
+        fetch("/api/superadmin/campuses"),
+      ]);
+
+      if (chRes.ok) {
+        const data = await chRes.json();
         setAllChallenges(
           (data.challenges || []).filter((c: Challenge) => c.id !== id)
         );
+      }
+
+      if (campRes.ok) {
+        const campData = await campRes.json();
+        const campList = campData.campuses || [];
+        setCampuses(campList);
       }
     } catch (err) {
       console.error(err);
@@ -139,6 +172,22 @@ export default function EditChallengePage({
     totalDays: totalDays || 30,
   });
 
+  const toggleYear = (yr: number) => {
+    if (eligibleYears.includes(yr)) {
+      setEligibleYears(eligibleYears.filter((y) => y !== yr));
+    } else {
+      setEligibleYears([...eligibleYears, yr].sort());
+    }
+  };
+
+  const toggleCampus = (cId: string) => {
+    if (eligibleCampusIds.includes(cId)) {
+      setEligibleCampusIds(eligibleCampusIds.filter((cid) => cid !== cId));
+    } else {
+      setEligibleCampusIds([...eligibleCampusIds, cId]);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
@@ -155,6 +204,11 @@ export default function EditChallengePage({
           totalDays: Number(totalDays),
           isActive,
           requiresCompletedChallengeId: requiresCompletedChallengeId || null,
+          eligibleYears: eligibleYears.length === 4 ? null : eligibleYears,
+          eligibleCampusIds:
+            eligibleCampusIds.length === 0 || eligibleCampusIds.length === campuses.length
+              ? null
+              : eligibleCampusIds,
           rules: currentRulesObject,
         }),
       });
@@ -183,10 +237,12 @@ export default function EditChallengePage({
       const res = await fetch(`/api/superadmin/challenges/${id}`, {
         method: "DELETE",
       });
+
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || "Failed to delete challenge");
+        throw new Error(data.error || "Failed to delete");
       }
+
       router.push("/superadmin/challenges");
     } catch (err: any) {
       setError(err.message || "Failed to delete challenge");
@@ -195,8 +251,8 @@ export default function EditChallengePage({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[60vh]">
-        <Loader2 className="w-8 h-8 text-[var(--color-primary-cyan)] animate-spin" />
+      <div className="flex items-center justify-center min-h-[50vh]">
+        <Loader2 className="w-8 h-8 animate-spin text-[#3bc3e2]" />
       </div>
     );
   }
@@ -208,13 +264,13 @@ export default function EditChallengePage({
         <div>
           <Link
             href="/superadmin/challenges"
-            className="inline-flex items-center gap-2 text-sm text-[var(--color-neutral-silver)] hover:text-white mb-2 transition-colors"
+            className="inline-flex items-center gap-2 text-sm text-slate-400 hover:text-white mb-2 transition-colors"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Challenges
           </Link>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white flex items-center gap-3">
-            <Trophy className="w-8 h-8 text-[var(--color-accent-cyan)]" />
-            Edit Challenge: <span className="text-[var(--color-primary-cyan)]">{name}</span>
+            <Trophy className="w-8 h-8 text-[#3bc3e2]" />
+            Edit Challenge: <span className="text-[#3bc3e2]">{name}</span>
           </h1>
         </div>
 
@@ -249,8 +305,8 @@ export default function EditChallengePage({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* Core Challenge Config */}
         <div className="alta-card p-6 sm:p-8 space-y-6">
-          <h2 className="text-xl font-bold text-white flex items-center gap-2 border-b border-[var(--color-border-dark)] pb-4">
-            <Trophy className="w-5 h-5 text-[var(--color-accent-cyan)]" /> General Configuration
+          <h2 className="text-xl font-bold text-white flex items-center gap-2 border-b border-white/10 pb-4">
+            <Trophy className="w-5 h-5 text-[#3bc3e2]" /> General Configuration
           </h2>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -312,9 +368,9 @@ export default function EditChallengePage({
               <select
                 value={requiresCompletedChallengeId}
                 onChange={(e) => setRequiresCompletedChallengeId(e.target.value)}
-                className="alta-input w-full text-white bg-[var(--color-navy-dark)]"
+                className="alta-input w-full text-white bg-[#071130] appearance-none"
               >
-                <option value="">None (Open to all students)</option>
+                <option value="">None (Open directly)</option>
                 {allChallenges.map((c) => (
                   <option key={c.id} value={c.id}>
                     Must complete {c.name} first
@@ -324,189 +380,218 @@ export default function EditChallengePage({
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-4 border-t border-[var(--color-border-dark)]">
+          <div className="flex items-center justify-between pt-4 border-t border-white/10">
             <div>
-              <h3 className="text-base font-semibold text-white">Active Status</h3>
-              <p className="text-xs text-[var(--color-neutral-silver)]">
-                Inactive challenges are hidden from student onboarding.
-              </p>
+              <span className="text-sm font-bold text-white block">Active Status</span>
+              <span className="text-xs text-gray-400">
+                Inactive tracks will be hidden from new student onboarding.
+              </span>
             </div>
             <button
               type="button"
               onClick={() => setIsActive(!isActive)}
-              className="text-2xl transition-colors cursor-pointer"
+              className="cursor-pointer"
             >
               {isActive ? (
-                <ToggleRight className="w-10 h-10 text-[var(--color-accent-cyan)]" />
+                <ToggleRight className="w-9 h-9 text-[#3ccc8b]" />
               ) : (
-                <ToggleLeft className="w-10 h-10 text-gray-500" />
+                <ToggleLeft className="w-9 h-9 text-slate-500" />
               )}
             </button>
           </div>
         </div>
 
-        {/* Labeled Rules Form + Rules Preview Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Rules Editor Form */}
-          <div className="alta-card p-6 sm:p-8 space-y-6">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2 border-b border-[var(--color-border-dark)] pb-4">
-              <Calendar className="w-5 h-5 text-[var(--color-accent-cyan)]" /> Rules Engine Configuration
+        {/* Cohort Eligibility Card */}
+        <div className="alta-card p-6 sm:p-8 space-y-6">
+          <div className="border-b border-white/10 pb-4">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <GraduationCap className="w-5 h-5 text-[#3bc3e2]" /> Cohort Eligibility (Year & Campuses)
             </h2>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-xs font-semibold text-[var(--color-neutral-silver)] uppercase tracking-wider mb-1">
-                  Grace Days per Month
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  max="10"
-                  value={graceDaysPerMonth}
-                  onChange={(e) => setGraceDaysPerMonth(Number(e.target.value))}
-                  className="alta-input w-full"
-                />
-                <p className="text-xs text-gray-400 mt-1">
-                  Number of missed days forgiven per calendar month.
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-[var(--color-neutral-silver)] uppercase tracking-wider mb-1">
-                  Missed Day Action
-                </label>
-                <select
-                  value={missedDayAction}
-                  onChange={(e: any) => setMissedDayAction(e.target.value)}
-                  className="alta-input w-full text-white bg-[var(--color-navy-dark)]"
-                >
-                  <option value="restart_to_day_1">Restart to Day 1</option>
-                  <option value="freeze_streak">Freeze Streak (Pause progress)</option>
-                  <option value="deduct_points">Deduct Points (Keep day count)</option>
-                </select>
-              </div>
-
-              <div className="pt-4 border-t border-[var(--color-border-dark)] space-y-3">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-300">
-                    LinkedIn Post Required for Submission?
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={linkedinRequired}
-                    onChange={(e) => setLinkedinRequired(e.target.checked)}
-                    className="w-5 h-5 accent-[var(--color-accent-cyan)] rounded cursor-pointer"
-                  />
-                </div>
-
-                {linkedinRequired && (
-                  <div>
-                    <label className="block text-xs font-semibold text-[var(--color-neutral-silver)] uppercase tracking-wider mb-1">
-                      Required Hashtag
-                    </label>
-                    <input
-                      type="text"
-                      value={requireHashtag}
-                      onChange={(e) => setRequireHashtag(e.target.value)}
-                      className="alta-input w-full"
-                    />
-                  </div>
-                )}
-
-                <div className="flex items-center justify-between pt-2">
-                  <span className="text-sm font-semibold text-gray-300">
-                    Require Code Screenshot / Link?
-                  </span>
-                  <input
-                    type="checkbox"
-                    checked={requireCodeScreenshot}
-                    onChange={(e) => setRequireCodeScreenshot(e.target.checked)}
-                    className="w-5 h-5 accent-[var(--color-accent-cyan)] rounded cursor-pointer"
-                  />
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[var(--color-border-dark)] grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--color-neutral-silver)] uppercase tracking-wider mb-1">
-                    Interview Eligible Day
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={interviewEligibleAtDay}
-                    onChange={(e) =>
-                      setInterviewEligibleAtDay(Number(e.target.value))
-                    }
-                    className="alta-input w-full"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-xs font-semibold text-[var(--color-neutral-silver)] uppercase tracking-wider mb-1">
-                    Goodies Eligible Day
-                  </label>
-                  <input
-                    type="number"
-                    min="1"
-                    value={goodiesEligibleAtDay}
-                    onChange={(e) =>
-                      setGoodiesEligibleAtDay(Number(e.target.value))
-                    }
-                    className="alta-input w-full"
-                  />
-                </div>
-              </div>
-            </div>
+            <p className="text-xs text-slate-400 mt-1">
+              Control which student cohorts can see and enroll in this DSA challenge.
+            </p>
           </div>
 
-          {/* Rules Live Preview */}
-          <div className="alta-card p-6 sm:p-8 space-y-6 flex flex-col">
-            <h2 className="text-xl font-bold text-white flex items-center gap-2 border-b border-[var(--color-border-dark)] pb-4">
-              <Eye className="w-5 h-5 text-[var(--color-accent-green)]" /> Live Rules Preview (Student View)
-            </h2>
+          <div className="space-y-6">
+            {/* Target Years */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Eligible Graduation Years
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEligibleYears(eligibleYears.length === 4 ? [] : [1, 2, 3, 4])
+                  }
+                  className="text-xs font-semibold text-[#3bc3e2] hover:underline"
+                >
+                  {eligibleYears.length === 4 ? "Deselect All" : "Select All 4 Years"}
+                </button>
+              </div>
 
-            <p className="text-xs text-[var(--color-neutral-silver)]">
-              This preview is dynamically generated using the shared Rules Engine renderer. Students will see this exact list on their dashboard.
-            </p>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                {[1, 2, 3, 4].map((yr) => {
+                  const isSelected = eligibleYears.includes(yr);
+                  return (
+                    <button
+                      key={yr}
+                      type="button"
+                      onClick={() => toggleYear(yr)}
+                      className={`p-3 rounded-xl border text-xs font-bold transition-all cursor-pointer text-center ${
+                        isSelected
+                          ? "bg-[#3bc3e2]/20 border-[#3bc3e2] text-white"
+                          : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      {yr}
+                      {yr === 1 ? "st" : yr === 2 ? "nd" : yr === 3 ? "rd" : "th"} Year
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
 
-            <div className="flex-1 p-6 rounded-2xl bg-[var(--color-navy-dark)]/60 border border-[var(--color-border-cyan)]/30 space-y-3">
-              <h3 className="font-bold text-[var(--color-accent-cyan)] text-base flex items-center gap-2">
-                <Trophy className="w-4 h-4" /> Challenge Rules & Guidelines
-              </h3>
+            {/* Target Campuses */}
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <label className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                  Eligible Partner Campuses
+                </label>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEligibleCampusIds(
+                      eligibleCampusIds.length === campuses.length
+                        ? []
+                        : campuses.map((c) => c.id)
+                    )
+                  }
+                  className="text-xs font-semibold text-[#3bc3e2] hover:underline"
+                >
+                  {eligibleCampusIds.length === campuses.length || eligibleCampusIds.length === 0
+                    ? "Restrict to Specific Campuses"
+                    : "Open to All 5 Campuses"}
+                </button>
+              </div>
 
-              <ul className="space-y-2.5">
-                {plainTextRules.map((rule, idx) => (
-                  <li key={idx} className="flex items-start gap-2.5 text-sm text-gray-200">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[var(--color-accent-cyan)] mt-2 shrink-0" />
-                    <span>{rule}</span>
-                  </li>
-                ))}
-              </ul>
+              <p className="text-xs text-slate-400 mb-3">
+                {eligibleCampusIds.length === 0 || eligibleCampusIds.length === campuses.length
+                  ? "Currently open to all 5 partner campuses."
+                  : `Restricted to ${eligibleCampusIds.length} selected campus(es).`}
+              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {campuses.map((c) => {
+                  const isSelected =
+                    eligibleCampusIds.length === 0 || eligibleCampusIds.includes(c.id);
+                  return (
+                    <button
+                      key={c.id}
+                      type="button"
+                      onClick={() => toggleCampus(c.id)}
+                      className={`p-3 rounded-xl border text-xs font-semibold transition-all cursor-pointer text-left flex items-center justify-between ${
+                        eligibleCampusIds.includes(c.id)
+                          ? "bg-purple-500/20 border-purple-500 text-white"
+                          : "bg-white/5 border-white/10 text-slate-400 hover:text-white"
+                      }`}
+                    >
+                      <div>
+                        <div className="font-bold text-white">{c.name}</div>
+                        <div className="text-[11px] text-slate-400">{c.region}</div>
+                      </div>
+                      <span className="text-xs">
+                        {eligibleCampusIds.includes(c.id) ? "✓ Selected" : "+ Click to Select"}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Submit */}
+        {/* Rules Engine Configuration */}
+        <div className="alta-card p-6 sm:p-8 space-y-6">
+          <h2 className="text-xl font-bold text-white flex items-center gap-2 border-b border-white/10 pb-4">
+            <Calendar className="w-5 h-5 text-[#3bc3e2]" /> Rules Engine & Streak Policies
+          </h2>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Grace Days Granted per Month
+              </label>
+              <input
+                type="number"
+                min="0"
+                max="5"
+                value={graceDaysPerMonth}
+                onChange={(e) => setGraceDaysPerMonth(Number(e.target.value))}
+                className="alta-input w-full"
+              />
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Missed Day Action
+              </label>
+              <select
+                value={missedDayAction}
+                onChange={(e: any) => setMissedDayAction(e.target.value)}
+                className="alta-input w-full text-white bg-[#071130] appearance-none"
+              >
+                <option value="restart_to_day_1">
+                  Restart Streak to Day 1 (Strict)
+                </option>
+                <option value="pause_streak_only">
+                  Pause Streak (Lenient)
+                </option>
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-semibold text-gray-300 mb-2">
+                Required Social Hashtag
+              </label>
+              <input
+                type="text"
+                value={requireHashtag}
+                onChange={(e) => setRequireHashtag(e.target.value)}
+                className="alta-input w-full"
+                placeholder="#ALTAChallenge"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Live Generated Rules Preview */}
+        <div className="alta-card p-6 sm:p-8 space-y-4">
+          <h2 className="text-base font-bold text-white flex items-center gap-2">
+            <Eye className="w-4 h-4 text-[#3bc3e2]" /> Live Plain Text Policy Preview
+          </h2>
+          <div className="p-4 rounded-xl bg-black/40 border border-white/10 text-xs text-gray-300 space-y-2">
+            {plainTextRules.map((rule, idx) => (
+              <div key={idx} className="flex items-start gap-2">
+                <span className="w-1.5 h-1.5 rounded-full bg-[#3bc3e2] mt-1.5 shrink-0" />
+                <span>{rule}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="flex justify-end gap-4">
-          <Link
-            href="/superadmin/challenges"
-            className="alta-button-secondary"
-          >
-            Cancel
-          </Link>
           <button
             type="submit"
             disabled={saving}
-            className="alta-button flex items-center gap-2 px-8"
+            className="alta-button px-8 py-3 text-sm font-bold flex items-center gap-2"
           >
             {saving ? (
-              <Loader2 className="w-5 h-5 animate-spin" />
+              <Loader2 className="w-4 h-4 animate-spin" />
             ) : (
-              <>
-                <Save className="w-5 h-5" /> Save Changes
-              </>
+              <Save className="w-4 h-4" />
             )}
+            Save All Changes
           </button>
         </div>
       </form>

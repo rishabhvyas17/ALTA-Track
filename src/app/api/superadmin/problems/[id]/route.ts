@@ -5,10 +5,14 @@ import { z } from "zod";
 
 const updateProblemSchema = z.object({
   dayNumber: z.number().min(1).optional(),
-  title: z.string().min(2).optional(),
+  title: z.string().min(1).optional(),
   topic: z.string().min(1).optional(),
-  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]).optional(),
+  difficulty: z.string().optional(),
   externalLink: z.string().url().optional(),
+  articleLink: z.string().url().optional().nullable(),
+  videoLink: z.string().url().optional().nullable(),
+  companies: z.string().optional().nullable(),
+  chapter: z.string().optional().nullable(),
 });
 
 export async function PUT(

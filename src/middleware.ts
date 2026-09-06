@@ -25,6 +25,11 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // API routes — let them handle their own auth & return proper JSON
+  if (pathname.startsWith("/api/")) {
+    return NextResponse.next();
+  }
+
   const session = await getSessionFromRequest(request);
 
   // Unauthenticated → redirect to landing

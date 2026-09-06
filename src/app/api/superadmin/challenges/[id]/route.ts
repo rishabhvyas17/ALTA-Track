@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth";
 import { ChallengeRulesSchema } from "@/lib/rules";
 import { slugify } from "@/lib/utils";
@@ -10,6 +11,8 @@ const updateChallengeSchema = z.object({
   totalDays: z.number().int().min(1).optional(),
   rules: ChallengeRulesSchema.optional(),
   requiresCompletedChallengeId: z.string().nullable().optional(),
+  eligibleYears: z.array(z.number().int().min(1).max(4)).optional().nullable(),
+  eligibleCampusIds: z.array(z.string()).optional().nullable(),
   isActive: z.boolean().optional(),
 });
 
@@ -102,6 +105,16 @@ export async function PUT(request: NextRequest, { params }: RouteParams) {
     if (parsed.data.requiresCompletedChallengeId !== undefined)
       updateData.requiresCompletedChallengeId =
         parsed.data.requiresCompletedChallengeId;
+    if (parsed.data.eligibleYears !== undefined)
+      updateData.eligibleYears =
+        parsed.data.eligibleYears && parsed.data.eligibleYears.length > 0
+          ? parsed.data.eligibleYears
+          : Prisma.DbNull;
+    if (parsed.data.eligibleCampusIds !== undefined)
+      updateData.eligibleCampusIds =
+        parsed.data.eligibleCampusIds && parsed.data.eligibleCampusIds.length > 0
+          ? parsed.data.eligibleCampusIds
+          : Prisma.DbNull;
     if (parsed.data.isActive !== undefined)
       updateData.isActive = parsed.data.isActive;
 

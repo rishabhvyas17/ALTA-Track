@@ -26,6 +26,37 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check student year and campus eligibility
+    const student = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { year: true, campusId: true },
+    });
+
+    const eligibleYears = Array.isArray(challenge.eligibleYears)
+      ? (challenge.eligibleYears as number[])
+      : null;
+    const eligibleCampusIds = Array.isArray(challenge.eligibleCampusIds)
+      ? (challenge.eligibleCampusIds as string[])
+      : null;
+
+    if (eligibleYears && eligibleYears.length > 0 && student?.year) {
+      if (!eligibleYears.includes(student.year)) {
+        return NextResponse.json(
+          { error: `This challenge is only open to Year ${eligibleYears.join(", ")} students.` },
+          { status: 403 }
+        );
+      }
+    }
+
+    if (eligibleCampusIds && eligibleCampusIds.length > 0 && student?.campusId) {
+      if (!eligibleCampusIds.includes(student.campusId)) {
+        return NextResponse.json(
+          { error: "This challenge is restricted to designated partner campuses." },
+          { status: 403 }
+        );
+      }
+    }
+
     // Check prerequisite requirement
     if (challenge.requiresCompletedChallengeId) {
       const prereqCompleted = await prisma.enrollment.findFirst({
@@ -55,10 +86,14 @@ export async function POST(request: NextRequest) {
     });
 
     if (existing) {
-      return NextResponse.json(
-        { error: "Already enrolled in this challenge", enrollment: existing },
-        { status: 400 }
-      );
+      if (existing.status !== "ACTIVE") {
+        const updated = await prisma.enrollment.update({
+          where: { id: existing.id },
+          data: { status: "ACTIVE" },
+        });
+        return NextResponse.json({ enrollment: updated, message: "Re-activated track" });
+      }
+      return NextResponse.json({ enrollment: existing, message: "Switched to track" });
     }
 
     // Create new enrollment

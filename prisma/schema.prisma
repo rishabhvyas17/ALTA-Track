@@ -88,6 +88,8 @@ model Challenge {
   totalDays                   Int      @map("total_days")
   rules                       Json
   requiresCompletedChallengeId String? @map("requires_completed_challenge_id")
+  eligibleYears               Json?    @map("eligible_years") // e.g. [1, 2, 3, 4] or null/[] for All
+  eligibleCampusIds           Json?    @map("eligible_campus_ids") // e.g. ["campusId1", ...] or null/[] for All
   isActive                    Boolean  @default(true) @map("is_active")
   createdById                 String?  @map("created_by")
   createdAt                   DateTime @default(now()) @map("created_at")
@@ -107,13 +109,19 @@ model Challenge {
 }
 
 model Problem {
-  id           String @id @default(cuid())
-  challengeId  String @map("challenge_id")
-  dayNumber    Int    @map("day_number")
+  id           String   @id @default(cuid())
+  challengeId  String   @map("challenge_id")
+  dayNumber    Int      @map("day_number")
   title        String
   topic        String
-  difficulty   String // "Easy", "Medium", "Hard"
-  externalLink String @map("external_link") // LeetCode/GFG URL
+  difficulty   String   // "Easy", "Medium", "Hard"
+  externalLink String   @map("external_link") // LeetCode/GFG URL
+  articleLink  String?  @map("article_link")
+  videoLink    String?  @map("video_link")
+  companies    String?
+  chapter      String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
 
   challenge   Challenge    @relation(fields: [challengeId], references: [id], onDelete: Cascade)
   submissions Submission[]
@@ -151,7 +159,7 @@ model Submission {
   enrollmentId    String           @map("enrollment_id")
   dayNumber       Int              @map("day_number")
   problemId       String           @map("problem_id")
-  linkedinPostUrl String           @map("linkedin_post_url")
+  linkedinPostUrl String?          @map("linkedin_post_url")
   supportingLink  String?          @map("supporting_link")
   githubLink      String?          @map("github_link")
   status          SubmissionStatus @default(PENDING)

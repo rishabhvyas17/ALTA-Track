@@ -3,14 +3,41 @@ import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { z } from "zod";
 
-const submitSchema = z.object({
-  enrollmentId: z.string().min(1),
-  dayNumber: z.number().min(1),
-  problemId: z.string().min(1),
-  linkedinPostUrl: z.string().url("Must be a valid LinkedIn URL"),
-  supportingLink: z.string().url("Must be a valid code screenshot or link URL").optional().or(z.literal("")),
-  githubLink: z.string().url().optional().or(z.literal("")),
-});
+const submitSchema = z
+  .object({
+    enrollmentId: z.string().min(1),
+    dayNumber: z.number().min(1),
+    problemId: z.string().min(1),
+    linkedinPostUrl: z
+      .string()
+      .url("Must be a valid LinkedIn post URL")
+      .optional()
+      .or(z.literal(""))
+      .nullable(),
+    supportingLink: z
+      .string()
+      .url("Must be a valid URL")
+      .optional()
+      .or(z.literal(""))
+      .nullable(),
+    githubLink: z
+      .string()
+      .url("Must be a valid GitHub URL")
+      .optional()
+      .or(z.literal(""))
+      .nullable(),
+  })
+  .refine(
+    (data) =>
+      Boolean(data.linkedinPostUrl && data.linkedinPostUrl.trim().length > 0) ||
+      Boolean(data.githubLink && data.githubLink.trim().length > 0) ||
+      Boolean(data.supportingLink && data.supportingLink.trim().length > 0),
+    {
+      message:
+        "Please provide either a LinkedIn post link or a GitHub link as proof.",
+      path: ["linkedinPostUrl"],
+    }
+  );
 
 export async function POST(request: NextRequest) {
   try {
@@ -49,7 +76,7 @@ export async function POST(request: NextRequest) {
       submission = await prisma.submission.update({
         where: { id: existingSubmission.id },
         data: {
-          linkedinPostUrl: validated.linkedinPostUrl,
+          linkedinPostUrl: validated.linkedinPostUrl || null,
           supportingLink: validated.supportingLink || null,
           githubLink: validated.githubLink || null,
           status: "PENDING",
@@ -61,10 +88,10 @@ export async function POST(request: NextRequest) {
       // Create new submission
       submission = await prisma.submission.create({
         data: {
-          enrollmentId: validated.enrollmentId,
+          enrollment: { connect: { id: validated.enrollmentId } },
+          problem: { connect: { id: validated.problemId } },
           dayNumber: validated.dayNumber,
-          problemId: validated.problemId,
-          linkedinPostUrl: validated.linkedinPostUrl,
+          linkedinPostUrl: validated.linkedinPostUrl || null,
           supportingLink: validated.supportingLink || null,
           githubLink: validated.githubLink || null,
           status: "PENDING",
@@ -83,7 +110,7 @@ export async function POST(request: NextRequest) {
           longestStreak: newLongest,
           currentDay: isChallengeCompleted
             ? enrollment.currentDay
-            : enrollment.currentDay + 1,
+            : Math.max(enrollment.currentDay, validated.dayNumber + 1),
           status: isChallengeCompleted ? "COMPLETED" : "ACTIVE",
           completedAt: isChallengeCompleted ? new Date() : null,
         },

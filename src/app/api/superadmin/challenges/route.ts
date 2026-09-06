@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import { requireRole } from "@/lib/auth";
 import { ChallengeRulesSchema, DEFAULT_RULES } from "@/lib/rules";
 import { slugify } from "@/lib/utils";
@@ -10,6 +11,8 @@ const createChallengeSchema = z.object({
   totalDays: z.number().int().min(1, "Must have at least 1 day"),
   rules: ChallengeRulesSchema.optional(),
   requiresCompletedChallengeId: z.string().nullable().optional(),
+  eligibleYears: z.array(z.number().int().min(1).max(4)).optional().nullable(),
+  eligibleCampusIds: z.array(z.string()).optional().nullable(),
   isActive: z.boolean().optional(),
 });
 
@@ -56,8 +59,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { name, totalDays, rules, requiresCompletedChallengeId, isActive } =
-      parsed.data;
+    const {
+      name,
+      totalDays,
+      rules,
+      requiresCompletedChallengeId,
+      eligibleYears,
+      eligibleCampusIds,
+      isActive,
+    } = parsed.data;
 
     // Check for duplicate slug
     const slug = slugify(name);
@@ -92,6 +102,14 @@ export async function POST(request: NextRequest) {
         totalDays,
         rules: rules || DEFAULT_RULES,
         requiresCompletedChallengeId: requiresCompletedChallengeId || null,
+        eligibleYears:
+          eligibleYears && eligibleYears.length > 0
+            ? eligibleYears
+            : Prisma.DbNull,
+        eligibleCampusIds:
+          eligibleCampusIds && eligibleCampusIds.length > 0
+            ? eligibleCampusIds
+            : Prisma.DbNull,
         isActive: isActive ?? true,
         createdById: session.userId,
       },

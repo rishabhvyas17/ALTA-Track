@@ -32,7 +32,13 @@ export async function GET() {
       (e) => e.status === "ACTIVE"
     );
 
-    // Map challenges with unlocked state
+    // Get current student profile
+    const student = await prisma.user.findUnique({
+      where: { id: auth.userId },
+      select: { year: true, campusId: true },
+    });
+
+    // Map challenges with unlocked & eligibility state
     const mapped = challenges.map((c) => {
       const isEnrolled = userEnrollments.some((e) => e.challengeId === c.id);
       const isCompleted = completedChallengeIds.includes(c.id);
@@ -44,11 +50,39 @@ export async function GET() {
         );
       }
 
+      const eligibleYears = Array.isArray(c.eligibleYears)
+        ? (c.eligibleYears as number[])
+        : null;
+      const eligibleCampusIds = Array.isArray(c.eligibleCampusIds)
+        ? (c.eligibleCampusIds as string[])
+        : null;
+
+      let isEligible = true;
+      let ineligibilityReason: string | null = null;
+
+      if (eligibleYears && eligibleYears.length > 0 && student?.year) {
+        if (!eligibleYears.includes(student.year)) {
+          isEligible = false;
+          ineligibilityReason = `Eligible for Year ${eligibleYears.join(", ")} only`;
+        }
+      }
+
+      if (eligibleCampusIds && eligibleCampusIds.length > 0 && student?.campusId) {
+        if (!eligibleCampusIds.includes(student.campusId)) {
+          isEligible = false;
+          ineligibilityReason = ineligibilityReason
+            ? `${ineligibilityReason} (Designated campuses only)`
+            : "Designated partner campuses only";
+        }
+      }
+
       return {
         ...c,
         isEnrolled,
         isCompleted,
         isUnlocked,
+        isEligible,
+        ineligibilityReason,
       };
     });
 

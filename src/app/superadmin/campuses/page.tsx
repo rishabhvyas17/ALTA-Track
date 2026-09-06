@@ -167,6 +167,16 @@ export default function CampusesPage() {
         </button>
       </div>
 
+      {/* Partner Campuses Guidance Hint */}
+      <div className="p-4 rounded-xl bg-white/[0.02] border border-white/10 flex items-start gap-3 text-xs text-slate-300">
+        <div className="w-5 h-5 rounded-md bg-[#3bc3e2]/20 text-[#3bc3e2] flex items-center justify-center font-bold shrink-0 mt-0.5">
+          ℹ️
+        </div>
+        <div>
+          <span className="font-bold text-white">Partner Institutions Architecture:</span> The platform strictly collaborates with <span className="text-[#3bc3e2] font-semibold">SAGE University, ADYPU, IITM, VGU, and DRK Institute</span>. Each partner college assigns campus admins who verify student LinkedIn problem proofs daily to ensure fair streak progression.
+        </div>
+      </div>
+
       {error && (
         <div className="p-4 rounded-xl bg-red-500/15 border border-red-500/30 text-red-200 text-sm">
           {error}

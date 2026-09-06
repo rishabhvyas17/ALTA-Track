@@ -24,6 +24,8 @@ interface MappedChallenge {
   isEnrolled: boolean;
   isCompleted: boolean;
   isUnlocked: boolean;
+  isEligible?: boolean;
+  ineligibilityReason?: string | null;
   _count: {
     problems: number;
     enrollments: number;
@@ -170,13 +172,17 @@ export default function StudentOnboardingPage() {
                   <span className="px-3.5 py-1 rounded-full bg-gray-500/10 border border-gray-500/30 text-xs font-bold text-gray-400 flex items-center gap-1.5">
                     <Lock className="w-3.5 h-3.5" /> Locked
                   </span>
+                ) : c.isEligible === false ? (
+                  <span className="px-3.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-xs font-bold text-amber-400 flex items-center gap-1.5">
+                    <Lock className="w-3.5 h-3.5" /> Cohort Restricted
+                  </span>
                 ) : c.isCompleted ? (
                   <span className="px-3.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-bold text-emerald-400 flex items-center gap-1.5">
                     <CheckCircle2 className="w-3.5 h-3.5" /> Completed
                   </span>
                 ) : (
                   <span className="px-3.5 py-1 rounded-full bg-[var(--color-accent-green)]/10 border border-[var(--color-accent-green)]/30 text-xs font-bold text-[var(--color-accent-green)] flex items-center gap-1.5">
-                    <Flame className="w-3.5 h-3.5 text-[var(--color-accent-gold)]" /> Active Track
+                    <Flame className="w-3.5 h-3.5 text-[var(--color-accent-gold)]" /> Open for You
                   </span>
                 )}
               </div>
@@ -196,6 +202,14 @@ export default function StudentOnboardingPage() {
                 </div>
               </div>
 
+              {/* Ineligibility Reason */}
+              {c.isEligible === false && c.ineligibilityReason && (
+                <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
+                  <Lock className="w-4 h-4 shrink-0" />
+                  <span>{c.ineligibilityReason}</span>
+                </div>
+              )}
+
               {/* Prerequisite Info */}
               {c.requiresCompletedChallengeId && !c.isUnlocked && (
                 <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-300 text-xs flex items-center gap-2">
@@ -206,7 +220,7 @@ export default function StudentOnboardingPage() {
 
               {/* Action Button */}
               <div className="pt-4 border-t border-[var(--color-border-dark)]">
-                {c.isUnlocked ? (
+                {c.isUnlocked && c.isEligible !== false ? (
                   <button
                     onClick={() => handleEnroll(c.id)}
                     disabled={enrollingId === c.id}
@@ -219,6 +233,13 @@ export default function StudentOnboardingPage() {
                         Enroll & Start Challenge <ArrowRight className="w-5 h-5" />
                       </>
                     )}
+                  </button>
+                ) : c.isEligible === false ? (
+                  <button
+                    disabled
+                    className="w-full py-3.5 rounded-xl bg-white/5 border border-white/10 text-gray-500 text-sm font-semibold flex items-center justify-center gap-2 cursor-not-allowed"
+                  >
+                    <Lock className="w-4 h-4" /> Cohort Not Eligible
                   </button>
                 ) : (
                   <button

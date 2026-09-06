@@ -1,79 +1,151 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState, useMemo } from "react";
+import Link from "next/link";
 import {
-  CheckCircle2,
-  XCircle,
-  Clock,
-  ExternalLink,
   ShieldCheck,
+  Users,
+  Flame,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  ExternalLink,
+  GraduationCap,
+  Building2,
   Search,
-  Filter,
+  Check,
+  X,
   Loader2,
-  LogOut,
+  TrendingUp,
+  Layers,
   Sparkles,
+  Trophy,
+  Filter,
+  RefreshCw,
+  Github,
+  Linkedin,
+  ArrowRight,
 } from "lucide-react";
 
-interface Submission {
+interface CampusInfo {
+  id: string;
+  name: string;
+  region?: string;
+  admins: { id: string; name: string; email: string }[];
+}
+
+interface StudentRosterItem {
+  id: string;
+  name: string;
+  email: string;
+  year: number | null;
+  trackName: string;
+  currentDay: number;
+  streakCount: number;
+  longestStreak: number;
+  status: string;
+  totalSubmissions: number;
+  approvedCount: number;
+  pendingCount: number;
+  lastActiveAt: string;
+}
+
+interface PendingSubmission {
   id: string;
   dayNumber: number;
-  linkedinPostUrl: string;
-  supportingLink: string | null;
-  githubLink: string | null;
-  status: "PENDING" | "APPROVED" | "REJECTED";
-  rejectionReason: string | null;
+  problemTitle: string;
+  difficulty: string;
+  topic: string;
+  studentName: string;
+  studentEmail: string;
+  year: number | null;
+  challengeName: string;
   submittedAt: string;
-  enrollment: {
-    user: {
-      id: string;
-      name: string;
-      email: string;
-      year: number;
-    };
-    challenge: {
-      name: string;
-    };
+  linkedinPostUrl: string | null;
+  githubLink: string | null;
+  supportingLink: string | null;
+  status: string;
+}
+
+interface CampusStatsData {
+  campus: CampusInfo;
+  kpis: {
+    totalStudents: number;
+    activeStreakers: number;
+    avgStreak: number;
+    maxStreak: number;
+    submissionsToday: number;
+    totalSubmissions: number;
+    pendingSubmissions: number;
+    approvedSubmissions: number;
+    rejectedSubmissions: number;
+    approvalRate: number;
   };
-  problem: {
-    title: string;
-    topic: string;
+  streakMilestones: {
+    streak7Plus: number;
+    streak14Plus: number;
+    streak25Plus: number;
+    streak50Plus: number;
   };
+  difficultyCount: {
+    Easy: number;
+    Medium: number;
+    Hard: number;
+  };
+  yearDistribution: {
+    year: number;
+    label: string;
+    totalStudents: number;
+    activeStreakers: number;
+    avgStreak: number;
+    totalSubmissions: number;
+    approvedSubmissions: number;
+    students: StudentRosterItem[];
+  }[];
+  allStudents: StudentRosterItem[];
+  topStudents: {
+    id: string;
+    name: string;
+    email: string;
+    year: number | null;
+    challengeName: string;
+    streakCount: number;
+    currentDay: number;
+    status: string;
+  }[];
+  recentPendingSubmissions: PendingSubmission[];
 }
 
 export default function CampusAdminDashboard() {
-  const router = useRouter();
-  const [submissions, setSubmissions] = useState<Submission[]>([]);
+  const [data, setData] = useState<CampusStatsData | null>(null);
   const [loading, setLoading] = useState(true);
-  const [filterStatus, setFilterStatus] = useState("ALL");
-  const [searchQuery, setSearchQuery] = useState("");
+  const [refreshing, setRefreshing] = useState(false);
+  const [activeYearTab, setActiveYearTab] = useState<"ALL" | 1 | 2 | 3 | 4>("ALL");
+  const [studentSearch, setStudentSearch] = useState("");
   const [processingId, setProcessingId] = useState<string | null>(null);
+  const [actionSuccess, setActionSuccess] = useState<string>("");
 
   useEffect(() => {
-    fetchSubmissions();
+    fetchDashboardStats();
   }, []);
 
-  const fetchSubmissions = async () => {
+  const fetchDashboardStats = async () => {
     try {
-      setLoading(true);
-      const res = await fetch("/api/admin/submissions");
-      if (!res.ok) {
-        if (res.status === 401) {
-          router.push("/");
-          return;
-        }
-        throw new Error("Failed to load submissions");
-      }
-      const data = await res.json();
-      setSubmissions(data.submissions || []);
-    } catch (err: any) {
+      setRefreshing(true);
+      const res = await fetch("/api/admin/stats");
+      if (!res.ok) throw new Error("Failed to load campus data");
+      const json = await res.json();
+      setData(json);
+    } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   };
 
-  const handleReview = async (
+  // Quick Review Handler for Pending Submissions
+  const handleReviewSubmission = async (
     id: string,
     status: "APPROVED" | "REJECTED",
     reason?: string
@@ -90,207 +162,495 @@ export default function CampusAdminDashboard() {
       });
 
       if (!res.ok) throw new Error("Failed to update submission");
-      fetchSubmissions();
+      setActionSuccess(`Submission marked as ${status}!`);
+      fetchDashboardStats();
+      setTimeout(() => setActionSuccess(""), 3000);
     } catch (err: any) {
-      alert(err.message);
+      alert(err.message || "Failed to process submission");
     } finally {
       setProcessingId(null);
     }
   };
 
-  const handleLogout = async () => {
-    await fetch("/api/auth/logout", { method: "POST" });
-    router.push("/");
-  };
+  // Filter students based on active year tab and search query
+  const filteredStudents = useMemo(() => {
+    if (!data) return [];
+    let list =
+      activeYearTab === "ALL"
+        ? data.allStudents
+        : data.yearDistribution.find((y) => y.year === activeYearTab)?.students || [];
 
-  const filtered = submissions.filter((s) => {
-    const matchesStatus = filterStatus === "ALL" || s.status === filterStatus;
-    const matchesSearch =
-      s.enrollment.user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.enrollment.user.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      s.problem.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesStatus && matchesSearch;
-  });
+    if (studentSearch.trim()) {
+      const q = studentSearch.toLowerCase();
+      list = list.filter(
+        (s) =>
+          s.name.toLowerCase().includes(q) ||
+          s.email.toLowerCase().includes(q) ||
+          s.trackName.toLowerCase().includes(q)
+      );
+    }
+    return list;
+  }, [data, activeYearTab, studentSearch]);
 
-  if (loading) {
+  if (loading || !data) {
     return (
-      <div className="min-h-screen bg-[var(--color-navy-dark)] flex items-center justify-center">
-        <Loader2 className="w-10 h-10 text-[var(--color-primary-cyan)] animate-spin" />
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-3">
+        <Loader2 className="w-8 h-8 text-[var(--color-accent-cyan)] animate-spin" />
+        <p className="text-xs text-[var(--color-neutral-silver)] font-medium">
+          Loading campus dashboard, students & analytics...
+        </p>
       </div>
     );
   }
 
+  const { campus, kpis, streakMilestones, difficultyCount, yearDistribution, topStudents, recentPendingSubmissions } = data;
+
   return (
-    <div className="min-h-screen bg-[var(--color-navy-dark)] text-white pb-20">
-      {/* Header */}
-      <header className="border-b border-[var(--color-border-dark)] bg-black/30 backdrop-blur-md sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-[var(--color-accent-cyan)] to-[var(--color-primary-cyan)] flex items-center justify-center text-white font-extrabold text-xl shadow-lg">
-              A
-            </div>
-            <div>
-              <h1 className="font-black text-xl tracking-wider text-white">
-                ALTA <span className="text-[var(--color-accent-cyan)]">TRACK</span>
-              </h1>
-              <p className="text-[10px] uppercase font-bold text-[var(--color-accent-green)] tracking-widest">
-                Campus Admin Portal
-              </p>
-            </div>
-          </div>
+    <div className="space-y-8 pb-16">
+      {/* NO DUPLICATE HEADER: Header is rendered by layout.tsx! */}
 
-          <button
-            onClick={handleLogout}
-            className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-gray-300 transition-colors flex items-center gap-2 text-xs font-semibold cursor-pointer"
-          >
-            <LogOut className="w-4 h-4" /> Sign Out
-          </button>
-        </div>
-      </header>
-
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+      {/* Campus Identity Banner */}
+      <div className="alta-card p-6 border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-[var(--color-surface-card)] to-blue-950/30">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 className="text-3xl font-black text-white flex items-center gap-3">
-              <ShieldCheck className="w-8 h-8 text-[var(--color-accent-cyan)]" /> Submission Verification
-            </h2>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-md bg-cyan-500/20 text-cyan-300 text-[11px] font-black uppercase tracking-wider">
+                Partner Campus Hub
+              </span>
+              <span className="text-xs text-gray-400 font-medium">
+                {campus.region || "Institutional Dashboard"}
+              </span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-white mt-1.5 flex items-center gap-2">
+              <Building2 className="w-7 h-7 text-[var(--color-accent-cyan)]" />
+              {campus.name}
+            </h1>
             <p className="text-xs text-[var(--color-neutral-silver)] mt-1">
-              Verify student daily LinkedIn posts, screenshots, and repository submissions for your campus.
+              Local verification console, student tracking, and year-wise cohort analytics.
             </p>
           </div>
 
-          {/* Search & Filters */}
-          <div className="flex flex-wrap items-center gap-3">
-            <div className="relative">
-              <Search className="w-4 h-4 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
-              <input
-                type="text"
-                placeholder="Search student or problem..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="alta-input pl-9 text-xs w-64"
-              />
-            </div>
-
-            <select
-              value={filterStatus}
-              onChange={(e) => setFilterStatus(e.target.value)}
-              className="alta-input text-xs text-white bg-[var(--color-navy-dark)]"
+          <div className="flex items-center gap-3">
+            <button
+              onClick={fetchDashboardStats}
+              disabled={refreshing}
+              className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold transition-all cursor-pointer"
             >
-              <option value="ALL">All Statuses</option>
-              <option value="PENDING">Pending Review</option>
-              <option value="APPROVED">Approved</option>
-              <option value="REJECTED">Rejected</option>
-            </select>
+              <RefreshCw className={`w-3.5 h-3.5 ${refreshing ? "animate-spin" : ""}`} />
+              <span>Refresh Stats</span>
+            </button>
+            <Link
+              href="/admin/queue"
+              className="px-4 py-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-slate-950 text-xs font-black transition-all flex items-center gap-1.5"
+            >
+              Verification Queue ({kpis.pendingSubmissions}) <ArrowRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
         </div>
 
-        {/* Submissions List */}
-        <div className="alta-card overflow-hidden">
-          {filtered.length === 0 ? (
-            <div className="p-12 text-center text-gray-400 text-sm">
-              No submissions match your current criteria.
+        {actionSuccess && (
+          <div className="mt-4 p-3 rounded-xl bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 text-xs font-bold flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            {actionSuccess}
+          </div>
+        )}
+      </div>
+
+      {/* Campus KPI Metrics Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
+        <div className="alta-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Registered</span>
+            <Users className="w-4 h-4 text-cyan-400" />
+          </div>
+          <div className="text-2xl font-black text-white">{kpis.totalStudents}</div>
+          <p className="text-[10px] text-cyan-400 font-semibold">Enrolled Students</p>
+        </div>
+
+        <div className="alta-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Active Streakers</span>
+            <Flame className="w-4 h-4 text-orange-400" />
+          </div>
+          <div className="text-2xl font-black text-orange-400 flex items-center gap-1">
+            {kpis.activeStreakers} <Flame className="w-4 h-4 fill-orange-400 inline" />
+          </div>
+          <p className="text-[10px] text-gray-400">Avg {kpis.avgStreak} days streak</p>
+        </div>
+
+        <div className="alta-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Pending Review</span>
+            <AlertCircle className="w-4 h-4 text-amber-400" />
+          </div>
+          <div className="text-2xl font-black text-amber-400">{kpis.pendingSubmissions}</div>
+          <p className="text-[10px] text-amber-400 font-semibold">Action needed</p>
+        </div>
+
+        <div className="alta-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Solves Today</span>
+            <Clock className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-black text-white">{kpis.submissionsToday}</div>
+          <p className="text-[10px] text-emerald-400 font-semibold">Today&apos;s activity</p>
+        </div>
+
+        <div className="alta-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Approved Proofs</span>
+            <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+          </div>
+          <div className="text-2xl font-black text-emerald-400">{kpis.approvedSubmissions}</div>
+          <p className="text-[10px] text-gray-400">{kpis.totalSubmissions} total proofs</p>
+        </div>
+
+        <div className="alta-card p-4 space-y-1">
+          <div className="flex items-center justify-between text-gray-400">
+            <span className="text-[10px] font-bold uppercase tracking-wider">Approval Rate</span>
+            <TrendingUp className="w-4 h-4 text-cyan-400" />
+          </div>
+          <div className="text-2xl font-black text-white">{kpis.approvalRate}%</div>
+          <p className="text-[10px] text-emerald-400 font-semibold">Verification health</p>
+        </div>
+      </div>
+
+      {/* Year-Wise Summary Cards */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-black text-white flex items-center gap-2">
+            <GraduationCap className="w-5 h-5 text-cyan-400" /> Year-Wise Cohorts Breakdown
+          </h2>
+          <span className="text-xs text-gray-400">Students grouped by graduation batch</span>
+        </div>
+
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {yearDistribution.map((yd) => (
+            <div
+              key={yd.year}
+              onClick={() => setActiveYearTab(yd.year as any)}
+              className={`alta-card p-4 space-y-2 cursor-pointer transition-all border ${
+                activeYearTab === yd.year
+                  ? "border-cyan-400 bg-cyan-950/20 shadow-md shadow-cyan-500/10"
+                  : "hover:border-white/20"
+              }`}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-black text-white bg-white/5 px-2.5 py-0.5 rounded-md">
+                  {yd.label}
+                </span>
+                <span className="text-[11px] font-bold text-cyan-400">
+                  {yd.totalStudents} Students
+                </span>
+              </div>
+              <div className="flex items-baseline justify-between pt-1">
+                <div>
+                  <span className="text-xl font-black text-white">{yd.activeStreakers}</span>
+                  <span className="text-[10px] text-gray-400 ml-1">Active Streakers</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-xs font-extrabold text-orange-400">{yd.avgStreak}d</span>
+                  <span className="text-[10px] text-gray-400 ml-1">Avg</span>
+                </div>
+              </div>
+              <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] text-gray-400">
+                <span>{yd.approvedSubmissions} verified solves</span>
+                <span className="text-cyan-400 font-bold hover:underline">View Roster →</span>
+              </div>
             </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="border-b border-[var(--color-border-dark)] bg-white/[0.02] text-xs font-bold text-[var(--color-neutral-silver)] uppercase tracking-wider">
-                    <th className="p-4 pl-6">Student</th>
-                    <th className="p-4">Challenge & Day</th>
-                    <th className="p-4">Problem</th>
-                    <th className="p-4">Proof Links</th>
-                    <th className="p-4">Status</th>
-                    <th className="p-4 text-right pr-6">Action</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--color-border-dark)] text-sm">
-                  {filtered.map((s) => (
-                    <tr key={s.id} className="hover:bg-white/[0.02] transition-colors">
-                      <td className="p-4 pl-6">
-                        <div className="font-bold text-white">{s.enrollment.user.name}</div>
-                        <div className="text-xs text-gray-400">{s.enrollment.user.email} (Year {s.enrollment.user.year})</div>
-                      </td>
-                      <td className="p-4 font-semibold text-[var(--color-accent-cyan)]">
-                        {s.enrollment.challenge.name} — <span className="text-white">Day {s.dayNumber}</span>
-                      </td>
-                      <td className="p-4">
-                        <div className="font-semibold text-gray-200">{s.problem.title}</div>
-                        <div className="text-xs text-gray-400">{s.problem.topic}</div>
-                      </td>
-                      <td className="p-4 space-y-1">
-                        <div>
-                          <a
-                            href={s.linkedinPostUrl}
-                            target="_blank"
-                            rel="noreferrer"
-                            className="inline-flex items-center gap-1 text-xs text-[var(--color-primary-cyan)] hover:underline"
-                          >
-                            LinkedIn Post <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                        {s.supportingLink && (
-                          <div>
-                            <a
-                              href={s.supportingLink}
-                              target="_blank"
-                              rel="noreferrer"
-                              className="inline-flex items-center gap-1 text-xs text-[var(--color-accent-green)] hover:underline"
-                            >
-                              Proof Screenshot <ExternalLink className="w-3 h-3" />
-                            </a>
-                          </div>
-                        )}
-                      </td>
-                      <td className="p-4">
-                        <span
-                          className={`px-3 py-1 rounded-full text-xs font-bold border inline-flex items-center gap-1.5 ${
-                            s.status === "APPROVED"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/30"
-                              : s.status === "REJECTED"
-                              ? "bg-red-500/10 text-red-400 border-red-500/30"
-                              : "bg-amber-500/10 text-amber-400 border-amber-500/30"
-                          }`}
-                        >
-                          {s.status === "APPROVED" && <CheckCircle2 className="w-3.5 h-3.5" />}
-                          {s.status === "REJECTED" && <XCircle className="w-3.5 h-3.5" />}
-                          {s.status === "PENDING" && <Clock className="w-3.5 h-3.5" />}
-                          {s.status}
+          ))}
+        </div>
+      </div>
+
+      {/* QUICK VERIFICATION QUEUE ACTION (If pending submissions exist) */}
+      {recentPendingSubmissions.length > 0 && (
+        <div className="alta-card p-6 space-y-4 border-amber-500/30 bg-gradient-to-b from-amber-950/10 to-transparent">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[var(--color-border-dark)] pb-4">
+            <div>
+              <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+                <Clock className="w-4 h-4 text-amber-400" /> Pending Submissions Needing Your Verification
+              </h3>
+              <p className="text-xs text-gray-400 mt-0.5">
+                Review your campus students&apos; solution proofs directly here or via the full queue.
+              </p>
+            </div>
+            <Link
+              href="/admin/queue"
+              className="text-xs text-cyan-400 font-bold hover:underline inline-flex items-center gap-1"
+            >
+              Open Full Verification Queue ({kpis.pendingSubmissions}) →
+            </Link>
+          </div>
+
+          <div className="divide-y divide-[var(--color-border-dark)]/60 text-xs">
+            {recentPendingSubmissions.slice(0, 5).map((sub) => (
+              <div key={sub.id} className="py-3 flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-white">{sub.studentName}</span>
+                    {sub.year && (
+                      <span className="px-2 py-0.5 rounded-full bg-white/5 text-gray-300 text-[10px] font-semibold">
+                        Year {sub.year}
+                      </span>
+                    )}
+                    <span className="text-gray-400 text-[11px]">({sub.studentEmail})</span>
+                  </div>
+                  <p className="text-gray-300 font-medium">
+                    <span className="text-cyan-400 font-bold">Day {sub.dayNumber}:</span> {sub.problemTitle}{" "}
+                    <span
+                      className={`text-[10px] font-bold px-1.5 py-0.5 rounded ml-1 ${
+                        sub.difficulty.includes("Easy")
+                          ? "bg-emerald-500/10 text-emerald-400"
+                          : sub.difficulty.includes("Hard")
+                          ? "bg-rose-500/10 text-rose-400"
+                          : "bg-amber-500/10 text-amber-400"
+                      }`}
+                    >
+                      {sub.difficulty}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-3 pt-1">
+                    {sub.linkedinPostUrl && (
+                      <a
+                        href={sub.linkedinPostUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-cyan-400 hover:underline font-bold text-[11px]"
+                      >
+                        <Linkedin className="w-3 h-3" /> LinkedIn Post <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
+                    {sub.githubLink && (
+                      <a
+                        href={sub.githubLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-gray-300 hover:underline font-bold text-[11px]"
+                      >
+                        <Github className="w-3 h-3" /> GitHub Solution <ExternalLink className="w-2.5 h-2.5" />
+                      </a>
+                    )}
+                  </div>
+                </div>
+
+                {/* Review Actions */}
+                <div className="flex items-center gap-2 self-end md:self-auto">
+                  <button
+                    onClick={() => handleReviewSubmission(sub.id, "APPROVED")}
+                    disabled={processingId === sub.id}
+                    className="px-3 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <Check className="w-3.5 h-3.5" /> Approve
+                  </button>
+                  <button
+                    onClick={() => {
+                      const reason = prompt("Enter reason for rejection (optional):");
+                      handleReviewSubmission(sub.id, "REJECTED", reason || undefined);
+                    }}
+                    disabled={processingId === sub.id}
+                    className="px-3 py-1.5 rounded-xl bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-xs flex items-center gap-1 transition-all cursor-pointer disabled:opacity-50"
+                  >
+                    <X className="w-3.5 h-3.5" /> Reject
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* DETAILED STUDENT DIRECTORY (YEAR-WISE ROSTER) */}
+      <div className="alta-card p-6 space-y-5">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-[var(--color-border-dark)] pb-4">
+          <div>
+            <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+              <Users className="w-5 h-5 text-cyan-400" /> Campus Student Directory & Streaks
+            </h3>
+            <p className="text-xs text-gray-400 mt-0.5">
+              Live tracking of student streaks, active track progress, and verification status.
+            </p>
+          </div>
+
+          {/* Year Filter Pills & Student Search */}
+          <div className="flex flex-wrap items-center gap-3">
+            <div className="flex items-center gap-1 bg-white/5 p-1 rounded-xl border border-white/10 text-xs font-bold">
+              {(["ALL", 1, 2, 3, 4] as const).map((yr) => (
+                <button
+                  key={yr}
+                  onClick={() => setActiveYearTab(yr)}
+                  className={`px-3 py-1 rounded-lg cursor-pointer transition-all ${
+                    activeYearTab === yr
+                      ? "bg-cyan-500 text-slate-950 font-black shadow-sm"
+                      : "text-gray-400 hover:text-white"
+                  }`}
+                >
+                  {yr === "ALL" ? "All Years" : `Year ${yr}`}
+                </button>
+              ))}
+            </div>
+
+            <div className="relative">
+              <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+              <input
+                type="text"
+                placeholder="Search by student or track..."
+                value={studentSearch}
+                onChange={(e) => setStudentSearch(e.target.value)}
+                className="alta-input pl-8 py-1.5 text-xs w-56"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Student Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full text-left border-collapse">
+            <thead>
+              <tr className="border-b border-[var(--color-border-dark)] text-[11px] font-extrabold text-gray-400 uppercase tracking-wider">
+                <th className="p-3 pl-4">Student</th>
+                <th className="p-3">Year</th>
+                <th className="p-3">Enrolled Track</th>
+                <th className="p-3">Progress</th>
+                <th className="p-3">Active Streak</th>
+                <th className="p-3">Verified Solves</th>
+                <th className="p-3 pr-4 text-right">Status</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-[var(--color-border-dark)]/60 text-xs">
+              {filteredStudents.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="p-12 text-center text-gray-400">
+                    <Users className="w-8 h-8 text-gray-600 mx-auto mb-2" />
+                    <p className="font-bold text-gray-300">No students found</p>
+                    <p className="text-xs text-gray-500 mt-0.5">
+                      No students match the selected year filter or search criteria.
+                    </p>
+                  </td>
+                </tr>
+              ) : (
+                filteredStudents.map((stu) => (
+                  <tr key={stu.id} className="hover:bg-white/5 transition-colors">
+                    <td className="p-3 pl-4">
+                      <p className="font-extrabold text-white">{stu.name}</p>
+                      <p className="text-[10px] text-gray-400">{stu.email}</p>
+                    </td>
+                    <td className="p-3 font-semibold text-gray-300">
+                      {stu.year ? `Year ${stu.year}` : "Unassigned"}
+                    </td>
+                    <td className="p-3">
+                      <span className="font-bold text-cyan-400">{stu.trackName}</span>
+                    </td>
+                    <td className="p-3 text-gray-300 font-medium">Day {stu.currentDay}</td>
+                    <td className="p-3">
+                      <span className="font-black text-orange-400 text-sm flex items-center gap-1">
+                        {stu.streakCount} <Flame className="w-3.5 h-3.5 fill-orange-400 inline" />
+                      </span>
+                      {stu.longestStreak > stu.streakCount && (
+                        <span className="text-[10px] text-gray-400 block">Best: {stu.longestStreak}d</span>
+                      )}
+                    </td>
+                    <td className="p-3 font-bold text-emerald-400">
+                      {stu.approvedCount} approved
+                      {stu.pendingCount > 0 && (
+                        <span className="text-[10px] text-amber-400 block">
+                          ({stu.pendingCount} pending)
                         </span>
-                      </td>
-                      <td className="p-4 text-right pr-6">
-                        <div className="flex items-center justify-end gap-2">
-                          {s.status !== "APPROVED" && (
-                            <button
-                              onClick={() => handleReview(s.id, "APPROVED")}
-                              disabled={processingId === s.id}
-                              className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/20 transition-all cursor-pointer"
-                            >
-                              Approve
-                            </button>
-                          )}
-                          {s.status !== "REJECTED" && (
-                            <button
-                              onClick={() => {
-                                const reason = prompt("Reason for rejection:");
-                                if (reason) handleReview(s.id, "REJECTED", reason);
-                              }}
-                              disabled={processingId === s.id}
-                              className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/20 transition-all cursor-pointer"
-                            >
-                              Reject
-                            </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      )}
+                    </td>
+                    <td className="p-3 pr-4 text-right">
+                      <span
+                        className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                          stu.status === "ACTIVE"
+                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                            : stu.status === "COMPLETED"
+                            ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                            : "bg-gray-500/10 text-gray-400 border border-gray-500/20"
+                        }`}
+                      >
+                        {stu.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* CAMPUS LEADERBOARD & DIFFICULTY DISTRIBUTION */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Campus Leaderboard Champions */}
+        <div className="alta-card p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--color-border-dark)] pb-3">
+            <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-amber-400" /> Campus Streak Champions
+            </h3>
+            <span className="text-xs text-gray-400">Top performers at {campus.name}</span>
+          </div>
+
+          {topStudents.length === 0 ? (
+            <p className="text-xs text-gray-400 py-6 text-center">No active streaks recorded yet.</p>
+          ) : (
+            <div className="divide-y divide-[var(--color-border-dark)]/60 text-xs">
+              {topStudents.map((st, idx) => (
+                <div key={st.id} className="py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="font-black text-gray-400 w-5">
+                      {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
+                    </span>
+                    <div>
+                      <p className="font-bold text-white">{st.name}</p>
+                      <p className="text-[10px] text-gray-400">
+                        {st.year ? `Year ${st.year} • ` : ""}
+                        {st.challengeName} (Day {st.currentDay})
+                      </p>
+                    </div>
+                  </div>
+                  <span className="font-black text-orange-400 text-sm flex items-center gap-1">
+                    {st.streakCount} <Flame className="w-3.5 h-3.5 fill-orange-400 inline" />
+                  </span>
+                </div>
+              ))}
             </div>
           )}
         </div>
-      </main>
+
+        {/* Difficulty Distribution */}
+        <div className="alta-card p-6 space-y-4">
+          <div className="flex items-center justify-between border-b border-[var(--color-border-dark)] pb-3">
+            <h3 className="font-extrabold text-white text-base flex items-center gap-2">
+              <Layers className="w-4 h-4 text-cyan-400" /> Solved Problems by Difficulty
+            </h3>
+            <span className="text-xs text-emerald-400 font-bold">{kpis.approvedSubmissions} Solved</span>
+          </div>
+
+          <div className="grid grid-cols-3 gap-3">
+            <div className="p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center">
+              <span className="text-xs font-bold text-emerald-400 block">Easy</span>
+              <span className="text-2xl font-black text-white">{difficultyCount.Easy}</span>
+              <p className="text-[10px] text-gray-400 mt-1">Foundational</p>
+            </div>
+            <div className="p-4 rounded-xl bg-amber-500/10 border border-amber-500/20 text-center">
+              <span className="text-xs font-bold text-amber-400 block">Medium</span>
+              <span className="text-2xl font-black text-white">{difficultyCount.Medium}</span>
+              <p className="text-[10px] text-gray-400 mt-1">Core Interview</p>
+            </div>
+            <div className="p-4 rounded-xl bg-rose-500/10 border border-rose-500/20 text-center">
+              <span className="text-xs font-bold text-rose-400 block">Hard</span>
+              <span className="text-2xl font-black text-white">{difficultyCount.Hard}</span>
+              <p className="text-[10px] text-gray-400 mt-1">Advanced</p>
+            </div>
+          </div>
+
+          <div className="p-4 rounded-xl bg-white/5 border border-white/10 flex items-center justify-between text-xs">
+            <span className="text-gray-300 font-bold">25+ Days Mock Interview Milestone:</span>
+            <span className="font-black text-amber-400 text-sm">
+              {streakMilestones.streak25Plus} Students Eligible 🎓
+            </span>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

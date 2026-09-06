@@ -5,10 +5,14 @@ import { z } from "zod";
 
 const createProblemSchema = z.object({
   dayNumber: z.number().min(1),
-  title: z.string().min(2),
+  title: z.string().min(1),
   topic: z.string().min(1),
-  difficulty: z.enum(["EASY", "MEDIUM", "HARD"]),
+  difficulty: z.string(),
   externalLink: z.string().url("Must be a valid URL (e.g. LeetCode / HackerRank)"),
+  articleLink: z.string().url().optional().nullable(),
+  videoLink: z.string().url().optional().nullable(),
+  companies: z.string().optional().nullable(),
+  chapter: z.string().optional().nullable(),
 });
 
 export async function GET(
