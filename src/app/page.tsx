@@ -176,18 +176,11 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <nav className="hidden sm:flex items-center gap-7 text-sm font-bold text-slate-300">
+          <nav className="hidden sm:flex items-center gap-8 text-sm font-bold text-slate-300">
             <a href="#tracks" className="hover:text-[#3bc3e2] transition-colors">Tracks</a>
             <a href="#how-it-works" className="hover:text-[#3bc3e2] transition-colors">How it Works</a>
             <a href="#leaderboard" className="hover:text-[#3bc3e2] transition-colors">Leaderboard</a>
             <a href="#about" className="hover:text-[#3bc3e2] transition-colors">About</a>
-            <button
-              type="button"
-              onClick={() => setShowTeamModal(true)}
-              className="hover:text-[#3bc3e2] transition-colors flex items-center gap-1.5 text-cyan-300 font-bold cursor-pointer"
-            >
-              <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" /> Team & Mentors
-            </button>
           </nav>
         </div>
       </header>
