@@ -23,7 +23,14 @@ import {
   ShieldCheck,
   CheckCircle2,
   Medal,
-  Calendar
+  Calendar,
+  Github,
+  Linkedin,
+  Heart,
+  ExternalLink,
+  X,
+  Star,
+  Award,
 } from "lucide-react";
 
 interface Campus {
@@ -64,6 +71,7 @@ export default function LandingPage() {
   const [campusId, setCampusId] = useState("");
   const [year, setYear] = useState<number>(1);
   const [showPassword, setShowPassword] = useState(false);
+  const [showTeamModal, setShowTeamModal] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [dataLoading, setDataLoading] = useState(true);
@@ -168,11 +176,18 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <nav className="hidden sm:flex items-center gap-8 text-sm font-bold text-slate-300">
+          <nav className="hidden sm:flex items-center gap-7 text-sm font-bold text-slate-300">
             <a href="#tracks" className="hover:text-[#3bc3e2] transition-colors">Tracks</a>
             <a href="#how-it-works" className="hover:text-[#3bc3e2] transition-colors">How it Works</a>
-            <a href="#about" className="hover:text-[#3bc3e2] transition-colors">About</a>
             <a href="#leaderboard" className="hover:text-[#3bc3e2] transition-colors">Leaderboard</a>
+            <a href="#about" className="hover:text-[#3bc3e2] transition-colors">About</a>
+            <button
+              type="button"
+              onClick={() => setShowTeamModal(true)}
+              className="hover:text-[#3bc3e2] transition-colors flex items-center gap-1.5 text-cyan-300 font-bold cursor-pointer"
+            >
+              <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" /> Team & Mentors
+            </button>
           </nav>
         </div>
       </header>
@@ -182,9 +197,9 @@ export default function LandingPage() {
         <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 lg:py-24 grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Hero Left Content */}
           <div className="lg:col-span-7 space-y-8 text-left">
-            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-[#3bc3e2]/10 border border-[#3bc3e2]/30 text-[#3bc3e2] text-xs font-black uppercase tracking-wider shadow-inner">
-              <Sparkles className="w-4 h-4 text-[#fcc032]" />
-              Official ALTA School DSA Track Platform
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 rounded-full bg-gradient-to-r from-[#3bc3e2]/15 via-[#3ccc8b]/15 to-[#3bc3e2]/15 border border-[#3bc3e2]/30 text-[#3bc3e2] text-xs font-black uppercase tracking-wider shadow-inner">
+              <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 shrink-0" />
+              Made by ALTA Tech Club Indore • For ALTA Students
             </div>
 
             <div className="space-y-6">
@@ -546,14 +561,90 @@ export default function LandingPage() {
         </section>
 
         {/* About Section */}
-        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 mb-12">
-          <div className="alta-card p-8 md:p-12 relative overflow-hidden text-center">
-            <div className="absolute inset-0 bg-gradient-to-br from-[#3bc3e2]/5 to-[#3ccc8b]/5 pointer-events-none" />
-            <Zap className="w-12 h-12 text-[#3bc3e2] mx-auto mb-6" />
-            <h3 className="text-3xl font-black text-white mb-6">About ALTA Track</h3>
-            <p className="text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed font-medium">
-              ALTA Track is a specialized learning platform designed to bridge the gap between academic curriculum and industry expectations. We partner with top-tier universities to provide structured, AI-assisted Data Structures and Algorithms (DSA) training. Our mission is to cultivate consistency, deep problem-solving skills, and a verifiable proof of work for every computer science undergraduate.
+        <section id="about" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+          <div className="alta-card p-8 md:p-12 relative overflow-hidden text-center border-white/10">
+            <div className="absolute inset-0 bg-gradient-to-br from-[#3bc3e2]/5 via-[#3ccc8b]/5 to-transparent pointer-events-none" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#3bc3e2]/10 border border-[#3bc3e2]/30 text-[#3bc3e2] text-xs font-bold uppercase tracking-wider mb-4">
+              <Zap className="w-3.5 h-3.5" /> Mission & Vision
+            </div>
+            <h3 className="text-3xl sm:text-4xl font-black text-white mb-6">About ALTA Track</h3>
+            <p className="text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed font-medium">
+              ALTA Track is a specialized learning platform designed to bridge the gap between academic curriculum and industry expectations. We partner with top-tier universities to provide structured, AI-assisted Data Structures and Algorithms (DSA) training. Our mission is to cultivate consistency, deep problem-solving skills, and verifiable proof of work for every computer science undergraduate.
             </p>
+          </div>
+        </section>
+
+        {/* Made by Students & Community Section */}
+        <section id="community" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+          <div className="text-center space-y-3 mb-12">
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#3bc3e2]/10 border border-[#3bc3e2]/30 text-[#3bc3e2] text-xs font-black uppercase tracking-wider">
+              <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400" /> Student Initiative
+            </div>
+            <h3 className="text-3xl sm:text-4xl font-black text-white">
+              Made by Students of <span className="alta-text-gradient">ALTA Tech Club Indore</span>
+            </h3>
+            <p className="text-slate-300 font-medium max-w-2xl mx-auto text-sm sm:text-base">
+              Built exclusively for ALTA students to inspire daily problem-solving discipline, consistency, and campus-wide coding excellence.
+            </p>
+          </div>
+
+          {/* Main ALTA Tech Club Indore Showcase Card */}
+          <div className="alta-card p-6 sm:p-10 relative overflow-hidden border-[#3bc3e2]/30 bg-gradient-to-br from-[#0c1b48]/90 via-[#071337] to-[#050c24] space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Feature 1 */}
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-cyan-500/20 text-cyan-300 flex items-center justify-center font-bold">
+                  <Code2 className="w-5 h-5" />
+                </div>
+                <h4 className="text-lg font-bold text-white">Curated Daily Challenges</h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                  Hand-picked DSA problems mapped to real interview questions, verified daily by campus coordinators to build an authentic problem-solving habit.
+                </p>
+              </div>
+
+              {/* Feature 2 */}
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-300 flex items-center justify-center font-bold">
+                  <Trophy className="w-5 h-5" />
+                </div>
+                <h4 className="text-lg font-bold text-white">Campus-Wide Leaderboards</h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                  Dynamic multi-campus rankings with calendar-day streak tracking, year-wise cohort filters, and merit-based proof of work.
+                </p>
+              </div>
+
+              {/* Feature 3 */}
+              <div className="p-5 rounded-2xl bg-white/[0.03] border border-white/5 space-y-3">
+                <div className="w-10 h-10 rounded-xl bg-amber-500/20 text-amber-300 flex items-center justify-center font-bold">
+                  <Sparkles className="w-5 h-5" />
+                </div>
+                <h4 className="text-lg font-bold text-white">Rewards & Mock Interviews</h4>
+                <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                  Consistency unlocks exclusive ALTA merchandise and 1-on-1 mock technical interviews to prepare undergraduates for tier-1 company placements.
+                </p>
+              </div>
+            </div>
+
+            {/* Bottom action row */}
+            <div className="pt-6 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-[#3bc3e2] to-[#3ccc8b] flex items-center justify-center text-[#050c24] font-black text-lg shadow-md">
+                  <Users className="w-5 h-5 text-[#050c24]" />
+                </div>
+                <div>
+                  <p className="text-xs text-white font-bold">Driven by Student Builders & Guided by ALTA Mentors</p>
+                  <p className="text-[11px] text-slate-400">Chapter: Indore, Madhya Pradesh • Active Student Collective</p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setShowTeamModal(true)}
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#3bc3e2] to-[#3ccc8b] hover:opacity-90 text-[#050c24] text-xs font-black transition-all flex items-center gap-2 shadow-lg shadow-[#3bc3e2]/20 cursor-pointer self-start sm:self-auto"
+              >
+                <Users className="w-4 h-4" /> About the Developers & Visionaries &rarr;
+              </button>
+            </div>
           </div>
         </section>
 
@@ -566,13 +657,213 @@ export default function LandingPage() {
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#3bc3e2] to-[#22acd1] flex items-center justify-center text-[#050c24] font-black text-lg">
               A
             </div>
-            <span className="font-bold text-white text-sm">ALTA TRACK © 2024</span>
+            <span className="font-bold text-white text-sm">ALTA TRACK © {new Date().getFullYear()}</span>
           </div>
-          <div className="text-sm text-slate-400 font-medium text-center">
-            Empowering Next-Gen Software Engineers.
+          <div className="text-sm text-slate-300 font-medium text-center flex flex-wrap items-center justify-center gap-2">
+            <span>
+              Made with <Heart className="w-4 h-4 text-rose-400 fill-rose-400 inline" /> by <span className="text-[#3bc3e2] font-bold">ALTA Tech Club Indore</span> for ALTA Students
+            </span>
+            <span className="text-slate-500 hidden sm:inline">•</span>
+            <button
+              type="button"
+              onClick={() => setShowTeamModal(true)}
+              className="text-xs text-[#3bc3e2] hover:text-white underline font-bold cursor-pointer transition-colors"
+            >
+              Meet the Developers & Visionaries &rarr;
+            </button>
           </div>
         </div>
       </footer>
+
+      {/* Team & Visionaries Modal */}
+      {showTeamModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="alta-card max-w-3xl w-full max-h-[90vh] overflow-y-auto p-6 sm:p-8 space-y-8 relative border-[#3bc3e2]/40 bg-[#071130] shadow-2xl">
+            {/* Modal Header */}
+            <div className="flex items-start justify-between border-b border-white/10 pb-5">
+              <div className="space-y-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#3bc3e2]/15 border border-[#3bc3e2]/30 text-[#3bc3e2] text-[11px] font-black uppercase tracking-wider">
+                  <Sparkles className="w-3.5 h-3.5 text-[#fcc032]" /> The People Behind ALTA Track
+                </div>
+                <h3 className="text-2xl sm:text-3xl font-black text-white">
+                  Developers & Visionaries
+                </h3>
+                <p className="text-xs sm:text-sm text-slate-300 font-medium">
+                  The student engineers who built it, and the mentors and founders who inspired the mission.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowTeamModal(false)}
+                className="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Section 1: Developers */}
+            <div className="space-y-4">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#3bc3e2]">
+                <Code2 className="w-4 h-4" /> Student Developers • ALTA Tech Club Indore
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Rishabh Vyas */}
+                <div className="p-5 rounded-2xl bg-white/[0.04] border border-cyan-500/30 hover:border-cyan-500/50 transition-colors space-y-3.5 flex flex-col justify-between">
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-cyan-400 to-sky-500 flex items-center justify-center text-[#050c24] font-black text-lg shadow-md shadow-cyan-500/20">
+                          RV
+                        </div>
+                        <div>
+                          <h4 className="text-base font-bold text-white">Rishabh Vyas</h4>
+                          <span className="text-[11px] font-extrabold text-cyan-300 block">Lead Developer</span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-cyan-400/15 border border-cyan-400/30 text-cyan-300 text-[10px] font-black uppercase">
+                        Tech Club Indore
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                      Architected and engineered ALTA Track — from the core API engine and calendar-day streak tracking to live multi-campus leaderboards and verification workflows.
+                    </p>
+                  </div>
+
+                  {/* Connect Links */}
+                  <div className="flex flex-wrap gap-2 pt-2 border-t border-white/5">
+                    <a
+                      href="https://www.linkedin.com/in/rishabh-vyas-/"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1.5 rounded-lg bg-[#0077b5]/20 hover:bg-[#0077b5]/30 text-sky-300 text-[11px] font-bold border border-[#0077b5]/40 transition-colors flex items-center gap-1.5"
+                    >
+                      <Linkedin className="w-3.5 h-3.5" /> LinkedIn <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                    </a>
+                    <a
+                      href="https://github.com/rishabhvyas17"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-2.5 py-1.5 rounded-lg bg-white/10 hover:bg-white/15 text-white text-[11px] font-bold border border-white/20 transition-colors flex items-center gap-1.5"
+                    >
+                      <Github className="w-3.5 h-3.5" /> GitHub <ExternalLink className="w-2.5 h-2.5 opacity-60" />
+                    </a>
+                    <a
+                      href="mailto:rishabhvyas222@gmail.com"
+                      className="px-2.5 py-1.5 rounded-lg bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 text-[11px] font-bold border border-emerald-500/30 transition-colors flex items-center gap-1.5"
+                    >
+                      <Mail className="w-3.5 h-3.5" /> Email
+                    </a>
+                  </div>
+                </div>
+
+                {/* Prince */}
+                <div className="p-5 rounded-2xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-colors space-y-3.5 flex flex-col justify-between">
+                  <div className="space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-emerald-400 to-teal-500 flex items-center justify-center text-[#050c24] font-black text-lg shadow-md shadow-emerald-500/20">
+                          P
+                        </div>
+                        <div>
+                          <h4 className="text-base font-bold text-white">Prince</h4>
+                          <span className="text-[11px] font-extrabold text-emerald-300 block">Co-Developer & Peer Collaborator</span>
+                        </div>
+                      </div>
+                      <span className="px-2 py-0.5 rounded bg-emerald-400/15 border border-emerald-400/30 text-emerald-300 text-[10px] font-black uppercase">
+                        Tech Club Indore
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                      Key peer collaborator instrumental in system testing, refining user journeys, UI/UX feedback, and supporting platform deployment for student cohorts.
+                    </p>
+                  </div>
+                  <div className="pt-2 border-t border-white/5">
+                    <span className="text-[11px] text-slate-400 font-semibold italic">
+                      Collaborative engineering partner on ALTA Track.
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Section 2: Visionaries & Mentors */}
+            <div className="space-y-4 pt-2">
+              <div className="flex items-center gap-2 text-xs font-black uppercase tracking-widest text-[#fcc032]">
+                <Star className="w-4 h-4" /> Visionaries, Mentors & Guiding Lights
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Ashish Sir */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-amber-500/20 hover:border-amber-500/40 transition-colors space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-base font-bold text-white">Ashish Sir</h4>
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-300 text-[10px] font-black uppercase">
+                      Founder, ALTA
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    The visionary catalyst behind ALTA’s mission — revolutionizing computer science education and inspiring students to build tangible, industry-standard engineering capabilities.
+                  </p>
+                </div>
+
+                {/* Harshit Sir */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-sky-500/20 hover:border-sky-500/40 transition-colors space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-base font-bold text-white">Harshit Sir</h4>
+                    <span className="px-2.5 py-0.5 rounded-full bg-sky-500/15 border border-sky-500/30 text-sky-300 text-[10px] font-black uppercase">
+                      Founding Member, ALTA
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    Founding pillar shaping the academic vision, mentor network, and structured curriculum that bridges university education with high-growth tech careers.
+                  </p>
+                </div>
+
+                {/* Nitesh Sir */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-emerald-500/20 hover:border-emerald-500/40 transition-colors space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-base font-bold text-white">Nitesh Sir</h4>
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-[10px] font-black uppercase">
+                      Mentor
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    Guiding engineering mentor providing continuous direction, architectural feedback, and technical mentorship that elevated the quality of ALTA Track.
+                  </p>
+                </div>
+
+                {/* Santosh Sir */}
+                <div className="p-5 rounded-2xl bg-white/[0.03] border border-purple-500/20 hover:border-purple-500/40 transition-colors space-y-2.5">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-base font-bold text-white">Santosh Sir</h4>
+                    <span className="px-2.5 py-0.5 rounded-full bg-purple-500/15 border border-purple-500/30 text-purple-300 text-[10px] font-black uppercase">
+                      Inspiration
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                    The guiding inspiration whose passion for relentless consistency, rigorous algorithmic practice, and student empowerment sparks our daily drive.
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="pt-4 border-t border-white/10 flex items-center justify-between">
+              <span className="text-xs text-slate-400 font-medium">
+                Made with <Heart className="w-3.5 h-3.5 text-rose-400 fill-rose-400 inline mx-0.5" /> for the ALTA Student Community
+              </span>
+              <button
+                type="button"
+                onClick={() => setShowTeamModal(false)}
+                className="alta-button-secondary text-xs"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

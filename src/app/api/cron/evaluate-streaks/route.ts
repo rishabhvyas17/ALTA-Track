@@ -5,13 +5,17 @@ import { parseRules } from "@/lib/rules";
 
 export async function GET(request: NextRequest) {
   try {
-    // Basic secret authorization check for Vercel Cron
+    // Strict authorization check for Cron (fail closed in production or if CRON_SECRET configured)
+    const cronSecret = process.env.CRON_SECRET;
     const authHeader = request.headers.get("authorization");
-    if (
-      process.env.CRON_SECRET &&
-      authHeader !== `Bearer ${process.env.CRON_SECRET}`
-    ) {
-      return NextResponse.json({ error: "Unauthorized cron execution" }, { status: 401 });
+
+    if (process.env.NODE_ENV === "production" || cronSecret) {
+      if (!cronSecret || authHeader !== `Bearer ${cronSecret}`) {
+        return NextResponse.json(
+          { error: "Unauthorized cron execution. Valid Bearer CRON_SECRET header required." },
+          { status: 401 }
+        );
+      }
     }
 
     const today = new Date();

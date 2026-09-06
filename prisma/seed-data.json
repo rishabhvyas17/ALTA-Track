@@ -1,0 +1,2444 @@
+{
+  "campuses": [
+    {
+      "name": "ADYPU",
+      "region": "Pune, Maharashtra"
+    },
+    {
+      "name": "VGU",
+      "region": "Jaipur, Rajasthan"
+    },
+    {
+      "name": "SAGE University",
+      "region": "Indore, Madhya Pradesh"
+    },
+    {
+      "name": "DRK Institute",
+      "region": "Hyderabad, Telangana"
+    },
+    {
+      "name": "IITM",
+      "region": "Delhi NCR"
+    }
+  ],
+  "challenges": [
+    {
+      "name": "BASE 111",
+      "slug": "base-111",
+      "totalDays": 111,
+      "rules": {
+        "graceDaysPerMonth": 1,
+        "graceDaysResetPolicy": "calendar_month",
+        "missedDayAction": "restart_to_day_1",
+        "allowOutOfOrderSubmission": false,
+        "proofRequired": "linkedin_post",
+        "supportingLinkRequired": false,
+        "supportingLinkTypes": [
+          "leetcode_gfg",
+          "github"
+        ],
+        "resubmissionAllowedOnReject": true,
+        "streakBreakGraceWindow": false
+      },
+      "isActive": true,
+      "problems": [
+        {
+          "dayNumber": 1,
+          "title": "Age Estimate From Days Lived",
+          "topic": "Programming Basics & Computational Thinking",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/age-estimate-from-days-lived/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 2,
+          "title": "Swap Two Numbers Using a Temporary Variable",
+          "topic": "Variables",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/swap-two-numbers-using-a-temporary-variable/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 3,
+          "title": "Toggle a Boolean Flag",
+          "topic": "Variables",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/toggle-a-boolean-flag/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 4,
+          "title": "Final Price After Discount and Tax",
+          "topic": "Operators",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/final-price-after-discount-and-tax/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 5,
+          "title": "Withdrawal Validity as a Boolean",
+          "topic": "Operators",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/withdrawal-validity-as-a-boolean/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 6,
+          "title": "Largest of Three Numbers (Nested If-Else)",
+          "topic": "Control Structures - If-Else",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/largest-of-three-numbers-nested-if-else/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 7,
+          "title": "Check Leap Year",
+          "topic": "Control Structures - If-Else",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-leap-year/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 8,
+          "title": "Divisible by Both 3 and 5",
+          "topic": "Control Structures - If-Else",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/divisible-by-both-3-and-5/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 9,
+          "title": "BMI Category (Nested If-Else)",
+          "topic": "Control Structures - If-Else",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/bmi-category-nested-if-else/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 10,
+          "title": "Validate a Calendar Date",
+          "topic": "Control Structures - If-Else",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/validate-a-calendar-date/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 11,
+          "title": "Simple Calculator Using Switch Case",
+          "topic": "Control Structures - Switch Case",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/simple-calculator-using-switch-case/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 12,
+          "title": "Month to Season Using Fall-Through",
+          "topic": "Control Structures - Switch Case",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/month-to-season-using-fall-through/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 13,
+          "title": "Print 1 to N (For Loop)",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/print-1-to-n-for-loop/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 14,
+          "title": "Print N to 1 (While Loop)",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/print-n-to-1-while-loop/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 15,
+          "title": "Check Prime Number (Loop)",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-prime-number-loop/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 16,
+          "title": "Check Palindrome Number",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-palindrome-number/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 17,
+          "title": "Fibonacci Series (Iterative)",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/fibonacci-series-iterative/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 18,
+          "title": "Break Statement Demo",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/break-statement-demo/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 19,
+          "title": "Continue Statement Demo",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/continue-statement-demo/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 20,
+          "title": "FizzBuzz",
+          "topic": "Control Structures - Loops",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/fizz-buzz/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 21,
+          "title": "Overloaded Functions for Int and Float Addition",
+          "topic": "Functions",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/overloaded-functions-for-int-and-float-addition/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 22,
+          "title": "Pass by Value vs Pass by Reference",
+          "topic": "Functions",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/pass-by-value-vs-pass-by-reference/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 23,
+          "title": "Function Returning Multiple Values",
+          "topic": "Functions",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/function-returning-multiple-values/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 24,
+          "title": "Menu-Driven Program Combining Multiple Functions",
+          "topic": "Functions",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/menu-driven-program-combining-multiple-functions/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 25,
+          "title": "Declare and Print an Array",
+          "topic": "Arrays Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/declare-and-print-an-array/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 26,
+          "title": "Access and Modify Array Elements by Index",
+          "topic": "Arrays Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/access-and-modify-array-elements-by-index/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 27,
+          "title": "Declare and Print a 2D Grid",
+          "topic": "Arrays Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/declare-and-print-a-2d-grid/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 28,
+          "title": "Define and Use a Simple Custom Type",
+          "topic": "Structs & Classes Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/define-and-use-a-simple-custom-type/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 29,
+          "title": "Custom Type With a Method",
+          "topic": "Structs & Classes Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/custom-type-with-a-method/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 30,
+          "title": "Manually Link Two Custom-Type Instances",
+          "topic": "Structs & Classes Basics",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/manually-link-two-custom-type-instances/",
+          "chapter": "Programming Basics",
+          "companies": ""
+        },
+        {
+          "dayNumber": 31,
+          "title": "Find the Largest Element in an Array",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/find-the-largest-element-in-an-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 32,
+          "title": "Second Largest Element in an Array",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/second-largest-element-in-an-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 33,
+          "title": "Check if an Array Is Sorted",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-an-array-is-sorted/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 34,
+          "title": "Reverse an Array",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/reverse-an-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 35,
+          "title": "Left Rotate an Array by D Places",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/left-rotate-an-array-by-d-places/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 36,
+          "title": "Maximum Consecutive Ones",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/max-consecutive-ones/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 37,
+          "title": "Two Sum",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/two-sum/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 38,
+          "title": "Intersection of Two Arrays",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/intersection-of-two-arrays/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 39,
+          "title": "Union of Two Sorted Arrays",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/union-of-two-sorted-arrays/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 40,
+          "title": "Squares of a Sorted Array",
+          "topic": "Arrays & Basic Math",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/squares-of-a-sorted-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 41,
+          "title": "Reverse a String",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/reverse-string/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 42,
+          "title": "Check if a String Is a Palindrome (Basic)",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-a-string-is-a-palindrome-basic/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 43,
+          "title": "Count Vowels, Consonants, Digits, Spaces",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/count-vowels-consonants-digits-spaces/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 44,
+          "title": "Frequency of Characters in a String",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/frequency-of-characters-in-a-string/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 45,
+          "title": "Check if a String Is a Rotation of Another",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-a-string-is-a-rotation-of-another/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 46,
+          "title": "First Non-Repeating Character in a String",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/first-unique-character-in-a-string/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 47,
+          "title": "Remove All Occurrences of a Given Character",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/remove-all-occurrences-of-a-given-character/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 48,
+          "title": "Check if a String Has All Unique Characters",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-a-string-has-all-unique-characters/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 49,
+          "title": "Print 1 to N Without a Loop",
+          "topic": "Basic Recursion",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/print-1-to-n-without-a-loop/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 50,
+          "title": "Factorial of a Number",
+          "topic": "Basic Recursion",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/factorial-of-a-number/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 51,
+          "title": "Fibonacci Number (Recursive)",
+          "topic": "Basic Recursion",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/fibonacci-number/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 52,
+          "title": "Sum of Digits of a Number (Recursive)",
+          "topic": "Basic Recursion",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/sum-of-digits-of-a-number-recursive/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 53,
+          "title": "Check if a String Is a Palindrome (Recursive)",
+          "topic": "Basic Recursion",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-a-string-is-a-palindrome-recursive/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 54,
+          "title": "Power of a Number (Recursive, Brute Force)",
+          "topic": "Basic Recursion",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/power-of-a-number-recursive-brute-force/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 55,
+          "title": "Rat in a Maze",
+          "topic": "Basic Recursion",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/rat-in-a-maze/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 56,
+          "title": "Linear Search",
+          "topic": "Searching & Sorting",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/linear-search/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 57,
+          "title": "Implement Bubble Sort",
+          "topic": "Searching & Sorting",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-bubble-sort/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 58,
+          "title": "Implement Selection Sort",
+          "topic": "Searching & Sorting",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-selection-sort/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 59,
+          "title": "Implement Insertion Sort",
+          "topic": "Searching & Sorting",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-insertion-sort/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 60,
+          "title": "Implement Merge Sort",
+          "topic": "Searching & Sorting",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/implement-merge-sort/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 61,
+          "title": "Implement Quick Sort",
+          "topic": "Searching & Sorting",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/implement-quick-sort/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 62,
+          "title": "Count Inversions in an Array",
+          "topic": "Searching & Sorting",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/count-inversions-in-an-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 63,
+          "title": "Kth Smallest / Largest Element (Sort-Based)",
+          "topic": "Searching & Sorting",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/kth-smallest-largest-element-sort-based/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 64,
+          "title": "Pair with Given Sum in a Sorted Array",
+          "topic": "Two Pointers & Basic Hashing",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/pair-with-given-sum-in-a-sorted-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 65,
+          "title": "Move All Negative Numbers to One Side",
+          "topic": "Two Pointers & Basic Hashing",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/move-all-negative-numbers-to-one-side/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 66,
+          "title": "Segregate 0s and 1s",
+          "topic": "Two Pointers & Basic Hashing",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/segregate-0s-and-1s/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 67,
+          "title": "Find All Pairs with a Given Difference",
+          "topic": "Two Pointers & Basic Hashing",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/find-all-pairs-with-a-given-difference/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 68,
+          "title": "Chocolate Distribution Problem",
+          "topic": "Two Pointers & Basic Hashing",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/chocolate-distribution-problem/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 69,
+          "title": "Subarray with Given Sum (Non-Negative Array)",
+          "topic": "Two Pointers & Basic Hashing",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/subarray-with-given-sum-non-negative-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 70,
+          "title": "Insert a Node in a Linked List",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/insert-a-node-in-a-linked-list/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 71,
+          "title": "Delete a Node from a Linked List",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/delete-a-node-from-a-linked-list/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 72,
+          "title": "Search an Element in a Linked List",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/search-an-element-in-a-linked-list/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 73,
+          "title": "Find the Length of a Linked List",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/find-the-length-of-a-linked-list/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 74,
+          "title": "Insert a Node in a Sorted Linked List",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/insert-a-node-in-a-sorted-linked-list/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 75,
+          "title": "Find the Nth Node from the Beginning",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/find-the-nth-node-from-the-beginning/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 76,
+          "title": "Print a Linked List in Reverse (Without Reversing It)",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/print-a-linked-list-in-reverse-without-reversing-it/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 77,
+          "title": "Convert an Array to a Linked List and Back",
+          "topic": "Linked List",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/convert-an-array-to-a-linked-list-and-back/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 78,
+          "title": "Implement Stack Using an Array",
+          "topic": "Stacks & Queues",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-stack-using-an-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 79,
+          "title": "Implement Queue Using an Array",
+          "topic": "Stacks & Queues",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-queue-using-an-array/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 80,
+          "title": "Implement Stack Using a Linked List",
+          "topic": "Stacks & Queues",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-stack-using-a-linked-list/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 81,
+          "title": "Implement a Circular Queue",
+          "topic": "Stacks & Queues",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/implement-a-circular-queue/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 82,
+          "title": "Infix to Postfix Conversion",
+          "topic": "Stacks & Queues",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/infix-to-postfix-conversion/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 83,
+          "title": "Reverse a Stack Using Recursion",
+          "topic": "Stacks & Queues",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/reverse-a-stack-using-recursion/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 84,
+          "title": "Insert a Node in a Binary Tree",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/insert-a-node-in-a-binary-tree/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 85,
+          "title": "Preorder Traversal (Recursive & Iterative)",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/preorder-traversal-recursive-iterative/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 86,
+          "title": "Inorder Traversal (Recursive & Iterative)",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/inorder-traversal-recursive-iterative/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 87,
+          "title": "Postorder Traversal (Recursive & Iterative)",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/postorder-traversal-recursive-iterative/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 88,
+          "title": "Count Total Nodes in a Binary Tree",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/count-total-nodes-in-a-binary-tree/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 89,
+          "title": "Insert a Node in a Binary Search Tree",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/insert-a-node-in-a-binary-search-tree/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 90,
+          "title": "Search a Node in a Binary Search Tree",
+          "topic": "Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/search-a-node-in-a-binary-search-tree/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 91,
+          "title": "Graph Representation: Adjacency List & Matrix",
+          "topic": "Basic Graphs",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/graph-representation-adjacency-list-matrix/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 92,
+          "title": "BFS Traversal of a Graph",
+          "topic": "Basic Graphs",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/bfs-traversal-of-a-graph/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 93,
+          "title": "DFS Traversal of a Graph",
+          "topic": "Basic Graphs",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/dfs-traversal-of-a-graph/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 94,
+          "title": "Detect Cycle in an Undirected Graph",
+          "topic": "Basic Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/detect-cycle-in-an-undirected-graph/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 95,
+          "title": "Detect Cycle in a Directed Graph",
+          "topic": "Basic Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/detect-cycle-in-a-directed-graph/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 96,
+          "title": "Topological Sort (Kahn's Algorithm / DFS)",
+          "topic": "Basic Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/topological-sort-kahn-s-algorithm-dfs/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 97,
+          "title": "Dijkstra's Algorithm (Single Source Shortest Path)",
+          "topic": "Basic Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/dijkstra-s-algorithm-single-source-shortest-path/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 98,
+          "title": "0/1 Knapsack Problem",
+          "topic": "Basic Dynamic Programming",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/0-1-knapsack-problem/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 99,
+          "title": "Subset Sum Problem",
+          "topic": "Basic Dynamic Programming",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/subset-sum-problem/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 100,
+          "title": "Rod Cutting Problem",
+          "topic": "Basic Dynamic Programming",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/rod-cutting-problem/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 101,
+          "title": "Longest Common Substring",
+          "topic": "Basic Dynamic Programming",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-common-substring/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 102,
+          "title": "Minimum Cost Path in a Grid",
+          "topic": "Basic Dynamic Programming",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/minimum-cost-path-in-a-grid/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 103,
+          "title": "Fibonacci Number (Memoization & Tabulation)",
+          "topic": "Basic Dynamic Programming",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/fibonacci-number-memoization-tabulation/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 104,
+          "title": "Check if a Number Is a Power of 2",
+          "topic": "Bit Manipulation Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-a-number-is-a-power-of-2/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 105,
+          "title": "Swap Two Numbers Without a Temporary Variable",
+          "topic": "Bit Manipulation Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/swap-two-numbers-without-a-temporary-variable/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 106,
+          "title": "Left Shift and Right Shift - Basic Problems",
+          "topic": "Bit Manipulation Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/left-shift-and-right-shift-basic-problems/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 107,
+          "title": "Find XOR of Numbers from 1 to N",
+          "topic": "Bit Manipulation Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/find-xor-of-numbers-from-1-to-n/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 108,
+          "title": "Check if the Kth Bit Is Set or Not",
+          "topic": "Bit Manipulation Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/check-if-the-kth-bit-is-set-or-not/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 109,
+          "title": "GCD and LCM of Two Numbers (Euclidean Algorithm)",
+          "topic": "Number Theory Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/gcd-and-lcm-of-two-numbers-euclidean-algorithm/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 110,
+          "title": "Sieve of Eratosthenes",
+          "topic": "Number Theory Basics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/sieve-of-eratosthenes/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        },
+        {
+          "dayNumber": 111,
+          "title": "Modular Exponentiation (Fast Power under Modulo)",
+          "topic": "Number Theory Basics",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/modular-exponentiation-fast-power-under-modulo/",
+          "chapter": "DSA Fundamentals",
+          "companies": ""
+        }
+      ],
+      "linkedInPostTemplates": [
+        {
+          "id": "template-base-default",
+          "templateText": "Day [X]/111 - ALTA Fundamentals 111\n\nToday’s problem: [Problem Name]\n\n💡 What I learned: [1-2 lines on the concept/technique you used]\n\nStreak: Day [X] of 111, unbroken. 🔥\n\nBuilding the base, one problem at a time - before APEX 151.\n\n@Ashish Munjal @Harshit Agarwal @Navdeep Sandhu @Santosh Kumar Mishra @ALTA School of Technology\n\n#ALTAFundamentals111 #DSA #CodingChallenge #PlacementPrep #ConsistencyIsKey",
+          "requiredHashtag": "#ALTABASE111",
+          "isActive": true
+        }
+      ]
+    },
+    {
+      "name": "APEX 151",
+      "slug": "apex-151",
+      "totalDays": 151,
+      "rules": {
+        "graceDaysPerMonth": 1,
+        "graceDaysResetPolicy": "calendar_month",
+        "missedDayAction": "restart_to_day_1",
+        "allowOutOfOrderSubmission": false,
+        "proofRequired": "linkedin_post",
+        "supportingLinkRequired": false,
+        "supportingLinkTypes": [
+          "leetcode_gfg",
+          "github"
+        ],
+        "resubmissionAllowedOnReject": true,
+        "streakBreakGraceWindow": false
+      },
+      "isActive": true,
+      "problems": [
+        {
+          "dayNumber": 1,
+          "title": "Move Zeroes",
+          "topic": "Arrays",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/move-zeroes/",
+          "chapter": "Foundations",
+          "companies": "Meta, Google, Amazon"
+        },
+        {
+          "dayNumber": 2,
+          "title": "Majority Element",
+          "topic": "Arrays",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/majority-element/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Google, Bloomberg"
+        },
+        {
+          "dayNumber": 3,
+          "title": "Rotate Array",
+          "topic": "Arrays",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/rotate-array/",
+          "chapter": "Foundations",
+          "companies": "Apple, Google, Amazon"
+        },
+        {
+          "dayNumber": 4,
+          "title": "Next Permutation",
+          "topic": "Arrays",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/next-permutation/",
+          "chapter": "Foundations",
+          "companies": "Meta, JPMorgan, Amazon"
+        },
+        {
+          "dayNumber": 5,
+          "title": "First Missing Positive",
+          "topic": "Arrays",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/first-missing-positive/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Google, Adobe"
+        },
+        {
+          "dayNumber": 6,
+          "title": "Roman to Integer",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/roman-to-integer/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Google, Microsoft"
+        },
+        {
+          "dayNumber": 7,
+          "title": "Isomorphic Strings",
+          "topic": "Strings",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/isomorphic-strings/",
+          "chapter": "Foundations",
+          "companies": "LinkedIn, Amazon, Apple"
+        },
+        {
+          "dayNumber": 8,
+          "title": "Group Anagrams",
+          "topic": "Strings",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/group-anagrams/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Microsoft, Apple"
+        },
+        {
+          "dayNumber": 9,
+          "title": "Encode and Decode Strings",
+          "topic": "Strings",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/encode-and-decode-strings/",
+          "chapter": "Foundations",
+          "companies": "Meta, Amazon, Google"
+        },
+        {
+          "dayNumber": 10,
+          "title": "String to Integer (atoi)",
+          "topic": "Strings",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/string-to-integer-atoi/",
+          "chapter": "Foundations",
+          "companies": "Meta, Amazon, Bloomberg"
+        },
+        {
+          "dayNumber": 11,
+          "title": "Text Justification",
+          "topic": "Strings",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/text-justification/",
+          "chapter": "Foundations",
+          "companies": "Moveworks, Twilio, LinkedIn"
+        },
+        {
+          "dayNumber": 12,
+          "title": "Find the Index of the First Occurrence in a String",
+          "topic": "String Matching",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/find-the-index-of-the-first-occurrence-in-a-string/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Bloomberg,  Apple"
+        },
+        {
+          "dayNumber": 13,
+          "title": "Shortest Palindrome",
+          "topic": "String Matching",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/shortest-palindrome/",
+          "chapter": "Foundations",
+          "companies": "Microsoft, Accenture, Google"
+        },
+        {
+          "dayNumber": 14,
+          "title": "Two Sum",
+          "topic": "Hashing",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/two-sum/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Google, Microsoft"
+        },
+        {
+          "dayNumber": 15,
+          "title": "Longest Consecutive Sequence",
+          "topic": "Hashing",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-consecutive-sequence/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Google, Bloomberg"
+        },
+        {
+          "dayNumber": 16,
+          "title": "LRU Cache",
+          "topic": "Hashing",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/lru-cache/",
+          "chapter": "Foundations",
+          "companies": "Meta, Microsoft, Amazon"
+        },
+        {
+          "dayNumber": 17,
+          "title": "Subarray Sum Equals K",
+          "topic": "Prefix Sums",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/subarray-sum-equals-k/",
+          "chapter": "Foundations",
+          "companies": "Meta, Yandex, Google"
+        },
+        {
+          "dayNumber": 18,
+          "title": "Product of Array Except Self",
+          "topic": "Prefix Sums",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/product-of-array-except-self/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Microsoft, Apple"
+        },
+        {
+          "dayNumber": 19,
+          "title": "Valid Palindrome",
+          "topic": "Two Pointers",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/valid-palindrome/",
+          "chapter": "Foundations",
+          "companies": "Meta, Yandex, Amazon"
+        },
+        {
+          "dayNumber": 20,
+          "title": "3Sum",
+          "topic": "Two Pointers",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/3sum/",
+          "chapter": "Foundations",
+          "companies": "Meta, Amazon, Google"
+        },
+        {
+          "dayNumber": 21,
+          "title": "Trapping Rain Water",
+          "topic": "Two Pointers",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/trapping-rain-water/",
+          "chapter": "Foundations",
+          "companies": "Goldman Sachs, Amazon, Google"
+        },
+        {
+          "dayNumber": 22,
+          "title": "Longest Substring Without Repeating Characters",
+          "topic": "Sliding Window",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-substring-without-repeating-characters/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Microsoft, Meta"
+        },
+        {
+          "dayNumber": 23,
+          "title": "Minimum Size Subarray Sum",
+          "topic": "Sliding Window",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/minimum-size-subarray-sum/",
+          "chapter": "Foundations",
+          "companies": "Meta, Amazon, Citadel"
+        },
+        {
+          "dayNumber": 24,
+          "title": "Permutation In String",
+          "topic": "Sliding Window",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/permutation-in-string/",
+          "chapter": "Foundations",
+          "companies": "Yandex, Adobe, Google"
+        },
+        {
+          "dayNumber": 25,
+          "title": "Longest Repeating Character Replacement",
+          "topic": "Sliding Window",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-repeating-character-replacement/",
+          "chapter": "Foundations",
+          "companies": "Google, Meta, Amazon"
+        },
+        {
+          "dayNumber": 26,
+          "title": "Minimum Window Substring",
+          "topic": "Sliding Window",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/minimum-window-substring/",
+          "chapter": "Foundations",
+          "companies": "Meta, Amazon, Google"
+        },
+        {
+          "dayNumber": 27,
+          "title": "Sliding Window Maximum",
+          "topic": "Sliding Window",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/sliding-window-maximum/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Microsoft, Google"
+        },
+        {
+          "dayNumber": 28,
+          "title": "Spiral Matrix",
+          "topic": "Matrices",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/spiral-matrix/",
+          "chapter": "Foundations",
+          "companies": "Amazon, Microsoft, Meta"
+        },
+        {
+          "dayNumber": 29,
+          "title": "Set Matrix Zeroes",
+          "topic": "Matrices",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/set-matrix-zeroes/",
+          "chapter": "Foundations",
+          "companies": "Meta, Amazon, Adobe"
+        },
+        {
+          "dayNumber": 30,
+          "title": "Valid Parentheses",
+          "topic": "Stacks",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/valid-parentheses/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, BlackRock, Meta"
+        },
+        {
+          "dayNumber": 31,
+          "title": "Min Stack",
+          "topic": "Stacks",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/min-stack/",
+          "chapter": "Linear Structures",
+          "companies": "Bloomberg, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 32,
+          "title": "Evaluate Reverse Polish Notation",
+          "topic": "Stacks",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/evaluate-reverse-polish-notation/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, Google, LinkedIn"
+        },
+        {
+          "dayNumber": 33,
+          "title": "Basic Calculator",
+          "topic": "Stacks",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/basic-calculator/",
+          "chapter": "Linear Structures",
+          "companies": "Meta, Microsoft, Google"
+        },
+        {
+          "dayNumber": 34,
+          "title": "Next Greater Element I",
+          "topic": "Monotonic Stacks",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/next-greater-element-i/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, Apple, Meta"
+        },
+        {
+          "dayNumber": 35,
+          "title": "Daily Temperatures",
+          "topic": "Monotonic Stacks",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/daily-temperatures/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, Meta, Google"
+        },
+        {
+          "dayNumber": 36,
+          "title": "Largest Rectangle In Histogram",
+          "topic": "Monotonic Stacks",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/largest-rectangle-in-histogram/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, Zynga, Google"
+        },
+        {
+          "dayNumber": 37,
+          "title": "Maximal Rectangle",
+          "topic": "Monotonic Stacks",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/maximal-rectangle/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, Meta, Zoho"
+        },
+        {
+          "dayNumber": 38,
+          "title": "Implement Queue using Stacks",
+          "topic": "Queues",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/implement-queue-using-stacks/",
+          "chapter": "Linear Structures",
+          "companies": "Google, Bloomberg, Apple"
+        },
+        {
+          "dayNumber": 39,
+          "title": "Reverse Linked List",
+          "topic": "Linked Lists",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/reverse-linked-list/",
+          "chapter": "Linear Structures",
+          "companies": "Microsoft, Amazon, Apple"
+        },
+        {
+          "dayNumber": 40,
+          "title": "Merge Two Sorted Lists",
+          "topic": "Linked Lists",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/merge-two-sorted-lists/",
+          "chapter": "Linear Structures",
+          "companies": "Meta, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 41,
+          "title": "Linked List Cycle II",
+          "topic": "Linked Lists",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/linked-list-cycle-ii/",
+          "chapter": "Linear Structures",
+          "companies": "TikTok, Google, Apple"
+        },
+        {
+          "dayNumber": 42,
+          "title": "Add Two Numbers",
+          "topic": "Linked Lists",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/add-two-numbers/",
+          "chapter": "Linear Structures",
+          "companies": "Amazon, Google, Microsoft"
+        },
+        {
+          "dayNumber": 43,
+          "title": "Reverse Nodes in k-Group",
+          "topic": "Linked Lists",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/reverse-nodes-in-k-group/",
+          "chapter": "Linear Structures",
+          "companies": "Microsoft, Snowflake, Google"
+        },
+        {
+          "dayNumber": 44,
+          "title": "Sort Colors",
+          "topic": "Sorting",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/sort-colors/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "TikTok, Bloomberg, Google"
+        },
+        {
+          "dayNumber": 45,
+          "title": "Binary Search",
+          "topic": "Binary Search on 1D Arrays",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/binary-search/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Google, Apple, Microsoft"
+        },
+        {
+          "dayNumber": 46,
+          "title": "Find First and Last Position of Element in Sorted Array",
+          "topic": "Binary Search on 1D Arrays",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/find-first-and-last-position-of-element-in-sorted-array/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Google, Meta, TikTok"
+        },
+        {
+          "dayNumber": 47,
+          "title": "Search In Rotated Sorted Array",
+          "topic": "Binary Search on 1D Arrays",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/search-in-rotated-sorted-array/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Amazon, Meta, TikTok"
+        },
+        {
+          "dayNumber": 48,
+          "title": "Find Minimum in Rotated Sorted Array",
+          "topic": "Binary Search on 1D Arrays",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Bloomberg, Apple, Goldman Sachs"
+        },
+        {
+          "dayNumber": 49,
+          "title": "Search a 2D Matrix",
+          "topic": "Binary Search on 2D Array",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/search-a-2d-matrix/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Amazon, Meta, Bloomberg"
+        },
+        {
+          "dayNumber": 50,
+          "title": "Search a 2D Matrix II",
+          "topic": "Binary Search on 2D Array",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/search-a-2d-matrix-ii/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Oracle, Meta, Motive"
+        },
+        {
+          "dayNumber": 51,
+          "title": "Koko Eating Bananas",
+          "topic": "Binary Search on Answer",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/koko-eating-bananas/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Amazon, Google, DoorDash"
+        },
+        {
+          "dayNumber": 52,
+          "title": "Capacity To Ship Packages Within D Days",
+          "topic": "Binary Search on Answer",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "TikTok, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 53,
+          "title": "Split Array Largest Sum",
+          "topic": "Binary Search on Answer",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/split-array-largest-sum/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Google, Microsoft, Uber"
+        },
+        {
+          "dayNumber": 54,
+          "title": "Median of Two Sorted Arrays",
+          "topic": "Binary Search on Answer",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/median-of-two-sorted-arrays/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Amazon, Meta, Google"
+        },
+        {
+          "dayNumber": 55,
+          "title": "Merge Intervals",
+          "topic": "Intervals",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/merge-intervals/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Meta, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 56,
+          "title": "Insert Interval",
+          "topic": "Intervals",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/insert-interval/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Meta, Amazon, Apple"
+        },
+        {
+          "dayNumber": 57,
+          "title": "Non-Overlapping Intervals",
+          "topic": "Intervals",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/non-overlapping-intervals/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Meta, Microsoft, Apple"
+        },
+        {
+          "dayNumber": 58,
+          "title": "Kth Largest Element in an Array",
+          "topic": "Heaps (Priority Queue)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/kth-largest-element-in-an-array/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Meta, Amazon, Google"
+        },
+        {
+          "dayNumber": 59,
+          "title": "Top K Frequent Elements",
+          "topic": "Heaps (Priority Queue)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/top-k-frequent-elements/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Meta, Amazon, Bloomberg"
+        },
+        {
+          "dayNumber": 60,
+          "title": "Merge k Sorted Lists",
+          "topic": "Heaps (Priority Queue)",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/merge-k-sorted-lists/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Meta, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 61,
+          "title": "Task Scheduler",
+          "topic": "Heaps (Priority Queue)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/task-scheduler/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "TikTok, Google, DoorDash"
+        },
+        {
+          "dayNumber": 62,
+          "title": "Find Median From Data Stream",
+          "topic": "Heaps (Priority Queue)",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/find-median-from-data-stream/",
+          "chapter": "Searching, Sorting & Heaps",
+          "companies": "Amazon, Meta, Microsoft"
+        },
+        {
+          "dayNumber": 63,
+          "title": "Subsets",
+          "topic": "Recursion and Backtracking",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/subsets/",
+          "chapter": "Recursion",
+          "companies": "Meta, Amazon, TikTok"
+        },
+        {
+          "dayNumber": 64,
+          "title": "Permutations",
+          "topic": "Recursion and Backtracking",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/permutations/",
+          "chapter": "Recursion",
+          "companies": "Amazon, Apple, Yahoo"
+        },
+        {
+          "dayNumber": 65,
+          "title": "Combination Sum",
+          "topic": "Recursion and Backtracking",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/combination-sum/",
+          "chapter": "Recursion",
+          "companies": "TikTok, Walmart Labs, Google"
+        },
+        {
+          "dayNumber": 66,
+          "title": "Word Search",
+          "topic": "Recursion and Backtracking",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/word-search/",
+          "chapter": "Recursion",
+          "companies": "Amazon, Meta, Microsoft"
+        },
+        {
+          "dayNumber": 67,
+          "title": "N-Queens",
+          "topic": "Recursion and Backtracking",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/n-queens/",
+          "chapter": "Recursion",
+          "companies": "Amazon, Bloomberg, Meta"
+        },
+        {
+          "dayNumber": 68,
+          "title": "Sudoku Solver",
+          "topic": "Recursion and Backtracking",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/sudoku-solver/",
+          "chapter": "Recursion",
+          "companies": "Intuit, Bloomberg, Google"
+        },
+        {
+          "dayNumber": 69,
+          "title": "Sort List",
+          "topic": "Divide and Conquer",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/sort-list/",
+          "chapter": "Recursion",
+          "companies": "Amazon, Meta, Adobe"
+        },
+        {
+          "dayNumber": 70,
+          "title": "Count Inversions",
+          "topic": "Divide and Conquer",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/count-inversions/",
+          "chapter": "Recursion",
+          "companies": "Flipkart, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 71,
+          "title": "Maximum Depth of Binary Tree",
+          "topic": "DFS on Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/maximum-depth-of-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Amazon, Google, Apple"
+        },
+        {
+          "dayNumber": 72,
+          "title": "Invert Binary Tree",
+          "topic": "DFS on Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/invert-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Apple, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 73,
+          "title": "Diameter of Binary Tree",
+          "topic": "DFS on Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/diameter-of-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Meta, Amazon, Google"
+        },
+        {
+          "dayNumber": 74,
+          "title": "Path Sum",
+          "topic": "DFS on Trees",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/path-sum/",
+          "chapter": "Trees & Tries",
+          "companies": "Google, Amazon, Meta"
+        },
+        {
+          "dayNumber": 75,
+          "title": "Count Good Nodes In Binary Tree",
+          "topic": "DFS on Trees",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/count-good-nodes-in-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Microsoft, Amazon, Google"
+        },
+        {
+          "dayNumber": 76,
+          "title": "Binary Tree Level Order Traversal",
+          "topic": "BFS on Trees",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/binary-tree-level-order-traversal/",
+          "chapter": "Trees & Tries",
+          "companies": "Amazon, Bloomberg, TikTok"
+        },
+        {
+          "dayNumber": 77,
+          "title": "Binary Tree Right Side View",
+          "topic": "BFS on Trees",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/binary-tree-right-side-view/",
+          "chapter": "Trees & Tries",
+          "companies": "Meta, Amazon, TikTok"
+        },
+        {
+          "dayNumber": 78,
+          "title": "Vertical Order Traversal of a Binary Tree",
+          "topic": "BFS on Trees",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/vertical-order-traversal-of-a-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Microsoft, DoorDash, Oracle"
+        },
+        {
+          "dayNumber": 79,
+          "title": "Validate Binary Search Tree",
+          "topic": "Binary Search Trees (BST)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/validate-binary-search-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Amazon, TikTok, SIG"
+        },
+        {
+          "dayNumber": 80,
+          "title": "Kth Smallest Element In a BST",
+          "topic": "Binary Search Trees (BST)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/kth-smallest-element-in-a-bst/",
+          "chapter": "Trees & Tries",
+          "companies": "Uber, Bloomberg, Microsoft"
+        },
+        {
+          "dayNumber": 81,
+          "title": "Lowest Common Ancestor of a Binary Search Tree",
+          "topic": "Binary Search Trees (BST)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-search-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Amazon, LinkedIn, Adobe"
+        },
+        {
+          "dayNumber": 82,
+          "title": "Recover Binary Search Tree",
+          "topic": "Binary Search Trees (BST)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/recover-binary-search-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Microsoft, Meta, Google"
+        },
+        {
+          "dayNumber": 83,
+          "title": "Construct Binary Tree From Preorder And Inorder Traversal",
+          "topic": "Tree Construction",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/construct-binary-tree-from-preorder-and-inorder-traversal/",
+          "chapter": "Trees & Tries",
+          "companies": "Bloomberg, Amazon, Adobe"
+        },
+        {
+          "dayNumber": 84,
+          "title": "Serialize And Deserialize Binary Tree",
+          "topic": "Tree Construction",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/serialize-and-deserialize-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Microsoft, Amazon, DoorDash"
+        },
+        {
+          "dayNumber": 85,
+          "title": "Lowest Common Ancestor of a Binary Tree",
+          "topic": "Advanced Trees",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/lowest-common-ancestor-of-a-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Meta, Amazon, Adobe"
+        },
+        {
+          "dayNumber": 86,
+          "title": "Binary Tree Maximum Path Sum",
+          "topic": "Advanced Trees",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/binary-tree-maximum-path-sum/",
+          "chapter": "Trees & Tries",
+          "companies": "Citadel, DoorDash, Meta"
+        },
+        {
+          "dayNumber": 87,
+          "title": "All Nodes Distance K in Binary Tree",
+          "topic": "Advanced Trees",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/all-nodes-distance-k-in-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Meta, Amazon, Bloomberg"
+        },
+        {
+          "dayNumber": 88,
+          "title": "Maximum Sum BST in Binary Tree",
+          "topic": "Advanced Trees",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/maximum-sum-bst-in-binary-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Meta, Amazon"
+        },
+        {
+          "dayNumber": 89,
+          "title": "Implement Trie (Prefix Tree)",
+          "topic": "Tries",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/implement-trie-prefix-tree/",
+          "chapter": "Trees & Tries",
+          "companies": "Google, Square, Pinterest"
+        },
+        {
+          "dayNumber": 90,
+          "title": "Design Add And Search Words Data Structure",
+          "topic": "Tries",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/design-add-and-search-words-data-structure/",
+          "chapter": "Trees & Tries",
+          "companies": "Amazon, Google, Bloomberg"
+        },
+        {
+          "dayNumber": 91,
+          "title": "Maximum XOR of Two Numbers in an Array",
+          "topic": "Tries",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/maximum-xor-of-two-numbers-in-an-array/",
+          "chapter": "Trees & Tries",
+          "companies": "Microsoft, Goldman Sachs, Google"
+        },
+        {
+          "dayNumber": 92,
+          "title": "Word Search II",
+          "topic": "Tries",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/word-search-ii/",
+          "chapter": "Trees & Tries",
+          "companies": "Uber, Amazon, Meta"
+        },
+        {
+          "dayNumber": 93,
+          "title": "Find if Path Exists in Graph",
+          "topic": "Graphs",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/find-if-path-exists-in-graph/",
+          "chapter": "Graphs",
+          "companies": "Google, Microsoft, Amazon"
+        },
+        {
+          "dayNumber": 94,
+          "title": "Is Graph Bipartite?",
+          "topic": "Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/is-graph-bipartite/",
+          "chapter": "Graphs",
+          "companies": "Meta, Uber, Samsung"
+        },
+        {
+          "dayNumber": 95,
+          "title": "Evaluate Division",
+          "topic": "Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/evaluate-division/",
+          "chapter": "Graphs",
+          "companies": "BlackRock, Uber, Amazon"
+        },
+        {
+          "dayNumber": 96,
+          "title": "Number of Islands",
+          "topic": "DFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/number-of-islands/",
+          "chapter": "Graphs",
+          "companies": "Amazon, Meta, Microsoft"
+        },
+        {
+          "dayNumber": 97,
+          "title": "Surrounded Regions",
+          "topic": "DFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/surrounded-regions/",
+          "chapter": "Graphs",
+          "companies": "Bloomberg, TikTok, Meta"
+        },
+        {
+          "dayNumber": 98,
+          "title": "Clone Graph",
+          "topic": "DFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/clone-graph/",
+          "chapter": "Graphs",
+          "companies": "Meta, Apple, Amazon"
+        },
+        {
+          "dayNumber": 99,
+          "title": "Pacific Atlantic Water Flow",
+          "topic": "DFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/pacific-atlantic-water-flow/",
+          "chapter": "Graphs",
+          "companies": "Google, Amazon, Uber"
+        },
+        {
+          "dayNumber": 100,
+          "title": "Rotting Oranges",
+          "topic": "BFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/rotting-oranges/",
+          "chapter": "Graphs",
+          "companies": "Amazon, TikTok, Uber"
+        },
+        {
+          "dayNumber": 101,
+          "title": "01 Matrix",
+          "topic": "BFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/01-matrix/",
+          "chapter": "Graphs",
+          "companies": "Bloomberg, DoorDash, Uber"
+        },
+        {
+          "dayNumber": 102,
+          "title": "Snakes and Ladders",
+          "topic": "BFS on Graphs",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/snakes-and-ladders/",
+          "chapter": "Graphs",
+          "companies": "Cisco, Amazon, Apple"
+        },
+        {
+          "dayNumber": 103,
+          "title": "Word Ladder",
+          "topic": "BFS on Graphs",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/word-ladder/",
+          "chapter": "Graphs",
+          "companies": "Amazon, Meta, Uber"
+        },
+        {
+          "dayNumber": 104,
+          "title": "Redundant Connection",
+          "topic": "Union-Find (DSU)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/redundant-connection/",
+          "chapter": "Graphs",
+          "companies": "Apple, TikTok,  Amazon"
+        },
+        {
+          "dayNumber": 105,
+          "title": "Accounts Merge",
+          "topic": "Union-Find (DSU)",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/accounts-merge/",
+          "chapter": "Graphs",
+          "companies": "Apple, Meta, Amazon"
+        },
+        {
+          "dayNumber": 106,
+          "title": "Making A Large Island",
+          "topic": "Union-Find (DSU)",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/making-a-large-island/",
+          "chapter": "Graphs",
+          "companies": "Meta, DoorDash, Bloomberg"
+        },
+        {
+          "dayNumber": 107,
+          "title": "Course Schedule",
+          "topic": "Topological Sort",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/course-schedule/",
+          "chapter": "Graphs",
+          "companies": "Meta, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 108,
+          "title": "Alien Dictionary",
+          "topic": "Topological Sort",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/alien-dictionary/",
+          "chapter": "Graphs",
+          "companies": "Amazon, Meta, Bloomberg"
+        },
+        {
+          "dayNumber": 109,
+          "title": "Network Delay Time",
+          "topic": "Graph Algorithms",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/network-delay-time/",
+          "chapter": "Graphs",
+          "companies": "Amazon, Google, Adobe"
+        },
+        {
+          "dayNumber": 110,
+          "title": "Cheapest Flights Within K Stops",
+          "topic": "Graph Algorithms",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/cheapest-flights-within-k-stops/",
+          "chapter": "Graphs",
+          "companies": "Amazon, TikTok, Meta"
+        },
+        {
+          "dayNumber": 111,
+          "title": "Min Cost to Connect All Points",
+          "topic": "Graph Algorithms",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/min-cost-to-connect-all-points/",
+          "chapter": "Graphs",
+          "companies": "Microsoft, Amazon, Adobe"
+        },
+        {
+          "dayNumber": 112,
+          "title": "Critical Connections in a Network",
+          "topic": "Graph Algorithms",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/critical-connections-in-a-network/",
+          "chapter": "Graphs",
+          "companies": "Bloomberg, Flipkart, Amazon"
+        },
+        {
+          "dayNumber": 113,
+          "title": "Jump Game",
+          "topic": "Greedy Algorithms",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/jump-game/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Amazon, Goldman Sachs, Apple"
+        },
+        {
+          "dayNumber": 114,
+          "title": "Gas Station",
+          "topic": "Greedy Algorithms",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/gas-station/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Microsoft, Amazon, Oracle"
+        },
+        {
+          "dayNumber": 115,
+          "title": "Partition Labels",
+          "topic": "Greedy Algorithms",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/partition-labels/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Amazon, LinkedIn, Meta"
+        },
+        {
+          "dayNumber": 116,
+          "title": "Candy",
+          "topic": "Greedy Algorithms",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/candy/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Amazon, Microsoft, Uber"
+        },
+        {
+          "dayNumber": 117,
+          "title": "Single Number",
+          "topic": "Bit Manipulation",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/single-number/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Amazon, Adobe, Meta"
+        },
+        {
+          "dayNumber": 118,
+          "title": "Number of 1 Bits",
+          "topic": "Bit Manipulation",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/number-of-1-bits/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Amazon, Box, Qualcomm"
+        },
+        {
+          "dayNumber": 119,
+          "title": "Sum of Two Integers",
+          "topic": "Bit Manipulation",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/sum-of-two-integers/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Microsoft, Apple, Amazon"
+        },
+        {
+          "dayNumber": 120,
+          "title": "Happy Number",
+          "topic": "Mathematics",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/happy-number/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Accenture, BlackRock, Amazon"
+        },
+        {
+          "dayNumber": 121,
+          "title": "Pow(x, n)",
+          "topic": "Mathematics",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/powx-n/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Meta, Amazon, Apple"
+        },
+        {
+          "dayNumber": 122,
+          "title": "Count Primes",
+          "topic": "Mathematics",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/count-primes/",
+          "chapter": "Greedy, Bits & Math",
+          "companies": "Meta, Intel, Bloomberg"
+        },
+        {
+          "dayNumber": 123,
+          "title": "Maximum Subarray",
+          "topic": "Kadane's Algorithm",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/maximum-subarray/",
+          "chapter": "Dynamic Programming",
+          "companies": "Microsoft, Amazon, Bloomberg"
+        },
+        {
+          "dayNumber": 124,
+          "title": "Maximum Product Subarray",
+          "topic": "Kadane's Algorithm",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/maximum-product-subarray/",
+          "chapter": "Dynamic Programming",
+          "companies": "Wayfair, Amazon, LinkedIn"
+        },
+        {
+          "dayNumber": 125,
+          "title": "Maximum Sum Circular Subarray",
+          "topic": "Kadane's Algorithm",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/maximum-sum-circular-subarray/",
+          "chapter": "Dynamic Programming",
+          "companies": "Meta, Amazon, Apple"
+        },
+        {
+          "dayNumber": 126,
+          "title": "Climbing Stairs",
+          "topic": "1D DP",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/climbing-stairs/",
+          "chapter": "Dynamic Programming",
+          "companies": "Google, Apple, Adobe"
+        },
+        {
+          "dayNumber": 127,
+          "title": "House Robber",
+          "topic": "1D DP",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/house-robber/",
+          "chapter": "Dynamic Programming",
+          "companies": "Cisco, Amazon, Apple"
+        },
+        {
+          "dayNumber": 128,
+          "title": "House Robber II",
+          "topic": "1D DP",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/house-robber-ii/",
+          "chapter": "Dynamic Programming",
+          "companies": "Google, Apple, PhonePe"
+        },
+        {
+          "dayNumber": 129,
+          "title": "Decode Ways",
+          "topic": "1D DP",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/decode-ways/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Cisco, Commvault"
+        },
+        {
+          "dayNumber": 130,
+          "title": "Unique Paths",
+          "topic": "DP on Grids",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/unique-paths/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Meta, Apple"
+        },
+        {
+          "dayNumber": 131,
+          "title": "Minimum Path Sum",
+          "topic": "DP on Grids",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/minimum-path-sum/",
+          "chapter": "Dynamic Programming",
+          "companies": "Goldman Sachs, Google, Microsoft"
+        },
+        {
+          "dayNumber": 132,
+          "title": "Maximal Square",
+          "topic": "DP on Grids",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/maximal-square/",
+          "chapter": "Dynamic Programming",
+          "companies": "Google, Adobe, Booking[.]com"
+        },
+        {
+          "dayNumber": 133,
+          "title": "Longest Increasing Path In a Matrix",
+          "topic": "DP on Grids",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/longest-increasing-path-in-a-matrix/",
+          "chapter": "Dynamic Programming",
+          "companies": "DoorDash, Meta, Apple"
+        },
+        {
+          "dayNumber": 134,
+          "title": "0/1 Knapsack Problem",
+          "topic": "DP on Subsequences",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/0-1-knapsack-problem/",
+          "chapter": "Dynamic Programming",
+          "companies": "Flipkart, Morgan Stanley, Amazon"
+        },
+        {
+          "dayNumber": 135,
+          "title": "Coin Change",
+          "topic": "DP on Subsequences",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/coin-change/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Google, TikTok"
+        },
+        {
+          "dayNumber": 136,
+          "title": "Partition Equal Subset Sum",
+          "topic": "DP on Subsequences",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/partition-equal-subset-sum/",
+          "chapter": "Dynamic Programming",
+          "companies": "Google, Apple, Expedia"
+        },
+        {
+          "dayNumber": 137,
+          "title": "Longest Common Subsequence",
+          "topic": "DP on Strings",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-common-subsequence/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Apple, Microsoft"
+        },
+        {
+          "dayNumber": 138,
+          "title": "Edit Distance",
+          "topic": "DP on Strings",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/edit-distance/",
+          "chapter": "Dynamic Programming",
+          "companies": "Google, Amazon, Microsoft"
+        },
+        {
+          "dayNumber": 139,
+          "title": "Word Break",
+          "topic": "DP on Strings",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/word-break/",
+          "chapter": "Dynamic Programming",
+          "companies": "Meta, Microsoft, Amazon"
+        },
+        {
+          "dayNumber": 140,
+          "title": "Regular Expression Matching",
+          "topic": "DP on Strings",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/regular-expression-matching/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Meta, Google"
+        },
+        {
+          "dayNumber": 141,
+          "title": "Longest Increasing Subsequence",
+          "topic": "DP on LIS",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-increasing-subsequence/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Google, TikTok"
+        },
+        {
+          "dayNumber": 142,
+          "title": "Maximum Profit in Job Scheduling",
+          "topic": "DP on LIS",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/maximum-profit-in-job-scheduling/",
+          "chapter": "Dynamic Programming",
+          "companies": "DoorDash, Pinterest, Airbnb"
+        },
+        {
+          "dayNumber": 143,
+          "title": "Best Time to Buy and Sell Stock",
+          "topic": "DP on Stocks",
+          "difficulty": "Easy",
+          "externalLink": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Meta, Google"
+        },
+        {
+          "dayNumber": 144,
+          "title": "Best Time to Buy and Sell Stock with Cooldown",
+          "topic": "DP on Stocks",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Google, Apple"
+        },
+        {
+          "dayNumber": 145,
+          "title": "Best Time to Buy and Sell Stock III",
+          "topic": "DP on Stocks",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/best-time-to-buy-and-sell-stock-iii/",
+          "chapter": "Dynamic Programming",
+          "companies": "Bolt, Google, Microsoft"
+        },
+        {
+          "dayNumber": 146,
+          "title": "Longest Palindromic Substring",
+          "topic": "DP on Partitioning",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/longest-palindromic-substring/",
+          "chapter": "Dynamic Programming",
+          "companies": "Amazon, Cisco, Microsoft"
+        },
+        {
+          "dayNumber": 147,
+          "title": "Palindrome Partitioning",
+          "topic": "DP on Partitioning",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/palindrome-partitioning/",
+          "chapter": "Dynamic Programming",
+          "companies": "Meta, Amazon, Apple"
+        },
+        {
+          "dayNumber": 148,
+          "title": "Burst Balloons",
+          "topic": "DP on Partitioning",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/burst-balloons/",
+          "chapter": "Dynamic Programming",
+          "companies": "PhonePe, Uber, Amazon"
+        },
+        {
+          "dayNumber": 149,
+          "title": "Range Sum Query - Mutable",
+          "topic": "Segment Trees",
+          "difficulty": "Medium",
+          "externalLink": "https://leetcode.com/problems/range-sum-query-mutable/",
+          "chapter": "Advanced Structures",
+          "companies": "Amazon, TikTok, Bloomberg"
+        },
+        {
+          "dayNumber": 150,
+          "title": "Count of Smaller Numbers After Self",
+          "topic": "Segment Trees",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/count-of-smaller-numbers-after-self/",
+          "chapter": "Advanced Structures",
+          "companies": "Google, Apple, Bloomberg"
+        },
+        {
+          "dayNumber": 151,
+          "title": "Reverse Pairs",
+          "topic": "Fenwick Trees (BITs)",
+          "difficulty": "Hard",
+          "externalLink": "https://leetcode.com/problems/reverse-pairs/",
+          "chapter": "Advanced Structures",
+          "companies": "Bloomberg, Meta, Google"
+        }
+      ],
+      "linkedInPostTemplates": [
+        {
+          "id": "cmtpn1hkl000dx9pxbge69aid",
+          "templateText": "Day [N]/151 - ALTA APEX 151 | DSA Challenge\n\nToday's problem: [Problem Name]\n\n💡 What I learned: [1-2 lines on the approach/technique you used]\n\n⏱️ Time: O([X]) | Space: O([Y])\n\nStreak: Day [N] of 151, unbroken. 🔥\n\nOne problem a day, building real interview-ready skills - not just memorizing solutions.\n\n@Ashish Munjal @Harshit Agarwal @Navdeep Sandhu @Santosh Kumar Mishra @ALTA School of Technology\n\n#ALTAAPEX151 #DSA #CodingChallenge #PlacementPrep #ConsistencyIsKey\n",
+          "requiredHashtag": "#ALTAAPEX151 ",
+          "isActive": true
+        }
+      ]
+    }
+  ]
+}

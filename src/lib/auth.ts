@@ -4,9 +4,20 @@ import { cookies } from "next/headers";
 import { NextRequest } from "next/server";
 import { Role } from "@prisma/client";
 
-const JWT_SECRET = new TextEncoder().encode(
-  process.env.JWT_SECRET || "alta-dsa-platform-secret-key-change-in-production"
-);
+const rawSecret =
+  process.env.JWT_SECRET || "alta-dsa-platform-secret-key-change-in-production";
+
+if (
+  process.env.NODE_ENV === "production" &&
+  (!process.env.JWT_SECRET ||
+    process.env.JWT_SECRET.includes("change-in-production"))
+) {
+  console.warn(
+    "⚠️ SECURITY WARNING: JWT_SECRET is using the insecure default key in production! Please set a strong, random JWT_SECRET in your production environment variables."
+  );
+}
+
+const JWT_SECRET = new TextEncoder().encode(rawSecret);
 
 const COOKIE_NAME = "alta_session";
 

@@ -24,6 +24,9 @@ import {
   Github,
   X,
   UserCheck,
+  Pencil,
+  Trash2,
+  Key,
 } from "lucide-react";
 
 interface CampusDetails {
@@ -83,6 +86,23 @@ export default function CampusDetailsPage() {
   const [modalError, setModalError] = useState("");
   const [modalSuccess, setModalSuccess] = useState("");
 
+  // Modal State for Editing Campus Admin
+  const [editingAdmin, setEditingAdmin] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    year?: number | null;
+  } | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editYear, setEditYear] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [updatingAdmin, setUpdatingAdmin] = useState(false);
+  const [editModalError, setEditModalError] = useState("");
+  const [editModalSuccess, setEditModalSuccess] = useState("");
+
+  const [deletingAdminId, setDeletingAdminId] = useState<string | null>(null);
+  const [actionNotice, setActionNotice] = useState("");
+
   useEffect(() => {
     if (campusId) {
       fetchCampusData();
@@ -94,45 +114,118 @@ export default function CampusDetailsPage() {
       setLoading(true);
       setError("");
 
-      // Fetch all superadmin stats and find this specific campus
-      const res = await fetch("/api/superadmin/stats");
-      if (!res.ok) throw new Error("Failed to load statistics");
-      const data = await res.json();
+      // Fetch base campus record with complete admin roster
+      const campusRes = await fetch(`/api/superadmin/campuses/${campusId}`);
+      if (!campusRes.ok) throw new Error("Campus not found");
+      const campusData = await campusRes.json();
+      const baseCampus = campusData.campus;
 
-      const matched = data.campusMetrics?.find((c: any) => c.id === campusId);
-      if (!matched) {
-        // Fallback: check /api/superadmin/campuses/[id]
-        const fallbackRes = await fetch(`/api/superadmin/campuses/${campusId}`);
-        if (!fallbackRes.ok) throw new Error("Campus not found");
-        const fallbackData = await fallbackRes.json();
-        const baseCampus = fallbackData.campus;
-        setCampus({
-          id: baseCampus.id,
-          name: baseCampus.name,
-          region: baseCampus.region,
-          createdAt: baseCampus.createdAt,
-          admins: baseCampus.users || [],
-          studentCount: baseCampus._count?.users || 0,
-          activeStreakCount: 0,
-          avgStreak: 0,
-          maxStreak: 0,
-          totalSubmissions: 0,
-          approvedSubmissions: 0,
-          pendingSubmissions: 0,
-          rejectedSubmissions: 0,
-          approvalRate: 0,
-          yearDistribution: [],
-          difficultyBreakdown: { Easy: 0, Medium: 0, Hard: 0 },
-          topStudents: [],
-          recentSubmissions: [],
-        });
-      } else {
-        setCampus(matched);
-      }
+      // Fetch stats for live performance analytics
+      const statsRes = await fetch("/api/superadmin/stats");
+      const statsData = statsRes.ok ? await statsRes.json() : null;
+      const matched = statsData?.campusMetrics?.find((c: any) => c.id === campusId);
+
+      setCampus({
+        id: baseCampus.id,
+        name: baseCampus.name,
+        region: baseCampus.region,
+        createdAt: baseCampus.createdAt,
+        admins: baseCampus.users || [],
+        studentCount: matched ? matched.studentCount : (baseCampus._count?.users || 0),
+        activeStreakCount: matched?.activeStreakCount || 0,
+        avgStreak: matched?.avgStreak || 0,
+        maxStreak: matched?.maxStreak || 0,
+        totalSubmissions: matched?.totalSubmissions || 0,
+        approvedSubmissions: matched?.approvedSubmissions || 0,
+        pendingSubmissions: matched?.pendingSubmissions || 0,
+        rejectedSubmissions: 0,
+        approvalRate: matched?.totalSubmissions > 0
+          ? Math.round((matched.approvedSubmissions / matched.totalSubmissions) * 100)
+          : 100,
+        yearDistribution: statsData?.yearDistribution || [],
+        difficultyBreakdown: statsData?.difficultyCount || { Easy: 0, Medium: 0, Hard: 0 },
+        topStudents: matched?.topStudent ? [matched.topStudent] : [],
+        recentSubmissions: (statsData?.recentActivity || []).filter(
+          (s: any) => s.campusName === baseCampus.name
+        ),
+      });
     } catch (err: any) {
       setError(err.message || "Failed to load campus details");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const openEditAdminModal = (adm: { id: string; name: string; email: string; year?: number | null }) => {
+    setEditingAdmin(adm);
+    setEditName(adm.name);
+    setEditYear(adm.year !== null && adm.year !== undefined ? String(adm.year) : "");
+    setEditPassword("");
+    setEditModalError("");
+    setEditModalSuccess("");
+  };
+
+  const handleUpdateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!campus || !editingAdmin) return;
+
+    setUpdatingAdmin(true);
+    setEditModalError("");
+    setEditModalSuccess("");
+
+    try {
+      const res = await fetch(`/api/superadmin/campuses/${campus.id}/admins/${editingAdmin.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: editName,
+          year: editYear ? Number(editYear) : null,
+          password: editPassword.trim() ? editPassword : undefined,
+        }),
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update admin account");
+
+      setEditModalSuccess("Campus Admin updated successfully!");
+      fetchCampusData();
+      setTimeout(() => {
+        setEditingAdmin(null);
+        setEditModalSuccess("");
+      }, 900);
+    } catch (err: any) {
+      setEditModalError(err.message || "Failed to update campus admin");
+    } finally {
+      setUpdatingAdmin(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (adminId: string, adminName: string) => {
+    if (!campus) return;
+    if (
+      !confirm(
+        `Are you sure you want to remove ${adminName} as Campus Admin? This will revoke their administrative credentials.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingAdminId(adminId);
+      const res = await fetch(`/api/superadmin/campuses/${campus.id}/admins/${adminId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete admin");
+
+      setActionNotice(`Campus Admin ${adminName} was removed successfully.`);
+      fetchCampusData();
+      setTimeout(() => setActionNotice(""), 4000);
+    } catch (err: any) {
+      alert(err.message || "Failed to remove admin");
+    } finally {
+      setDeletingAdminId(null);
     }
   };
 
@@ -260,26 +353,86 @@ export default function CampusDetailsPage() {
           </div>
         </div>
 
-        {/* Admins Contact Bar */}
-        <div className="pt-4 border-t border-white/10 flex flex-wrap items-center gap-3 text-xs">
-          <span className="text-gray-400 font-bold flex items-center gap-1.5">
-            <ShieldCheck className="w-4 h-4 text-emerald-400" /> Campus Admin(s):
-          </span>
+        {/* Admins Contact Bar & Management */}
+        <div className="pt-4 border-t border-white/10 space-y-3">
+          <div className="flex items-center justify-between">
+            <span className="text-gray-400 text-xs font-bold flex items-center gap-1.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" /> Assigned Campus Admins ({campus.admins?.length || 0}):
+            </span>
+            <button
+              onClick={() => {
+                setShowAddAdminModal(true);
+                setAdminName("");
+                setAdminEmail("");
+                setAdminPassword("");
+                setAdminYear("");
+                setModalError("");
+                setModalSuccess("");
+              }}
+              className="text-xs text-[#3bc3e2] hover:underline font-bold flex items-center gap-1 cursor-pointer"
+            >
+              <UserPlus className="w-3.5 h-3.5" /> + Add Another Admin
+            </button>
+          </div>
+
+          {actionNotice && (
+            <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-bold animate-fadeIn">
+              {actionNotice}
+            </div>
+          )}
+
           {campus.admins && campus.admins.length > 0 ? (
-            campus.admins.map((adm) => (
-              <span
-                key={adm.id}
-                className="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-semibold flex items-center gap-1.5"
-              >
-                <UserCheck className="w-3 h-3" /> {adm.name} ({adm.email})
-                <span className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold ${adm.year ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "bg-white/10 text-slate-300"}`}>
-                  {adm.year ? `Year ${adm.year} Coordinator` : "All Years"}
-                </span>
-              </span>
-            ))
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {campus.admins.map((adm) => (
+                <div
+                  key={adm.id}
+                  className="p-3 rounded-xl bg-white/[0.04] border border-white/10 hover:border-cyan-500/40 transition-all flex items-center justify-between gap-2"
+                >
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-bold text-white truncate">{adm.name}</span>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-black shrink-0 ${
+                          adm.year
+                            ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                            : "bg-white/10 text-slate-300"
+                        }`}
+                      >
+                        {adm.year ? `Year ${adm.year}` : "All Years"}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-400 truncate">{adm.email}</p>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <button
+                      type="button"
+                      title="Edit Admin"
+                      onClick={() => openEditAdminModal(adm)}
+                      className="p-1.5 rounded-lg bg-cyan-500/10 hover:bg-cyan-500/25 text-cyan-300 border border-cyan-500/30 transition-all cursor-pointer"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      title="Delete Admin"
+                      disabled={deletingAdminId === adm.id}
+                      onClick={() => handleDeleteAdmin(adm.id, adm.name)}
+                      className="p-1.5 rounded-lg bg-rose-500/10 hover:bg-rose-500/25 text-rose-300 border border-rose-500/30 transition-all cursor-pointer disabled:opacity-50"
+                    >
+                      {deletingAdminId === adm.id ? (
+                        <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-3.5 h-3.5" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
           ) : (
-            <span className="px-2.5 py-1 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 font-semibold flex items-center gap-1.5">
-              <AlertCircle className="w-3 h-3" /> No Admin Assigned (Click "+ Add Campus Admin" to provision a campus coordinator)
+            <span className="px-2.5 py-1.5 rounded-lg bg-rose-500/10 border border-rose-500/20 text-rose-300 text-xs font-semibold flex items-center gap-1.5">
+              <AlertCircle className="w-3.5 h-3.5" /> No Admin Assigned (Click "+ Add Campus Admin" to provision a campus coordinator)
             </span>
           )}
         </div>
@@ -635,6 +788,132 @@ export default function CampusDetailsPage() {
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     "Assign Admin Account"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal: Edit Campus Admin */}
+      {editingAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
+          <div className="alta-card w-full max-w-md p-6 sm:p-8 space-y-6 relative border-[#3bc3e2]/40 shadow-2xl">
+            <button
+              onClick={() => setEditingAdmin(null)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg hover:bg-white/10 transition-colors cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2 py-0.5 rounded-md bg-[#3bc3e2]/20 text-[#3bc3e2] text-[10px] font-black uppercase tracking-wider">
+                  Campus Coordinator
+                </span>
+                <span className="text-xs text-slate-400">{campus.name}</span>
+              </div>
+              <h2 className="text-xl font-black text-white mt-1 flex items-center gap-2">
+                <Pencil className="w-5 h-5 text-[#3bc3e2]" /> Edit Campus Admin
+              </h2>
+              <p className="text-xs text-slate-400 mt-1">
+                Update coordinator details, academic year cohort scope, or reset password.
+              </p>
+            </div>
+
+            {editModalError && (
+              <div className="p-3 rounded-xl bg-red-500/15 border border-red-500/30 text-red-200 text-xs flex items-center gap-2">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0" />
+                {editModalError}
+              </div>
+            )}
+
+            {editModalSuccess && (
+              <div className="p-3 rounded-xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-300 text-xs flex items-center gap-2">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                {editModalSuccess}
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateAdmin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="alta-input w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={editingAdmin.email}
+                  className="alta-input w-full opacity-60 cursor-not-allowed bg-slate-900"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Email address is fixed to preserve audit logs.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Assigned Year Cohort
+                </label>
+                <select
+                  value={editYear}
+                  onChange={(e) => setEditYear(e.target.value)}
+                  className="alta-input w-full"
+                >
+                  <option value="">All Years (General Campus Admin)</option>
+                  <option value="1">1st Year Students Only</option>
+                  <option value="2">2nd Year Students Only</option>
+                  <option value="3">3rd Year Students Only</option>
+                  <option value="4">4th Year Students Only</option>
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Controls which cohort this admin can see and verify in the queue.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-cyan-400" /> Reset Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  minLength={6}
+                  placeholder="Leave blank to keep existing password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="alta-input w-full"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setEditingAdmin(null)}
+                  className="alta-button-secondary text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingAdmin}
+                  className="alta-button text-xs font-extrabold flex items-center gap-2 cursor-pointer"
+                >
+                  {updatingAdmin ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Save Changes"
                   )}
                 </button>
               </div>

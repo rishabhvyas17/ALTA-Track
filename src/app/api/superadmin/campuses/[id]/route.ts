@@ -252,6 +252,42 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
   try {
     await requireRole("SUPER_ADMIN");
     const { id } = await params;
+    const adminId = request.nextUrl.searchParams.get("adminId");
+
+    // If adminId is provided, delete the specific campus admin
+    if (adminId) {
+      const admin = await prisma.user.findUnique({
+        where: { id: adminId },
+      });
+
+      if (!admin || admin.role !== "CAMPUS_ADMIN" || admin.campusId !== id) {
+        return NextResponse.json(
+          { error: "Campus admin not found on this campus" },
+          { status: 404 }
+        );
+      }
+
+      await prisma.$transaction([
+        prisma.submission.updateMany({
+          where: { reviewedById: adminId },
+          data: { reviewedById: null },
+        }),
+        prisma.interviewApplication.updateMany({
+          where: { interviewerId: adminId },
+          data: { interviewerId: null },
+        }),
+        prisma.auditLog.deleteMany({
+          where: { actorId: adminId },
+        }),
+        prisma.user.delete({
+          where: { id: adminId },
+        }),
+      ]);
+
+      return NextResponse.json({
+        message: `Campus Admin ${admin.name} (${admin.email}) removed successfully`,
+      });
+    }
 
     const campus = await prisma.campus.findUnique({
       where: { id },

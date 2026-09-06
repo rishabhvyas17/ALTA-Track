@@ -15,6 +15,9 @@ import {
   AlertCircle,
   CheckCircle2,
   UserCheck,
+  Pencil,
+  Trash2,
+  Key,
 } from "lucide-react";
 
 interface AdminUser {
@@ -59,6 +62,23 @@ export default function CampusesPage() {
   const [creatingAdmin, setCreatingAdmin] = useState(false);
   const [adminModalError, setAdminModalError] = useState("");
   const [adminModalSuccess, setAdminModalSuccess] = useState("");
+
+  // Edit Admin Modal State
+  const [editingAdmin, setEditingAdmin] = useState<{
+    id: string;
+    name: string;
+    email: string;
+    year?: number | null;
+    campusId: string;
+    campusName: string;
+  } | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editYear, setEditYear] = useState("");
+  const [editPassword, setEditPassword] = useState("");
+  const [updatingAdmin, setUpdatingAdmin] = useState(false);
+  const [editModalError, setEditModalError] = useState("");
+  const [editModalSuccess, setEditModalSuccess] = useState("");
+  const [deletingAdminId, setDeletingAdminId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchCampuses();
@@ -179,6 +199,91 @@ export default function CampusesPage() {
     }
   };
 
+  const openEditAdminModal = (campus: Campus, adm: AdminUser) => {
+    setEditingAdmin({
+      id: adm.id,
+      name: adm.name,
+      email: adm.email,
+      year: adm.year,
+      campusId: campus.id,
+      campusName: campus.name,
+    });
+    setEditName(adm.name);
+    setEditYear(adm.year !== null && adm.year !== undefined ? String(adm.year) : "");
+    setEditPassword("");
+    setEditModalError("");
+    setEditModalSuccess("");
+  };
+
+  const handleUpdateAdmin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingAdmin) return;
+
+    setUpdatingAdmin(true);
+    setEditModalError("");
+    setEditModalSuccess("");
+
+    try {
+      const res = await fetch(
+        `/api/superadmin/campuses/${editingAdmin.campusId}/admins/${editingAdmin.id}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: editName,
+            year: editYear ? Number(editYear) : null,
+            password: editPassword.trim() ? editPassword : undefined,
+          }),
+        }
+      );
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to update admin account");
+
+      const successMsg = `Admin ${editingAdmin.name} updated successfully!`;
+      setEditModalSuccess(successMsg);
+      setSuccess(successMsg);
+      fetchCampuses();
+      setTimeout(() => {
+        setEditingAdmin(null);
+        setEditModalSuccess("");
+      }, 900);
+      setTimeout(() => setSuccess(""), 4000);
+    } catch (err: any) {
+      setEditModalError(err.message || "Failed to update campus admin");
+    } finally {
+      setUpdatingAdmin(false);
+    }
+  };
+
+  const handleDeleteAdmin = async (campusId: string, adminId: string, adminName: string) => {
+    if (
+      !confirm(
+        `Are you sure you want to remove ${adminName} as Campus Admin? This will revoke their administrative credentials.`
+      )
+    ) {
+      return;
+    }
+
+    try {
+      setDeletingAdminId(adminId);
+      const res = await fetch(`/api/superadmin/campuses/${campusId}/admins/${adminId}`, {
+        method: "DELETE",
+      });
+
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Failed to delete admin");
+
+      setSuccess(`Campus Admin ${adminName} was removed successfully.`);
+      fetchCampuses();
+      setTimeout(() => setSuccess(""), 4000);
+    } catch (err: any) {
+      alert(err.message || "Failed to remove admin");
+    } finally {
+      setDeletingAdminId(null);
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -285,16 +390,47 @@ export default function CampusesPage() {
                   {admins.length === 0 ? (
                     <p className="text-xs text-amber-400 font-semibold italic">No admin assigned yet</p>
                   ) : (
-                    <div className="space-y-1.5 max-h-24 overflow-y-auto pr-1">
+                    <div className="space-y-1.5 max-h-32 overflow-y-auto pr-1">
                       {admins.map((adm) => (
-                        <div key={adm.id} className="text-xs text-slate-200 flex items-center justify-between font-semibold">
-                          <div className="flex items-center gap-1.5 truncate max-w-[150px]">
-                            <span className="truncate">{adm.name}</span>
-                            <span className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold ${adm.year ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30" : "bg-slate-500/20 text-slate-300"}`}>
+                        <div
+                          key={adm.id}
+                          className="text-xs text-slate-200 flex items-center justify-between font-semibold p-1.5 rounded-lg bg-white/[0.03] border border-white/5 hover:border-white/10 transition-colors"
+                        >
+                          <div className="flex items-center gap-1.5 min-w-0 flex-1 mr-1">
+                            <span className="truncate max-w-[95px] sm:max-w-[125px]">{adm.name}</span>
+                            <span
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-extrabold shrink-0 ${
+                                adm.year
+                                  ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/30"
+                                  : "bg-slate-500/20 text-slate-300"
+                              }`}
+                            >
                               {adm.year ? `Y${adm.year}` : "All"}
                             </span>
                           </div>
-                          <span className="text-slate-400 text-[11px] truncate max-w-[130px]">{adm.email}</span>
+                          <div className="flex items-center gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => openEditAdminModal(campus, adm)}
+                              title={`Edit ${adm.name}`}
+                              className="p-1 rounded hover:bg-cyan-500/20 text-slate-400 hover:text-cyan-300 transition-colors cursor-pointer"
+                            >
+                              <Pencil className="w-3.5 h-3.5" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleDeleteAdmin(campus.id, adm.id, adm.name)}
+                              disabled={deletingAdminId === adm.id}
+                              title={`Remove ${adm.name}`}
+                              className="p-1 rounded hover:bg-rose-500/20 text-slate-400 hover:text-rose-400 transition-colors cursor-pointer disabled:opacity-50"
+                            >
+                              {deletingAdminId === adm.id ? (
+                                <Loader2 className="w-3.5 h-3.5 animate-spin text-rose-400" />
+                              ) : (
+                                <Trash2 className="w-3.5 h-3.5" />
+                              )}
+                            </button>
+                          </div>
                         </div>
                       ))}
                     </div>
@@ -533,6 +669,128 @@ export default function CampusesPage() {
                     <Loader2 className="w-4 h-4 animate-spin" />
                   ) : (
                     "Assign Admin Account"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Campus Admin Modal */}
+      {editingAdmin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+          <div className="alta-card max-w-md w-full p-6 sm:p-8 space-y-5 relative border border-cyan-500/40 bg-[#071130]">
+            <div className="flex items-center justify-between border-b border-white/10 pb-4">
+              <div>
+                <h3 className="text-xl font-bold text-white flex items-center gap-2">
+                  <Pencil className="w-5 h-5 text-cyan-400" /> Edit Campus Admin
+                </h3>
+                <p className="text-xs text-slate-400 mt-1">
+                  Updating role & cohort for <span className="text-cyan-300 font-bold">{editingAdmin.campusName}</span>
+                </p>
+              </div>
+              <button
+                onClick={() => setEditingAdmin(null)}
+                className="text-slate-400 hover:text-white transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {editModalError && (
+              <div className="p-3.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-200 text-xs flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                <div className="flex-1 font-medium">{editModalError}</div>
+              </div>
+            )}
+
+            {editModalSuccess && (
+              <div className="p-3.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-200 text-xs flex items-start gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" />
+                <div className="flex-1 font-medium">{editModalSuccess}</div>
+              </div>
+            )}
+
+            <form onSubmit={handleUpdateAdmin} className="space-y-4">
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Full Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Dr. Rajesh Sharma"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="alta-input w-full"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={editingAdmin.email}
+                  className="alta-input w-full opacity-60 cursor-not-allowed bg-slate-900"
+                />
+                <p className="text-[10px] text-slate-400 mt-1">Email address is fixed to preserve audit logs.</p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5">
+                  Assigned Year Cohort
+                </label>
+                <select
+                  value={editYear}
+                  onChange={(e) => setEditYear(e.target.value)}
+                  className="alta-input w-full"
+                >
+                  <option value="">All Years (General Campus Admin)</option>
+                  <option value="1">1st Year Students Only</option>
+                  <option value="2">2nd Year Students Only</option>
+                  <option value="3">3rd Year Students Only</option>
+                  <option value="4">4th Year Students Only</option>
+                </select>
+                <p className="text-[11px] text-slate-400 mt-1">
+                  Controls which student cohort this admin can verify in the evaluation queue.
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-extrabold text-slate-200 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                  <Key className="w-3.5 h-3.5 text-cyan-400" /> Reset Password (Optional)
+                </label>
+                <input
+                  type="password"
+                  minLength={6}
+                  placeholder="Leave blank to keep current password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="alta-input w-full"
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 pt-4 border-t border-white/10">
+                <button
+                  type="button"
+                  onClick={() => setEditingAdmin(null)}
+                  className="alta-button-secondary text-xs"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={updatingAdmin}
+                  className="alta-button text-xs font-extrabold flex items-center gap-2 cursor-pointer"
+                >
+                  {updatingAdmin ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    "Save Changes"
                   )}
                 </button>
               </div>
