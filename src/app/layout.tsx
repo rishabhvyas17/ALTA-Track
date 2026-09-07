@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Nunito_Sans } from "next/font/google";
 import "./globals.css";
 
@@ -8,6 +8,12 @@ const nunitoSans = Nunito_Sans({
   weight: ["300", "400", "600", "700", "800", "900"],
   display: "swap",
 });
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 5,
+};
 
 export const metadata: Metadata = {
   title: "ALTA Track — DSA Challenge Platform",

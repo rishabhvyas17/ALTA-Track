@@ -177,10 +177,10 @@ export default function LeaderboardPage() {
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
         {/* Navigation Tabs */}
         <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-[var(--color-border-dark)] pb-4">
-          <div className="flex items-center gap-2 bg-white/5 p-1 rounded-2xl border border-white/10">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-white/5 p-1 rounded-2xl border border-white/10 overflow-x-auto max-w-full no-scrollbar">
             <button
               onClick={() => setActiveTab("OVERALL")}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              className={`flex items-center gap-2 px-3.5 sm:px-5 py-2 sm:py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                 activeTab === "OVERALL"
                   ? "bg-[var(--color-accent-cyan)] text-black shadow-lg shadow-[var(--color-accent-cyan)]/20"
                   : "text-gray-300 hover:text-white hover:bg-white/5"
@@ -292,7 +292,7 @@ export default function LeaderboardPage() {
               </div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="w-full text-left border-collapse">
+                <table className="w-full text-left border-collapse min-w-[660px] sm:min-w-0">
                   <thead>
                     <tr className="border-b border-[var(--color-border-dark)] bg-white/[0.02] text-xs font-bold text-[var(--color-neutral-silver)] uppercase tracking-wider">
                       <th className="p-4 pl-6">Rank</th>

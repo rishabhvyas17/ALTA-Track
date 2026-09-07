@@ -43,8 +43,8 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Calculate score & questions solved for each student
-    const individualRankings = rawEnrollments.map((e) => {
+    // Calculate score & questions solved for each enrollment
+    const allEnrollmentScores = rawEnrollments.map((e) => {
       const scoreData = calculateScore(e.submissions);
       return {
         id: e.id,
@@ -63,6 +63,23 @@ export async function GET(request: NextRequest) {
         challenge: e.challenge,
       };
     });
+
+    // Deduplicate: keep only the best enrollment per student (by user.id)
+    // This prevents the same student from appearing multiple times when enrolled
+    // in both BASE 111 and APEX 151 (or any multiple challenges).
+    const bestByUser = new Map<string, typeof allEnrollmentScores[0]>();
+    for (const entry of allEnrollmentScores) {
+      const userId = entry.user.id;
+      const existing = bestByUser.get(userId);
+      if (
+        !existing ||
+        entry.score > existing.score ||
+        (entry.score === existing.score && entry.streakCount > existing.streakCount)
+      ) {
+        bestByUser.set(userId, entry);
+      }
+    }
+    const individualRankings = Array.from(bestByUser.values());
 
     // Rank sorting: Total Score (desc) -> Streak Count (desc) -> Current Day (desc) -> Earliest Updated (asc)
     individualRankings.sort((a, b) => {

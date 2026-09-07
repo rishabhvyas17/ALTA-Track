@@ -31,10 +31,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (enrollment.streakCount < 25) {
+    // Check if all problems in challenge are completed
+    const allProblems = await prisma.problem.findMany({
+      where: { challengeId },
+      select: { id: true },
+    });
+    const approvedSubmissions = await prisma.submission.findMany({
+      where: {
+        enrollmentId: enrollment.id,
+        status: "APPROVED",
+      },
+      select: { problemId: true },
+    });
+    const approvedProblemIds = new Set(approvedSubmissions.map((s) => s.problemId));
+    const allProblemsSolved = allProblems.length > 0 && approvedProblemIds.size >= allProblems.length;
+
+    if (!allProblemsSolved) {
       return NextResponse.json(
         {
-          error: `You must reach a streak of Day 25 to unlock mock interviews. Current streak: ${enrollment.streakCount}`,
+          error: `You must complete all ${allProblems.length} problems in this sheet before applying for tech interviews. Current approved: ${approvedProblemIds.size}/${allProblems.length}`,
         },
         { status: 400 }
       );

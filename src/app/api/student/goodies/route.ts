@@ -33,10 +33,43 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (enrollment.streakCount < 30) {
+    // Check if all problems in challenge are completed
+    const allProblems = await prisma.problem.findMany({
+      where: { challengeId: validated.challengeId },
+      select: { id: true },
+    });
+    const approvedSubmissions = await prisma.submission.findMany({
+      where: {
+        enrollmentId: enrollment.id,
+        status: "APPROVED",
+      },
+      select: { problemId: true },
+    });
+    const approvedProblemIds = new Set(approvedSubmissions.map((s) => s.problemId));
+    const allProblemsSolved = allProblems.length > 0 && approvedProblemIds.size >= allProblems.length;
+
+    if (!allProblemsSolved) {
       return NextResponse.json(
         {
-          error: `You must complete Day 30 to claim ALTA Goodies! Current streak: ${enrollment.streakCount}`,
+          error: `You must complete all ${allProblems.length} problems in the sheet to be eligible for goodies. Current approved: ${approvedProblemIds.size}/${allProblems.length}`,
+        },
+        { status: 400 }
+      );
+    }
+
+    // Check if interview is completed and passed
+    const interviewApp = await prisma.interviewApplication.findFirst({
+      where: {
+        userId: auth.userId,
+        challengeId: validated.challengeId,
+        status: "PASSED",
+      },
+    });
+
+    if (!interviewApp) {
+      return NextResponse.json(
+        {
+          error: "You must pass the technical interview before claiming goodies.",
         },
         { status: 400 }
       );

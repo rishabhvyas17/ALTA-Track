@@ -41,7 +41,9 @@ import {
   FileCode,
   Medal,
   Crown,
+  FileText,
 } from "lucide-react";
+import { getBase111ProblemDescription } from "@/lib/base111-descriptions";
 
 interface Problem {
   id: string;
@@ -143,8 +145,9 @@ export default function StudentDashboardPage() {
   const [showExploreModal, setShowExploreModal] = useState(false);
   const [enrollingTrackId, setEnrollingTrackId] = useState<string | null>(null);
 
-  // Submit Proof Modal State (for ANY problem)
+  // Submit Proof & Problem Description Modal State
   const [activeProblemForProof, setActiveProblemForProof] = useState<Problem | null>(null);
+  const [activeProblemForDescription, setActiveProblemForDescription] = useState<Problem | null>(null);
   const [linkedinUrl, setLinkedinUrl] = useState("");
   const [githubUrl, setGithubUrl] = useState("");
   const [submittingProof, setSubmittingProof] = useState(false);
@@ -490,51 +493,72 @@ export default function StudentDashboardPage() {
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
       {/* Light Theme Clean Navigation */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between gap-4">
-          {/* Logo & Student Badge */}
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-emerald-500 flex items-center justify-center font-black text-white text-base shadow-sm">
-              A
-            </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="font-extrabold text-base tracking-tight text-slate-900">
-                  ALTA <span className="text-sky-600">Track</span>
-                </span>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[10px] font-bold">
-                  Student Deck
-                </span>
+        <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
+          {/* Top Row: Logo + Actions */}
+          <div className="flex items-center justify-between w-full sm:w-auto gap-2">
+            {/* Logo & Student Badge */}
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-gradient-to-tr from-sky-600 to-emerald-500 flex items-center justify-center font-black text-white text-sm sm:text-base shadow-sm shrink-0">
+                A
               </div>
-              <p className="text-[11px] text-slate-500 font-medium">
-                {student?.name || "Student"} • {student?.campus?.name || "Partner College"}{" "}
-                {student?.year ? `(Year ${student.year})` : ""}
-              </p>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5 sm:gap-2">
+                  <span className="font-extrabold text-sm sm:text-base tracking-tight text-slate-900 whitespace-nowrap">
+                    ALTA <span className="text-sky-600">Track</span>
+                  </span>
+                  <span className="px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 border border-emerald-200 text-[9px] sm:text-[10px] font-bold hidden xs:inline">
+                    Student Deck
+                  </span>
+                </div>
+                <p className="text-[10px] sm:text-[11px] text-slate-500 font-medium truncate max-w-[200px] sm:max-w-none">
+                  {student?.name || "Student"} • {student?.campus?.name || "Partner College"}{" "}
+                  {student?.year ? `(Y${student.year})` : ""}
+                </p>
+              </div>
+            </div>
+
+            {/* Mobile-only: compact action buttons */}
+            <div className="flex items-center gap-1.5 sm:hidden">
+              <button
+                onClick={() => setShowExploreModal(true)}
+                className="p-2 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 cursor-pointer"
+                title="All Tracks"
+              >
+                <Layers className="w-4 h-4" />
+              </button>
+              <button
+                onClick={handleLogout}
+                className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                title="Logout"
+              >
+                <LogOut className="w-4 h-4" />
+              </button>
             </div>
           </div>
 
-          {/* Active Track Switcher & Navigation Links */}
-          <div className="flex items-center gap-3">
+          {/* Bottom Row: View Switcher + Track Selector (scrollable on mobile) */}
+          <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto overflow-x-auto no-scrollbar">
             {/* View Switcher: DSA Sheet vs Leaderboards */}
-            <div className="bg-slate-100 p-1 rounded-xl flex items-center text-xs font-bold">
+            <div className="bg-slate-100 p-0.5 sm:p-1 rounded-xl flex items-center text-[11px] sm:text-xs font-bold shrink-0">
               <button
                 onClick={() => setCurrentView("SHEET")}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
                   currentView === "SHEET"
                     ? "bg-white text-slate-900 shadow-xs"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <ListOrdered className="w-3.5 h-3.5" /> DSA Sheet
+                <ListOrdered className="w-3.5 h-3.5" /> <span>Sheet</span>
               </button>
               <button
                 onClick={() => setCurrentView("LEADERBOARDS")}
-                className={`px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1.5 ${
+                className={`px-2.5 sm:px-3 py-1.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 sm:gap-1.5 ${
                   currentView === "LEADERBOARDS"
                     ? "bg-white text-slate-900 shadow-xs"
                     : "text-slate-500 hover:text-slate-800"
                 }`}
               >
-                <Trophy className="w-3.5 h-3.5 text-amber-500" /> Leaderboard
+                <Trophy className="w-3.5 h-3.5 text-amber-500" /> <span>Ranks</span>
               </button>
             </div>
 
@@ -543,7 +567,7 @@ export default function StudentDashboardPage() {
               <select
                 value={challenge?.id || ""}
                 onChange={(e) => fetchDashboard(e.target.value)}
-                className="px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-800 text-xs font-bold shadow-xs hover:border-slate-400 cursor-pointer hidden sm:block"
+                className="px-2 sm:px-3 py-1.5 rounded-xl bg-white border border-slate-300 text-slate-800 text-[11px] sm:text-xs font-bold shadow-xs hover:border-slate-400 cursor-pointer shrink-0 max-w-[140px] sm:max-w-none"
                 title="Switch Active Challenge Track"
               >
                 {allUserEnrollments.map((enr) => (
@@ -554,9 +578,10 @@ export default function StudentDashboardPage() {
               </select>
             )}
 
+            {/* Desktop-only action buttons */}
             <button
               onClick={() => setShowExploreModal(true)}
-              className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-colors text-xs font-bold flex items-center gap-1 cursor-pointer"
+              className="px-3 py-1.5 rounded-xl bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100 transition-colors text-xs font-bold items-center gap-1 cursor-pointer hidden sm:flex"
               title="Explore all DSA challenge tracks and join"
             >
               <Layers className="w-3.5 h-3.5" /> All Tracks
@@ -564,7 +589,7 @@ export default function StudentDashboardPage() {
 
             <button
               onClick={handleLogout}
-              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              className="p-2 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer hidden sm:block"
               title="Logout"
             >
               <LogOut className="w-4 h-4" />
@@ -574,7 +599,7 @@ export default function StudentDashboardPage() {
       </header>
 
       {/* Main Container */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 space-y-6">
+      <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-6 space-y-4 sm:space-y-6">
         {/* If no enrollment exists yet, show welcome prompt */}
         {!enrollment || !challenge ? (
           <div className="bg-white rounded-2xl p-10 border border-slate-200 shadow-sm text-center space-y-4 max-w-xl mx-auto my-12">
@@ -598,135 +623,139 @@ export default function StudentDashboardPage() {
             {currentView === "SHEET" && (
               <div className="space-y-6">
                 {/* Stats Ribbon (Light theme) */}
-                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
                   {/* Current Streak */}
-                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600 shrink-0">
-                      <Flame className="w-5 h-5" />
+                  <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-xs flex items-center gap-2.5 sm:gap-3.5">
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-orange-50 border border-orange-200 flex items-center justify-center text-orange-600 shrink-0">
+                      <Flame className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                        Daily Streak
+                    <div className="min-w-0">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                        Streak
                       </span>
-                      <div className="text-2xl font-black text-slate-900">
-                        {enrollment.streakCount} <span className="text-xs text-orange-600 font-bold">Days 🔥</span>
+                      <div className="text-xl sm:text-2xl font-black text-slate-900">
+                        {enrollment.streakCount} <span className="text-[10px] sm:text-xs text-orange-600 font-bold">🔥</span>
                       </div>
                     </div>
                   </div>
 
                   {/* Solved Verified */}
-                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
-                      <CheckCircle2 className="w-5 h-5" />
+                  <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-xs flex items-center gap-2.5 sm:gap-3.5">
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                        Problems Solved
+                    <div className="min-w-0">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                        Solved
                       </span>
-                      <div className="text-2xl font-black text-slate-900">
-                        {approvedCount}{" "}
-                        <span className="text-xs text-emerald-600 font-bold">
-                          / {totalProblemsCount} ({progressPercent}%)
+                      <div className="text-xl sm:text-2xl font-black text-slate-900">
+                        {approvedCount}
+                        <span className="text-[10px] sm:text-xs text-emerald-600 font-bold">
+                          /{totalProblemsCount}
                         </span>
                       </div>
-                      <span className="text-[10px] text-slate-400 font-medium block mt-0.5">
+                      <span className="text-[9px] sm:text-[10px] text-slate-400 font-medium block mt-0.5 truncate">
                         {data?.submissions?.filter((s: any) => s.status === "PENDING").length
-                          ? `${data.submissions.filter((s: any) => s.status === "PENDING").length} pending verification`
-                          : `${approvedCount} verified solved`}
+                          ? `${data.submissions.filter((s: any) => s.status === "PENDING").length} pending`
+                          : `${progressPercent}% done`}
                       </span>
                     </div>
                   </div>
 
                   {/* Active Track Progression */}
-                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
-                      <Trophy className="w-5 h-5" />
+                  <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-xs flex items-center gap-2.5 sm:gap-3.5">
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
+                      <Trophy className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                        Current Track
+                    <div className="min-w-0">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                        Track
                       </span>
-                      <div className="text-lg font-black text-slate-900 truncate max-w-[150px]">
+                      <div className="text-sm sm:text-lg font-black text-slate-900 truncate">
                         {challenge.name}
                       </div>
                     </div>
                   </div>
 
                   {/* Grace Days */}
-                  <div className="bg-white rounded-2xl p-4 border border-slate-200 shadow-xs flex items-center gap-3.5">
-                    <div className="w-11 h-11 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shrink-0">
-                      <Clock className="w-5 h-5" />
+                  <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-200 shadow-xs flex items-center gap-2.5 sm:gap-3.5">
+                    <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-xl bg-purple-50 border border-purple-200 flex items-center justify-center text-purple-600 shrink-0">
+                      <Clock className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
-                    <div>
-                      <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
-                        Grace Days Used
+                    <div className="min-w-0">
+                      <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+                        Grace Days
                       </span>
-                      <div className="text-2xl font-black text-slate-900">
-                        {enrollment.graceDaysUsedThisMonth}{" "}
-                        <span className="text-xs text-slate-500 font-medium">/ 2 this month</span>
+                      <div className="text-xl sm:text-2xl font-black text-slate-900">
+                        {enrollment.graceDaysUsedThisMonth}
+                        <span className="text-[10px] sm:text-xs text-slate-500 font-medium">/2</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Milestone Rewards Cards (Light theme) */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
                   {/* Mock Interview */}
-                  <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
-                        <Video className="w-5 h-5" />
+                  <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200 shadow-xs flex items-center justify-between gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-sky-50 border border-sky-200 flex items-center justify-center text-sky-600 shrink-0">
+                        <Video className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-                      <div>
-                        <h4 className="font-extrabold text-slate-900 text-sm">1-on-1 Technical Mock Interview</h4>
-                        <p className="text-[11px] text-slate-500">Unlocked at 25-day streak • Senior mentor interview</p>
+                      <div className="min-w-0">
+                        <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">1-on-1 Technical Mock Interview</h4>
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">Complete all problems to unlock</p>
                       </div>
                     </div>
 
                     {data.interviewApp ? (
-                      <span className="px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-xs font-bold whitespace-nowrap">
+                      <span className="px-2.5 sm:px-3 py-1 rounded-full bg-sky-50 border border-sky-200 text-sky-700 text-[10px] sm:text-xs font-bold whitespace-nowrap shrink-0">
                         {data.interviewApp.status}
                       </span>
                     ) : data.isEligibleForInterview ? (
                       <button
                         onClick={() => setShowInterviewModal(true)}
-                        className="px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold cursor-pointer shrink-0"
+                        className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-[10px] sm:text-xs font-bold cursor-pointer shrink-0"
                       >
                         Apply Now
                       </button>
                     ) : (
-                      <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold whitespace-nowrap">
-                        {enrollment.streakCount}/25 Days
+                      <span className="px-2.5 sm:px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] sm:text-xs font-bold whitespace-nowrap shrink-0">
+                        {approvedCount}/{totalProblemsCount} Solved
                       </span>
                     )}
                   </div>
 
                   {/* Goodies Swag Pack */}
-                  <div className="bg-white rounded-2xl p-4 sm:p-5 border border-slate-200 shadow-xs flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
-                        <Gift className="w-5 h-5" />
+                  <div className="bg-white rounded-2xl p-3 sm:p-5 border border-slate-200 shadow-xs flex items-center justify-between gap-3 sm:gap-4">
+                    <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                      <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-center text-emerald-600 shrink-0">
+                        <Gift className="w-4 h-4 sm:w-5 sm:h-5" />
                       </div>
-                      <div>
-                        <h4 className="font-extrabold text-slate-900 text-sm">ALTA Goodies & Swag Pack</h4>
-                        <p className="text-[11px] text-slate-500">Unlocked at 30-day streak • T-Shirt & Stickers</p>
+                      <div className="min-w-0">
+                        <h4 className="font-extrabold text-slate-900 text-xs sm:text-sm truncate">ALTA Goodies & Swag Pack</h4>
+                        <p className="text-[10px] sm:text-[11px] text-slate-500 truncate">Pass tech interview to unlock</p>
                       </div>
                     </div>
 
                     {data.goodiesClaim ? (
-                      <span className="px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold whitespace-nowrap">
+                      <span className="px-2.5 sm:px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] sm:text-xs font-bold whitespace-nowrap shrink-0">
                         Claimed!
                       </span>
                     ) : data.isEligibleForGoodies ? (
                       <button
                         onClick={() => setShowGoodiesModal(true)}
-                        className="px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold cursor-pointer shrink-0"
+                        className="px-3 sm:px-3.5 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] sm:text-xs font-bold cursor-pointer shrink-0"
                       >
                         Claim Swag
                       </button>
+                    ) : data.interviewApp?.status === 'PASSED' ? (
+                      <span className="px-2.5 sm:px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] sm:text-xs font-bold whitespace-nowrap shrink-0">
+                        ✓ Eligible
+                      </span>
                     ) : (
-                      <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-xs font-bold whitespace-nowrap">
-                        {enrollment.streakCount}/30 Days
+                      <span className="px-2.5 sm:px-3 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] sm:text-xs font-bold whitespace-nowrap shrink-0">
+                        {data.interviewApp ? 'Interview ' + data.interviewApp.status : 'Interview Required'}
                       </span>
                     )}
                   </div>
@@ -735,51 +764,51 @@ export default function StudentDashboardPage() {
                 {/* THE EXCEL-STYLE INTERACTIVE SHEET */}
                 <div className="bg-white rounded-2xl border border-slate-200 shadow-xs overflow-hidden">
                   {/* Sheet Top Header & Instructions */}
-                  <div className="p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                    <div>
+                  <div className="p-3 sm:p-5 border-b border-slate-200 bg-slate-50/50 flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4">
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
-                          <ListOrdered className="w-5 h-5 text-sky-600" />
-                          {challenge.name} — Interactive DSA Spreadsheet
+                        <h2 className="text-sm sm:text-xl font-black text-slate-900 flex items-center gap-1.5 sm:gap-2">
+                          <ListOrdered className="w-4 h-4 sm:w-5 sm:h-5 text-sky-600 shrink-0" />
+                          <span className="truncate">{challenge.name}</span>
                         </h2>
-                        <span className="px-2.5 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[11px] font-bold">
-                          {totalProblemsCount} Curated Questions
+                        <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] sm:text-[11px] font-bold whitespace-nowrap">
+                          {totalProblemsCount} Questions
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 mt-1">
+                      <p className="text-[10px] sm:text-xs text-slate-500 mt-1 hidden sm:block">
                         Use this sheet just like Excel! You can attempt <strong>any problem in any order</strong> and submit your LinkedIn post or GitHub link.
                       </p>
                     </div>
 
                     {/* Quick Difficulty Breakdown Chips */}
-                    <div className="flex items-center gap-2 text-xs flex-wrap">
-                      <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold text-[11px]">
-                        Easy: {easySolved} solved
+                    <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs flex-wrap">
+                      <span className="px-2 py-0.5 sm:py-1 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200 font-semibold">
+                        E: {easySolved}
                       </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-semibold text-[11px]">
-                        Medium: {mediumSolved} solved
+                      <span className="px-2 py-0.5 sm:py-1 rounded-lg bg-amber-50 text-amber-800 border border-amber-200 font-semibold">
+                        M: {mediumSolved}
                       </span>
-                      <span className="px-2.5 py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-semibold text-[11px]">
-                        Hard: {hardSolved} solved
+                      <span className="px-2 py-0.5 sm:py-1 rounded-lg bg-rose-50 text-rose-800 border border-rose-200 font-semibold">
+                        H: {hardSolved}
                       </span>
                     </div>
                   </div>
 
                   {/* Contextual Hint Banner */}
-                  <div className="px-5 py-3 bg-sky-50/50 border-b border-sky-100 flex items-center gap-2 text-xs text-slate-700">
-                    <Sparkles className="w-4 h-4 text-sky-600 shrink-0" />
+                  <div className="px-3 sm:px-5 py-2 sm:py-3 bg-sky-50/50 border-b border-sky-100 flex items-center gap-2 text-[10px] sm:text-xs text-slate-700">
+                    <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-sky-600 shrink-0" />
                     <span>
-                      <strong className="text-slate-900">How to use:</strong> Click on any Problem Title to solve directly on LeetCode. Then click <strong>&ldquo;Submit Proof&rdquo;</strong> in that row to add your LinkedIn post or GitHub link.
+                      <strong className="text-slate-900">Tip:</strong> Click any problem to solve it, then <strong>"Submit Proof"</strong> with your LinkedIn or GitHub link.
                     </span>
                   </div>
 
                   {/* Search & Filter Toolbar */}
-                  <div className="p-4 border-b border-slate-200 flex flex-col md:flex-row items-center justify-between gap-3 bg-white">
-                    <div className="relative w-full md:w-80">
+                  <div className="p-3 sm:p-4 border-b border-slate-200 flex flex-col gap-2 sm:gap-3 bg-white">
+                    <div className="relative w-full">
                       <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" />
                       <input
                         type="text"
-                        placeholder="Filter problem, pattern, company..."
+                        placeholder="Search problem, pattern, company..."
                         value={sheetSearch}
                         onChange={(e) => {
                           setSheetSearch(e.target.value);
@@ -789,7 +818,7 @@ export default function StudentDashboardPage() {
                       />
                     </div>
 
-                    <div className="flex items-center gap-2 w-full md:w-auto flex-wrap">
+                    <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
                       {/* Chapter Filter */}
                       <select
                         value={sheetChapter}
@@ -797,7 +826,7 @@ export default function StudentDashboardPage() {
                           setSheetChapter(e.target.value);
                           setSheetPage(1);
                         }}
-                        className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-hidden"
+                        className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 focus:outline-hidden flex-1 sm:flex-none min-w-0"
                       >
                         <option value="ALL">All Chapters ({distinctChapters.length})</option>
                         {distinctChapters.map((ch) => (
@@ -814,9 +843,9 @@ export default function StudentDashboardPage() {
                           setSheetDifficulty(e.target.value);
                           setSheetPage(1);
                         }}
-                        className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-hidden"
+                        className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 focus:outline-hidden"
                       >
-                        <option value="ALL">All Difficulties</option>
+                        <option value="ALL">All Levels</option>
                         <option value="Easy">Easy</option>
                         <option value="Medium">Medium</option>
                         <option value="Hard">Hard</option>
@@ -829,15 +858,15 @@ export default function StudentDashboardPage() {
                           setSheetStatus(e.target.value);
                           setSheetPage(1);
                         }}
-                        className="px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-xs font-semibold text-slate-700 focus:outline-hidden"
+                        className="px-2 sm:px-3 py-1.5 sm:py-2 rounded-xl bg-slate-50 border border-slate-200 text-[11px] sm:text-xs font-semibold text-slate-700 focus:outline-hidden"
                       >
                         <option value="ALL">All Status</option>
-                        <option value="SOLVED">Solved (Verified)</option>
-                        <option value="IN_REVIEW">In Review (Pending)</option>
+                        <option value="SOLVED">Solved</option>
+                        <option value="IN_REVIEW">In Review</option>
                         <option value="UNSOLVED">Unsolved</option>
                       </select>
 
-                      <span className="text-xs text-slate-500 whitespace-nowrap ml-1">
+                      <span className="text-[10px] sm:text-xs text-slate-500 whitespace-nowrap ml-auto">
                         {filteredProblems.length} results
                       </span>
                     </div>
@@ -845,23 +874,23 @@ export default function StudentDashboardPage() {
 
                   {/* The Spreadsheet Grid */}
                   <div className="overflow-x-auto">
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse min-w-[600px] sm:min-w-0">
                       <thead>
-                        <tr className="border-b border-slate-200 bg-slate-100/70 text-[11px] font-bold text-slate-600 uppercase tracking-wider">
-                          <th className="p-3 pl-4 w-14">#</th>
-                          <th className="p-3 w-28">Status</th>
-                          <th className="p-3 min-w-[240px]">Problem Name</th>
-                          <th className="p-3 w-24">Difficulty</th>
-                          <th className="p-3 min-w-[160px]">Chapter & Topic</th>
-                          <th className="p-3 min-w-[180px]">Companies</th>
-                          <th className="p-3 min-w-[140px]">Solutions</th>
-                          <th className="p-3 pr-4 text-right min-w-[130px]">Action</th>
+                        <tr className="border-b border-slate-200 bg-slate-100/70 text-[10px] sm:text-[11px] font-bold text-slate-600 uppercase tracking-wider">
+                          <th className="p-2 sm:p-3 pl-3 sm:pl-4 w-10 sm:w-14">#</th>
+                          <th className="p-2 sm:p-3 w-20 sm:w-28">Status</th>
+                          <th className="p-2 sm:p-3 min-w-[160px] sm:min-w-[240px]">Problem</th>
+                          <th className="p-2 sm:p-3 w-16 sm:w-24">Level</th>
+                          <th className="p-2 sm:p-3 min-w-[120px] hidden md:table-cell">Chapter & Topic</th>
+                          <th className="p-2 sm:p-3 min-w-[120px] hidden lg:table-cell">Companies</th>
+                          <th className="p-2 sm:p-3 w-20 sm:min-w-[140px]">Solutions</th>
+                          <th className="p-2 sm:p-3 pr-3 sm:pr-4 text-right w-24 sm:min-w-[130px]">Action</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-slate-100 text-xs">
+                      <tbody className="divide-y divide-slate-100 text-[11px] sm:text-xs">
                         {paginatedProblems.length === 0 ? (
                           <tr>
-                            <td colSpan={8} className="p-12 text-center text-slate-400 text-xs">
+                            <td colSpan={8} className="p-8 sm:p-12 text-center text-slate-400 text-xs">
                               No problems matched your search or filters.
                             </td>
                           </tr>
@@ -880,6 +909,14 @@ export default function StudentDashboardPage() {
                                 ? "bg-rose-50 text-rose-700 border-rose-200"
                                 : "bg-amber-50 text-amber-700 border-amber-200";
 
+                            // Determine track type
+                            const isBase111 = challenge?.slug === 'base-111' || challenge?.name?.includes('BASE');
+                            const hasValidExternalLink = !isBase111 && Boolean(p.externalLink) && p.externalLink.startsWith('http') && !p.externalLink.includes('/problems/age-estimate') && !p.externalLink.includes('/problems/swap-two-numbers') && !p.externalLink.includes('/problems/check-voting') && !p.externalLink.includes('/problems/toggle-a-boolean');
+                            const isLeetCodeLink = !isBase111 && p.externalLink?.includes('leetcode.com');
+
+                            // Auto-generate YouTube search URL for APEX 151 problems
+                            const youtubeSearchUrl = `https://www.youtube.com/results?search_query=${encodeURIComponent(p.title + ' leetcode solution')}`;
+
                             return (
                               <tr
                                 key={p.id}
@@ -888,52 +925,67 @@ export default function StudentDashboardPage() {
                                 }`}
                               >
                                 {/* Index / Day */}
-                                <td className="p-3 pl-4 font-bold text-slate-500">
+                                <td className="p-2 sm:p-3 pl-3 sm:pl-4 font-bold text-slate-500">
                                   #{p.dayNumber}
                                 </td>
 
                                 {/* Status */}
-                                <td className="p-3">
+                                <td className="p-2 sm:p-3">
                                   {isApproved ? (
-                                    <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-xs">
-                                      <CheckCircle2 className="w-4 h-4 text-emerald-600" /> Solved
+                                    <span className="inline-flex items-center gap-1 text-emerald-600 font-bold text-[10px] sm:text-xs">
+                                      <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-600" /> <span className="hidden sm:inline">Solved</span><span className="sm:hidden">✓</span>
                                     </span>
                                   ) : isPending ? (
-                                    <span className="inline-flex items-center gap-1 text-amber-600 font-semibold text-xs">
-                                      <Clock className="w-3.5 h-3.5" /> In Review
+                                    <span className="inline-flex items-center gap-1 text-amber-600 font-semibold text-[10px] sm:text-xs">
+                                      <Clock className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> <span className="hidden sm:inline">In Review</span><span className="sm:hidden">Pending</span>
                                     </span>
                                   ) : isRejected ? (
-                                    <span className="inline-flex items-center gap-1 text-rose-600 font-semibold text-xs" title={sub?.rejectionReason || "Needs revision"}>
-                                      <AlertCircle className="w-3.5 h-3.5" /> Retry
+                                    <span className="inline-flex items-center gap-1 text-rose-600 font-semibold text-[10px] sm:text-xs" title={sub?.rejectionReason || "Needs revision"}>
+                                      <AlertCircle className="w-3 h-3 sm:w-3.5 sm:h-3.5" /> Retry
                                     </span>
                                   ) : (
                                     <span className="text-slate-400 font-medium">To-Do</span>
                                   )}
                                 </td>
 
-                                {/* Problem Name (Direct Link to LeetCode) */}
-                                <td className="p-3">
-                                  <a
-                                    href={p.externalLink}
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    className="font-bold text-slate-900 hover:text-sky-600 group-hover:underline inline-flex items-center gap-1.5"
-                                    title="Open directly on LeetCode"
-                                  >
-                                    {p.title}
-                                    <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-sky-600 shrink-0" />
-                                  </a>
+                                {/* Problem Name - links to LeetCode for APEX 151, or opens Question Description Modal for BASE 111 */}
+                                <td className="p-2 sm:p-3">
+                                  {hasValidExternalLink ? (
+                                    <a
+                                      href={p.externalLink}
+                                      target="_blank"
+                                      rel="noreferrer"
+                                      className="font-bold text-slate-900 hover:text-sky-600 group-hover:underline inline-flex items-center gap-1 sm:gap-1.5"
+                                      title="Open problem on LeetCode"
+                                    >
+                                      <span className="line-clamp-2 sm:line-clamp-1">{p.title}</span>
+                                      <ExternalLink className="w-3 h-3 text-slate-400 group-hover:text-sky-600 shrink-0" />
+                                    </a>
+                                  ) : (
+                                    <button
+                                      type="button"
+                                      onClick={() => setActiveProblemForDescription(p)}
+                                      className="text-left group/btn cursor-pointer inline-block"
+                                      title="Click to view problem description & program requirements"
+                                    >
+                                      <div className="font-bold text-slate-900 group-hover/btn:text-sky-600 group-hover/btn:underline inline-flex items-center gap-1 sm:gap-1.5">
+                                        <span className="line-clamp-2 sm:line-clamp-1">{p.title}</span>
+                                        <FileText className="w-3.5 h-3.5 text-sky-500 group-hover/btn:text-sky-700 shrink-0" />
+                                      </div>
+                                      <span className="text-[10px] text-slate-400 block mt-0.5">{p.topic}</span>
+                                    </button>
+                                  )}
                                 </td>
 
                                 {/* Difficulty */}
-                                <td className="p-3">
-                                  <span className={`px-2 py-0.5 rounded-md border text-[11px] font-bold ${diffBadgeStyle}`}>
+                                <td className="p-2 sm:p-3">
+                                  <span className={`px-1.5 sm:px-2 py-0.5 rounded-md border text-[10px] sm:text-[11px] font-bold ${diffBadgeStyle}`}>
                                     {p.difficulty}
                                   </span>
                                 </td>
 
-                                {/* Chapter & Topic */}
-                                <td className="p-3">
+                                {/* Chapter & Topic - hidden on mobile */}
+                                <td className="p-2 sm:p-3 hidden md:table-cell">
                                   <div className="flex flex-col gap-0.5">
                                     {p.chapter && (
                                       <span className="text-[10px] font-semibold text-slate-400">
@@ -944,8 +996,8 @@ export default function StudentDashboardPage() {
                                   </div>
                                 </td>
 
-                                {/* Companies */}
-                                <td className="p-3">
+                                {/* Companies - hidden on mobile/tablet */}
+                                <td className="p-2 sm:p-3 hidden lg:table-cell">
                                   {p.companies ? (
                                     <div className="flex flex-wrap gap-1 max-w-xs">
                                       {p.companies.split(",").slice(0, 3).map((c, i) => (
@@ -967,49 +1019,66 @@ export default function StudentDashboardPage() {
                                   )}
                                 </td>
 
-                                {/* Solutions (Article & Video) */}
-                                <td className="p-3">
-                                  <div className="flex items-center gap-1.5">
-                                    {p.articleLink && (
+                                {/* Solutions (Article, Video, or YouTube Search for APEX 151) */}
+                                <td className="p-2 sm:p-3">
+                                  <div className="flex items-center gap-1">
+                                    {p.articleLink ? (
                                       <a
                                         href={p.articleLink}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="p-1 rounded-md bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                                        className="p-1 rounded-md bg-sky-50 hover:bg-sky-100 border border-sky-200 text-sky-700 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 transition-colors"
                                         title="Read Editorial / Article"
                                       >
-                                        <BookOpen className="w-3 h-3" /> Read
+                                        <BookOpen className="w-3 h-3" /> <span className="hidden sm:inline">Read</span>
                                       </a>
-                                    )}
-                                    {p.videoLink && (
+                                    ) : null}
+                                    {p.videoLink ? (
                                       <a
                                         href={p.videoLink}
                                         target="_blank"
                                         rel="noreferrer"
-                                        className="p-1 rounded-md bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                                        className="p-1 rounded-md bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 transition-colors"
                                         title="Watch Video Solution"
                                       >
-                                        <Video className="w-3 h-3" /> Watch
+                                        <Video className="w-3 h-3" /> <span className="hidden sm:inline">Watch</span>
                                       </a>
+                                    ) : !isBase111 ? (
+                                      <a
+                                        href={youtubeSearchUrl}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="p-1 rounded-md bg-rose-50 hover:bg-rose-100 border border-rose-200 text-rose-700 text-[10px] sm:text-[11px] font-semibold flex items-center gap-1 transition-colors"
+                                        title="Search YouTube for LeetCode solution"
+                                      >
+                                        <Video className="w-3 h-3 text-rose-600" /> <span className="hidden sm:inline">YouTube</span><span className="sm:hidden">▶</span>
+                                      </a>
+                                    ) : (
+                                      <span
+                                        className="text-[10px] text-slate-400 font-semibold px-1.5 py-0.5 rounded-md bg-slate-100 border border-slate-200"
+                                        title="Custom manual task — click problem title for description"
+                                      >
+                                        Practice
+                                      </span>
                                     )}
                                   </div>
                                 </td>
 
                                 {/* Action / Submit Proof */}
-                                <td className="p-3 pr-4 text-right">
+                                <td className="p-2 sm:p-3 pr-3 sm:pr-4 text-right">
                                   <button
                                     onClick={() => openProofModal(p)}
-                                    className={`px-3 py-1 rounded-lg text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1 shadow-2xs ${
+                                    className={`px-2 sm:px-3 py-1 rounded-lg text-[10px] sm:text-[11px] font-bold transition-all cursor-pointer inline-flex items-center gap-1 shadow-2xs ${
                                       isApproved
                                         ? "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200"
                                         : "bg-sky-600 hover:bg-sky-700 text-white shadow-sky-600/10"
                                     }`}
                                   >
                                     {isApproved ? (
-                                      "View / Edit"
+                                      <><span className="hidden sm:inline">View / Edit</span><span className="sm:hidden">View</span></>
                                     ) : (
                                       <>
-                                        <Share2 className="w-3 h-3" /> Submit Proof
+                                        <Share2 className="w-3 h-3" /> <span className="hidden sm:inline">Submit Proof</span><span className="sm:hidden">Submit</span>
                                       </>
                                     )}
                                   </button>
@@ -1054,56 +1123,56 @@ export default function StudentDashboardPage() {
             {currentView === "LEADERBOARDS" && (
               <div className="space-y-6">
                 {/* Current Student's Standing Banner */}
-                <div className="bg-gradient-to-r from-sky-50 via-white to-emerald-50 rounded-2xl p-5 border border-sky-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-sky-600 text-white flex items-center justify-center font-black text-lg shadow-sm">
+                <div className="bg-gradient-to-r from-sky-50 via-white to-emerald-50 rounded-2xl p-4 sm:p-5 border border-sky-100 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-sky-600 text-white flex items-center justify-center font-black text-base sm:text-lg shadow-sm shrink-0">
                       {loggedInStudentRank ? `#${loggedInStudentRank}` : "🔥"}
                     </div>
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <span className="font-extrabold text-slate-900 text-base">
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-extrabold text-slate-900 text-sm sm:text-base truncate">
                           {data?.student?.name || "Student"}
                         </span>
-                        <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-black border border-sky-200">
+                        <span className="px-2 py-0.5 rounded-full bg-sky-100 text-sky-800 text-[10px] font-black border border-sky-200 whitespace-nowrap">
                           {leaderboardScope === "MY_CAMPUS" ? "My Campus Rank" : "All-Campus Rank"}
                         </span>
                       </div>
-                      <p className="text-xs text-slate-500 font-medium">
+                      <p className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">
                         {data?.student?.campus?.name || "Partner College"} {data?.student?.year ? `• Year ${data.student.year}` : ""}
                       </p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 text-xs">
-                    <div className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-center shadow-xs">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Your Position</span>
-                      <span className="font-black text-slate-900 text-sm">
-                        {loggedInStudentRank ? `#${loggedInStudentRank} of ${leaderboardIndividual.length}` : "Not ranked yet"}
+                  <div className="grid grid-cols-3 gap-2 sm:flex sm:items-center sm:gap-4 text-xs w-full sm:w-auto">
+                    <div className="bg-white p-2 sm:px-3.5 sm:py-2 rounded-xl border border-slate-200 text-center shadow-xs">
+                      <span className="block text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Position</span>
+                      <span className="font-black text-slate-900 text-xs sm:text-sm truncate block">
+                        {loggedInStudentRank ? `#${loggedInStudentRank}` : "Unranked"}
                       </span>
                     </div>
-                    <div className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-center shadow-xs">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Active Streak</span>
-                      <span className="font-black text-orange-600 text-sm flex items-center justify-center gap-1">
-                        {data?.enrollment?.streakCount || 0} <Flame className="w-3.5 h-3.5 fill-orange-500 text-orange-500 inline" />
+                    <div className="bg-white p-2 sm:px-3.5 sm:py-2 rounded-xl border border-slate-200 text-center shadow-xs">
+                      <span className="block text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Streak</span>
+                      <span className="font-black text-orange-600 text-xs sm:text-sm flex items-center justify-center gap-0.5 sm:gap-1">
+                        {data?.enrollment?.streakCount || 0} <Flame className="w-3 h-3 sm:w-3.5 sm:h-3.5 fill-orange-500 text-orange-500 inline" />
                       </span>
                     </div>
-                    <div className="bg-white px-3.5 py-2 rounded-xl border border-slate-200 text-center shadow-xs">
-                      <span className="block text-[10px] font-bold text-slate-400 uppercase">Active Track</span>
-                      <span className="font-black text-sky-700 text-sm">
+                    <div className="bg-white p-2 sm:px-3.5 sm:py-2 rounded-xl border border-slate-200 text-center shadow-xs">
+                      <span className="block text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase">Track</span>
+                      <span className="font-black text-sky-700 text-xs sm:text-sm truncate block">
                         Day {data?.enrollment?.currentDay || 1}
                       </span>
                     </div>
                   </div>
                 </div>
 
-                <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-xs space-y-6">
+                <div className="bg-white rounded-2xl p-3.5 sm:p-6 border border-slate-200 shadow-xs space-y-4 sm:space-y-6">
                   {/* Leaderboard Header & Scope Tabs */}
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 border-b border-slate-200 pb-5">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-3 sm:gap-4 border-b border-slate-200 pb-4 sm:pb-5">
                     <div>
-                      <h2 className="text-xl font-black text-slate-900 flex items-center gap-2">
-                        <Trophy className="w-5 h-5 text-amber-500" /> Leaderboard Standings
+                      <h2 className="text-lg sm:text-xl font-black text-slate-900 flex items-center gap-2">
+                        <Trophy className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500" /> Leaderboard Standings
                       </h2>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-[11px] sm:text-xs text-slate-500 mt-0.5">
                         {leaderboardScope === "MY_CAMPUS"
                           ? `Showing rankings exclusively for students of ${data?.student?.campus?.name || "your college"}`
                           : leaderboardScope === "CAMPUS_BENCHMARK"
@@ -1113,13 +1182,13 @@ export default function StudentDashboardPage() {
                     </div>
 
                     {/* Scope Selector: All Campuses vs My Campus vs Campus vs Campus */}
-                    <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl text-xs font-bold self-start lg:self-auto">
+                    <div className="flex items-center gap-1 sm:gap-1.5 bg-slate-100 p-1 sm:p-1.5 rounded-xl text-[11px] sm:text-xs font-bold overflow-x-auto max-w-full no-scrollbar">
                       <button
                         onClick={() => {
                           setLeaderboardScope("ALL_CAMPUSES");
                           setSelectedCampusFilter("ALL");
                         }}
-                        className={`px-3.5 py-1.5 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 ${
+                        className={`px-2.5 sm:px-3.5 py-1.5 rounded-lg cursor-pointer transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
                           leaderboardScope === "ALL_CAMPUSES"
                             ? "bg-white text-slate-900 shadow-xs font-black"
                             : "text-slate-500 hover:text-slate-800"
@@ -1130,7 +1199,7 @@ export default function StudentDashboardPage() {
 
                       <button
                         onClick={() => setLeaderboardScope("MY_CAMPUS")}
-                        className={`px-3.5 py-1.5 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 ${
+                        className={`px-2.5 sm:px-3.5 py-1.5 rounded-lg cursor-pointer transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
                           leaderboardScope === "MY_CAMPUS"
                             ? "bg-white text-sky-700 shadow-xs font-black"
                             : "text-slate-500 hover:text-slate-800"
@@ -1146,7 +1215,7 @@ export default function StudentDashboardPage() {
 
                       <button
                         onClick={() => setLeaderboardScope("CAMPUS_BENCHMARK")}
-                        className={`px-3.5 py-1.5 rounded-lg cursor-pointer transition-all flex items-center gap-1.5 ${
+                        className={`px-2.5 sm:px-3.5 py-1.5 rounded-lg cursor-pointer transition-all flex items-center gap-1 sm:gap-1.5 whitespace-nowrap shrink-0 ${
                           leaderboardScope === "CAMPUS_BENCHMARK"
                             ? "bg-white text-slate-900 shadow-xs font-black"
                             : "text-slate-500 hover:text-slate-800"
@@ -1159,17 +1228,17 @@ export default function StudentDashboardPage() {
 
                   {/* Filter Row: Campus Selector (on All Campuses) & Year Selector */}
                   {leaderboardScope !== "CAMPUS_BENCHMARK" && (
-                    <div className="flex flex-wrap items-center justify-between gap-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+                    <div className="flex flex-wrap items-center justify-between gap-2.5 sm:gap-3 bg-slate-50 p-2.5 sm:p-3 rounded-xl border border-slate-200">
                       {/* Campus Filter (only active on All Campuses scope) */}
                       {leaderboardScope === "ALL_CAMPUSES" ? (
-                        <div className="flex items-center gap-2 text-xs font-medium">
-                          <span className="text-slate-500 font-bold flex items-center gap-1">
+                        <div className="flex items-center gap-2 text-xs font-medium min-w-0">
+                          <span className="text-slate-500 font-bold flex items-center gap-1 shrink-0">
                             <Building2 className="w-3.5 h-3.5 text-slate-400" /> College:
                           </span>
                           <select
                             value={selectedCampusFilter}
                             onChange={(e) => setSelectedCampusFilter(e.target.value)}
-                            className="bg-white border border-slate-200 rounded-lg px-2.5 py-1 text-xs font-bold text-slate-700 cursor-pointer focus:outline-sky-500"
+                            className="bg-white border border-slate-200 rounded-lg px-2 sm:px-2.5 py-1 text-[11px] sm:text-xs font-bold text-slate-700 cursor-pointer focus:outline-sky-500 max-w-[180px] sm:max-w-none truncate"
                           >
                             <option value="ALL">All 5 Partner Campuses</option>
                             {data?.allCampuses && data.allCampuses.length > 0 ? (
@@ -1191,14 +1260,14 @@ export default function StudentDashboardPage() {
                         </div>
                       ) : (
                         <div className="flex items-center gap-2 text-xs">
-                          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold flex items-center gap-1">
+                          <span className="px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold flex items-center gap-1 text-[11px] sm:text-xs">
                             <ShieldCheck className="w-3.5 h-3.5" /> Filtering for: {data?.student?.campus?.name || "Your Campus"}
                           </span>
                         </div>
                       )}
 
                       {/* Year Filter Buttons */}
-                      <div className="flex items-center gap-1.5 text-xs font-bold">
+                      <div className="flex items-center gap-1 sm:gap-1.5 text-xs font-bold flex-wrap">
                         <span className="text-slate-500 mr-1 flex items-center gap-1">
                           <GraduationCap className="w-3.5 h-3.5 text-slate-400" /> Year:
                         </span>
@@ -1206,13 +1275,13 @@ export default function StudentDashboardPage() {
                           <button
                             key={yr}
                             onClick={() => setLeaderboardYearFilter(yr)}
-                            className={`px-2.5 py-1 rounded-lg border text-xs cursor-pointer transition-all ${
+                            className={`px-2 sm:px-2.5 py-1 rounded-lg border text-[11px] sm:text-xs cursor-pointer transition-all ${
                               leaderboardYearFilter === yr
                                 ? "bg-sky-600 text-white border-sky-600 font-extrabold shadow-xs"
                                 : "bg-white border-slate-200 text-slate-600 hover:border-slate-300"
                             }`}
                           >
-                            {yr === "ALL" ? "All" : `Year ${yr}`}
+                            {yr === "ALL" ? "All" : `Y${yr}`}
                           </button>
                         ))}
                       </div>
@@ -1227,7 +1296,7 @@ export default function StudentDashboardPage() {
                     </div>
                   ) : leaderboardScope === "CAMPUS_BENCHMARK" ? (
                     <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                      <table className="w-full text-left border-collapse">
+                      <table className="w-full text-left border-collapse min-w-[620px] sm:min-w-0">
                         <thead>
                           <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                             <th className="p-3.5 pl-4">Rank</th>
@@ -1287,7 +1356,7 @@ export default function StudentDashboardPage() {
                     </div>
                   ) : (
                     <div className="overflow-x-auto border border-slate-200 rounded-xl">
-                      <table className="w-full text-left border-collapse">
+                      <table className="w-full text-left border-collapse min-w-[660px] sm:min-w-0">
                         <thead>
                           <tr className="border-b border-slate-200 bg-slate-50 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
                             <th className="p-3.5 pl-4">Rank</th>
@@ -1409,17 +1478,158 @@ export default function StudentDashboardPage() {
         )}
       </main>
 
+      {/* MODAL 0: QUESTION DESCRIPTION MODAL (FOR BASE 111 / CUSTOM PROBLEMS) */}
+      {activeProblemForDescription && (() => {
+        const desc = getBase111ProblemDescription(
+          activeProblemForDescription.dayNumber,
+          activeProblemForDescription.title,
+          activeProblemForDescription.topic,
+          activeProblemForDescription.chapter || undefined,
+          activeProblemForDescription.difficulty
+        );
+        const diffBadgeStyle =
+          desc.difficulty === "Easy"
+            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+            : desc.difficulty === "Hard"
+            ? "bg-rose-50 text-rose-700 border-rose-200"
+            : "bg-amber-50 text-amber-700 border-amber-200";
+
+        return (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
+            <div className="bg-white rounded-2xl max-w-xl w-full p-5 sm:p-6 space-y-4 relative shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
+              {/* Header */}
+              <div className="border-b border-slate-200 pb-3 flex items-start justify-between gap-3">
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap mb-1">
+                    <span className="text-[10px] font-black text-sky-700 bg-sky-50 px-2 py-0.5 rounded-md border border-sky-200 uppercase tracking-wider">
+                      Day {desc.dayNumber}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-md border text-[10px] font-bold ${diffBadgeStyle}`}>
+                      {desc.difficulty}
+                    </span>
+                    <span className="text-[10px] text-slate-500 font-semibold">
+                      {desc.topic}
+                    </span>
+                  </div>
+                  <h3 className="text-base sm:text-lg font-black text-slate-900 leading-snug">
+                    {desc.title}
+                  </h3>
+                </div>
+                <button
+                  onClick={() => setActiveProblemForDescription(null)}
+                  className="w-8 h-8 rounded-lg hover:bg-slate-100 flex items-center justify-center text-slate-400 hover:text-slate-700 cursor-pointer shrink-0"
+                >
+                  ✕
+                </button>
+              </div>
+
+              {/* Problem Description Statement */}
+              <div className="space-y-3 text-xs text-slate-700">
+                <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200">
+                  <span className="text-[11px] font-bold text-slate-900 uppercase tracking-wider block mb-1.5 flex items-center gap-1.5">
+                    <FileText className="w-3.5 h-3.5 text-sky-600" /> Problem Statement & What to Create
+                  </span>
+                  <p className="leading-relaxed whitespace-pre-line text-slate-800 font-medium">
+                    {desc.description}
+                  </p>
+                </div>
+
+                {/* Input / Output Formats */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                      Input Format
+                    </span>
+                    <p className="text-slate-800 font-medium">{desc.inputFormat}</p>
+                  </div>
+                  <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                    <span className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                      Output Format
+                    </span>
+                    <p className="text-slate-800 font-medium">{desc.outputFormat}</p>
+                  </div>
+                </div>
+
+                {/* Sample Input / Output */}
+                {(desc.sampleInput !== "N/A" || desc.sampleOutput !== "N/A") && (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                    <div className="p-3 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans">
+                        Sample Input
+                      </span>
+                      <pre className="whitespace-pre-wrap">{desc.sampleInput}</pre>
+                    </div>
+                    <div className="p-3 rounded-xl bg-slate-900 text-slate-100 font-mono text-[11px]">
+                      <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1 font-sans">
+                        Sample Output
+                      </span>
+                      <pre className="whitespace-pre-wrap">{desc.sampleOutput}</pre>
+                    </div>
+                  </div>
+                )}
+
+                {/* Explanation */}
+                {desc.explanation && (
+                  <div className="p-3 rounded-xl bg-sky-50 border border-sky-200/60 text-sky-950">
+                    <span className="text-[10px] font-bold text-sky-800 uppercase tracking-wider block mb-1">
+                      Explanation
+                    </span>
+                    <p className="font-medium">{desc.explanation}</p>
+                  </div>
+                )}
+
+                {/* Hints */}
+                {desc.hints && desc.hints.length > 0 && (
+                  <div className="p-3 rounded-xl bg-amber-50/70 border border-amber-200 text-amber-950">
+                    <span className="text-[10px] font-bold text-amber-800 uppercase tracking-wider block mb-1 flex items-center gap-1">
+                      <Sparkles className="w-3 h-3 text-amber-600" /> Implementation Hints
+                    </span>
+                    <ul className="list-disc pl-4 space-y-0.5">
+                      {desc.hints.map((h, i) => (
+                        <li key={i}>{h}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+                <button
+                  type="button"
+                  onClick={() => setActiveProblemForDescription(null)}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-100 text-xs font-bold cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const prob = activeProblemForDescription;
+                    setActiveProblemForDescription(null);
+                    openProofModal(prob);
+                  }}
+                  className="px-4 sm:px-5 py-2 rounded-xl bg-sky-600 hover:bg-sky-700 text-white text-xs font-bold cursor-pointer flex items-center gap-1.5 shadow-sm"
+                >
+                  <Share2 className="w-3.5 h-3.5" /> Submit Proof for Day #{desc.dayNumber}
+                </button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
+
       {/* MODAL 1: SUBMIT PROOF MODAL (FOR ANY PROBLEM) */}
       {activeProblemForProof && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 sm:p-7 space-y-5 relative shadow-2xl border border-slate-200">
+          <div className="bg-white rounded-2xl max-w-lg w-full p-5 sm:p-7 space-y-4 sm:space-y-5 relative shadow-2xl border border-slate-200 max-h-[90vh] overflow-y-auto">
             {/* Header */}
             <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
               <div>
                 <span className="text-[10px] font-extrabold text-sky-600 uppercase tracking-wider block">
                   Day {activeProblemForProof.dayNumber} • {activeProblemForProof.topic}
                 </span>
-                <h3 className="text-lg font-black text-slate-900">
+                <h3 className="text-base sm:text-lg font-black text-slate-900">
                   {activeProblemForProof.title}
                 </h3>
               </div>
@@ -1433,15 +1643,29 @@ export default function StudentDashboardPage() {
 
             {/* Quick Solve Link & Template Generator */}
             <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2.5 text-xs">
-              <div className="flex items-center justify-between">
-                <a
-                  href={activeProblemForProof.externalLink}
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-bold text-sky-600 hover:underline flex items-center gap-1"
-                >
-                  Solve on LeetCode <ExternalLink className="w-3.5 h-3.5" />
-                </a>
+              <div className="flex items-center justify-between flex-wrap gap-2">
+                {!challenge?.slug?.includes('base') && activeProblemForProof.externalLink?.includes('leetcode.com') && !activeProblemForProof.externalLink?.includes('/problems/age-estimate') ? (
+                  <a
+                    href={activeProblemForProof.externalLink}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="font-bold text-sky-600 hover:underline flex items-center gap-1"
+                  >
+                    Solve on LeetCode <ExternalLink className="w-3.5 h-3.5" />
+                  </a>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const prob = activeProblemForProof;
+                      setActiveProblemForProof(null);
+                      setActiveProblemForDescription(prob);
+                    }}
+                    className="font-bold text-sky-600 hover:underline flex items-center gap-1 cursor-pointer"
+                  >
+                    <FileText className="w-3.5 h-3.5" /> View Problem Requirements
+                  </button>
+                )}
 
                 {data?.challenge?.template && (
                   <button
@@ -1547,10 +1771,10 @@ export default function StudentDashboardPage() {
       {/* MODAL 2: EXPLORE & JOIN ALL TRACKS */}
       {showExploreModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-2xl w-full p-6 sm:p-7 space-y-5 relative shadow-2xl border border-slate-200 max-h-[85vh] overflow-y-auto">
+          <div className="bg-white rounded-2xl max-w-2xl w-full p-5 sm:p-7 space-y-4 sm:space-y-5 relative shadow-2xl border border-slate-200 max-h-[85vh] overflow-y-auto">
             <div className="border-b border-slate-200 pb-3 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+                <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
                   <Layers className="w-5 h-5 text-sky-600" /> All DSA Challenge Tracks
                 </h3>
                 <p className="text-xs text-slate-500 mt-0.5">
@@ -1634,12 +1858,12 @@ export default function StudentDashboardPage() {
       {/* MODAL 3: MOCK INTERVIEW APPLICATION */}
       {showInterviewModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
-            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200">
+            <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <Video className="w-5 h-5 text-sky-600" /> Apply for Mock Interview
             </h3>
             <p className="text-xs text-slate-600">
-              Congratulations on reaching your 25-day streak! Enter your preferred schedule or areas of focus below.
+              Congratulations on completing all problems in this sheet! Enter your preferred schedule or areas of focus below.
             </p>
             <textarea
               rows={4}
@@ -1652,7 +1876,7 @@ export default function StudentDashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowInterviewModal(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold"
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold cursor-pointer"
               >
                 Cancel
               </button>
@@ -1676,7 +1900,7 @@ export default function StudentDashboardPage() {
                   }
                 }}
                 disabled={applyingInterview}
-                className="px-5 py-2 rounded-xl bg-sky-600 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-sky-600 text-white text-xs font-bold cursor-pointer"
               >
                 {applyingInterview ? "Submitting..." : "Submit Application"}
               </button>
@@ -1688,12 +1912,12 @@ export default function StudentDashboardPage() {
       {/* MODAL 4: GOODIES CLAIM */}
       {showGoodiesModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 space-y-4 shadow-2xl border border-slate-200">
-            <h3 className="text-lg font-black text-slate-900 flex items-center gap-2">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-2xl border border-slate-200">
+            <h3 className="text-base sm:text-lg font-black text-slate-900 flex items-center gap-2">
               <Gift className="w-5 h-5 text-emerald-600" /> Claim ALTA Swag Pack
             </h3>
             <p className="text-xs text-slate-600">
-              You earned the 30-day streak milestone! Provide your delivery address for your official ALTA merchandise.
+              Congratulations on passing your technical mock interview! Provide your delivery address for your official ALTA merchandise.
             </p>
             <div className="space-y-3">
               <input
@@ -1722,7 +1946,7 @@ export default function StudentDashboardPage() {
               <button
                 type="button"
                 onClick={() => setShowGoodiesModal(false)}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold"
+                className="px-4 py-2 rounded-xl border border-slate-200 text-slate-600 text-xs font-bold cursor-pointer"
               >
                 Cancel
               </button>
@@ -1736,7 +1960,7 @@ export default function StudentDashboardPage() {
                       headers: { "Content-Type": "application/json" },
                       body: JSON.stringify({
                         challengeId: challenge?.id,
-                        recipientName: shippingName,
+                        shippingName,
                         shippingAddress,
                         phone,
                       }),
@@ -1748,7 +1972,7 @@ export default function StudentDashboardPage() {
                   }
                 }}
                 disabled={claimingGoodies}
-                className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold"
+                className="px-5 py-2 rounded-xl bg-emerald-600 text-white text-xs font-bold cursor-pointer"
               >
                 {claimingGoodies ? "Claiming..." : "Confirm Delivery"}
               </button>

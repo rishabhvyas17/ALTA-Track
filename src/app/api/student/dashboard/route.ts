@@ -184,14 +184,23 @@ export async function GET(request: NextRequest) {
       totalDays: challenge.totalDays,
     });
 
-    const isEligibleForInterview = enrollment.streakCount >= 25;
-    const isEligibleForGoodies = enrollment.streakCount >= 30;
-
-    // Fetch all problems for this challenge
+    // Fetch all problems for this challenge (needed for eligibility check below)
     const allProblems = await prisma.problem.findMany({
       where: { challengeId: challenge.id },
       orderBy: { dayNumber: "asc" },
     });
+
+    // Eligibility: Interview = all problems solved, Goodies = all solved + interview passed
+    const approvedProblemIds = new Set(
+      enrollment.submissions
+        .filter((s: any) => s.status === 'APPROVED')
+        .map((s: any) => s.problemId)
+    );
+    const totalProblemsInChallenge = allProblems.length;
+    const allProblemsSolved = totalProblemsInChallenge > 0 && approvedProblemIds.size >= totalProblemsInChallenge;
+
+    const isEligibleForInterview = allProblemsSolved;
+    const isEligibleForGoodies = allProblemsSolved && interviewApp?.status === 'PASSED';
 
     return NextResponse.json({
       student,
