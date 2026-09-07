@@ -64,19 +64,29 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Deduplicate: keep only the best enrollment per student (by user.id)
-    // This prevents the same student from appearing multiple times when enrolled
-    // in both BASE 111 and APEX 151 (or any multiple challenges).
+    // Deduplicate: keep only the best enrollment per student.
+    // This handles both:
+    // 1. A student enrolled in multiple challenges (BASE 111 & APEX 151) under the same account.
+    // 2. A student who registered multiple accounts with different emails (e.g. personal email vs college email).
     const bestByUser = new Map<string, typeof allEnrollmentScores[0]>();
     for (const entry of allEnrollmentScores) {
-      const userId = entry.user.id;
-      const existing = bestByUser.get(userId);
+      // Normalize name and campus to prevent duplicate student profiles
+      const cleanName = (entry.user.name || "").trim().toLowerCase();
+      const campusId = entry.user.campus?.id || "global";
+      const studentKey = `${campusId}_${cleanName}`;
+
+      const existing = bestByUser.get(studentKey);
       if (
         !existing ||
         entry.score > existing.score ||
-        (entry.score === existing.score && entry.streakCount > existing.streakCount)
+        (entry.score === existing.score && entry.streakCount > existing.streakCount) ||
+        (entry.score === existing.score && entry.streakCount === existing.streakCount && entry.questionsSolved > existing.questionsSolved)
       ) {
-        bestByUser.set(userId, entry);
+        // Ensure student name is nicely trimmed and title-cased if entered in lowercase
+        if (entry.user.name) {
+          entry.user.name = entry.user.name.trim().replace(/\b\w/g, (char) => char.toUpperCase());
+        }
+        bestByUser.set(studentKey, entry);
       }
     }
     const individualRankings = Array.from(bestByUser.values());

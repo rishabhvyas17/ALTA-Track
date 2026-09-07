@@ -258,9 +258,17 @@ export default function StudentDashboardPage() {
   // Compute student's rank in current view
   const loggedInStudentRank = useMemo(() => {
     if (!data?.student?.id || leaderboardIndividual.length === 0) return null;
-    const idx = leaderboardIndividual.findIndex((item) => item.user?.id === data.student?.id);
+    const studentName = data.student.name?.trim().toLowerCase();
+    const studentCampusId = data.student.campus?.id || data.student.campusId;
+    const idx = leaderboardIndividual.findIndex(
+      (item) =>
+        item.user?.id === data.student?.id ||
+        (Boolean(studentName && item.user?.name) &&
+          item.user.name.trim().toLowerCase() === studentName &&
+          item.user.campus?.id === studentCampusId)
+    );
     return idx !== -1 ? idx + 1 : null;
-  }, [leaderboardIndividual, data?.student?.id]);
+  }, [leaderboardIndividual, data?.student]);
 
   // Submissions Map (dayNumber -> Submission)
   const submissionsMap = useMemo(() => {
@@ -1381,7 +1389,13 @@ export default function StudentDashboardPage() {
                             </tr>
                           ) : (
                             leaderboardIndividual.map((item, idx) => {
-                              const isCurrentStudent = item.user?.id === data?.student?.id;
+                              const studentName = data?.student?.name?.trim().toLowerCase();
+                              const studentCampusId = data?.student?.campus?.id || data?.student?.campusId;
+                              const isCurrentStudent =
+                                item.user?.id === data?.student?.id ||
+                                (Boolean(studentName && item.user?.name) &&
+                                  item.user.name.trim().toLowerCase() === studentName &&
+                                  item.user.campus?.id === studentCampusId);
                               return (
                                 <tr
                                   key={item.id}
