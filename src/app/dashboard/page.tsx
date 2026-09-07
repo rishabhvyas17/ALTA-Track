@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import {
@@ -181,14 +181,38 @@ export default function StudentDashboardPage() {
   const [leaderboardIndividual, setLeaderboardIndividual] = useState<any[]>([]);
   const [leaderboardCampus, setLeaderboardCampus] = useState<any[]>([]);
   const [leaderboardLoading, setLeaderboardLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // In-memory client caches for instantaneous 0ms track and leaderboard switching
+  const trackCacheRef = useRef<Map<string, { data: DashboardData; timestamp: number }>>(new Map());
+  const leaderboardCacheRef = useRef<Map<string, { individual: any[]; campus: any[]; timestamp: number }>>(new Map());
 
   useEffect(() => {
     fetchDashboard();
   }, []);
 
-  const fetchDashboard = async (challengeId?: string) => {
+  const fetchDashboard = async (challengeId?: string, forceFresh = false) => {
+    const cacheKey = challengeId || "default";
+    const cached = trackCacheRef.current.get(cacheKey);
+
+    // 1. Instant optimistic swap if cached in memory
+    if (cached) {
+      setData(cached.data);
+      setLoading(false);
+      // If cached within 45s and not forced, avoid background network call
+      if (!forceFresh && Date.now() - cached.timestamp < 45000) {
+        return;
+      }
+    }
+
     try {
-      setLoading(true);
+      // Only show full skeleton on cold start when no data exists
+      if (!cached && !data) {
+        setLoading(true);
+      } else {
+        setIsRefreshing(true);
+      }
+
       const url = challengeId
         ? `/api/student/dashboard?challengeId=${challengeId}`
         : "/api/student/dashboard";
@@ -201,22 +225,59 @@ export default function StudentDashboardPage() {
         throw new Error("Failed to load dashboard");
       }
       const json = await res.json();
+
+      // Store in memory cache under both challengeId and actual ID
+      const actualTrackId = json.challenge?.id;
+      if (actualTrackId) {
+        trackCacheRef.current.set(actualTrackId, { data: json, timestamp: Date.now() });
+      }
+      trackCacheRef.current.set(cacheKey, { data: json, timestamp: Date.now() });
+
       setData(json);
+      setError("");
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred");
+      if (!cached && !data) {
+        setError(err.message || "An unexpected error occurred");
+      }
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   };
 
-  const fetchLeaderboards = async () => {
-    try {
+  const fetchLeaderboards = async (forceFresh = false) => {
+    const currentChallengeId = data?.challenge?.id || "all";
+    const myCampusId = data?.student?.campus?.id || data?.student?.campusId;
+    const effectiveCampusId =
+      leaderboardScope === "MY_CAMPUS"
+        ? (myCampusId || "none")
+        : (leaderboardScope === "ALL_CAMPUSES" && selectedCampusFilter !== "ALL" ? selectedCampusFilter : "all");
+    const effectiveYear = leaderboardYearFilter !== "ALL" ? leaderboardYearFilter.toString() : "all";
+
+    const cacheKey = `${currentChallengeId}_${leaderboardScope}_${effectiveCampusId}_${effectiveYear}`;
+    const cached = leaderboardCacheRef.current.get(cacheKey);
+
+    // If cache is fresh (< 30s) and not forced, render immediately without network request
+    if (cached && !forceFresh && Date.now() - cached.timestamp < 30000) {
+      setLeaderboardIndividual(cached.individual);
+      setLeaderboardCampus(cached.campus);
+      setLeaderboardLoading(false);
+      return;
+    }
+
+    // If we have stale cache, populate immediately to prevent layout thrashing
+    if (cached) {
+      setLeaderboardIndividual(cached.individual);
+      setLeaderboardCampus(cached.campus);
+    } else {
       setLeaderboardLoading(true);
+    }
+
+    try {
       const params = new URLSearchParams();
       if (data?.challenge?.id) params.set("challengeId", data.challenge.id);
 
       if (leaderboardScope === "MY_CAMPUS") {
-        const myCampusId = data?.student?.campus?.id || data?.student?.campusId;
         if (myCampusId) {
           params.set("campusId", myCampusId);
         }
@@ -231,8 +292,15 @@ export default function StudentDashboardPage() {
       const res = await fetch(`/api/leaderboard?${params.toString()}`);
       if (res.ok) {
         const json = await res.json();
-        setLeaderboardIndividual(json.individualRankings || []);
-        setLeaderboardCampus(json.campusRankings || []);
+        const individual = json.individualRankings || [];
+        const campus = json.campusRankings || [];
+        setLeaderboardIndividual(individual);
+        setLeaderboardCampus(campus);
+        leaderboardCacheRef.current.set(cacheKey, {
+          individual,
+          campus,
+          timestamp: Date.now(),
+        });
       }
     } catch (err) {
       console.error("Failed to load leaderboards:", err);
@@ -350,7 +418,7 @@ export default function StudentDashboardPage() {
       setProofSuccess("Proof submitted successfully! Your campus admin will verify it.");
       setTimeout(() => {
         setActiveProblemForProof(null);
-        fetchDashboard(data.challenge?.id);
+        fetchDashboard(data.challenge?.id, true);
       }, 1500);
     } catch (err: any) {
       setProofError(err.message || "Failed to submit proof");
@@ -376,7 +444,7 @@ export default function StudentDashboardPage() {
       }
 
       setShowExploreModal(false);
-      fetchDashboard(challengeId);
+      fetchDashboard(challengeId, true);
     } catch (err: any) {
       alert(err.message || "Something went wrong");
     } finally {
@@ -467,7 +535,7 @@ export default function StudentDashboardPage() {
     return filteredProblems.slice(start, start + sheetPageSize);
   }, [filteredProblems, sheetPage]);
 
-  if (loading) {
+  if (loading && !data) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
         <Loader2 className="w-8 h-8 animate-spin text-sky-600" />
@@ -499,6 +567,11 @@ export default function StudentDashboardPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
+      {/* Background SWR Refresh Indicator */}
+      {isRefreshing && (
+        <div className="fixed top-0 left-0 right-0 z-50 h-1 bg-gradient-to-r from-sky-500 via-indigo-500 to-emerald-500 animate-pulse" />
+      )}
+
       {/* Light Theme Clean Navigation */}
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200 shadow-xs">
         <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2.5 sm:py-0 sm:h-16 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-4">
@@ -1908,7 +1981,7 @@ export default function StudentDashboardPage() {
                       }),
                     });
                     setShowInterviewModal(false);
-                    fetchDashboard(challenge?.id);
+                    fetchDashboard(challenge?.id, true);
                   } finally {
                     setApplyingInterview(false);
                   }
@@ -1980,7 +2053,7 @@ export default function StudentDashboardPage() {
                       }),
                     });
                     setShowGoodiesModal(false);
-                    fetchDashboard(challenge?.id);
+                    fetchDashboard(challenge?.id, true);
                   } finally {
                     setClaimingGoodies(false);
                   }

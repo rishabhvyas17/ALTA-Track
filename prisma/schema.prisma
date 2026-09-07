@@ -6,8 +6,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 // ─── Enums ──────────────────────────────────────────────────────────────────
@@ -78,6 +79,8 @@ model User {
   auditLogs             AuditLog[]
   createdChallenges     Challenge[]            @relation("ChallengeCreator")
 
+  @@index([campusId])
+  @@index([role])
   @@map("users")
 }
 
@@ -105,6 +108,7 @@ model Challenge {
   goodiesClaims         GoodiesClaim[]
   linkedInPostTemplates LinkedInPostTemplate[]
 
+  @@index([isActive])
   @@map("challenges")
 }
 
@@ -151,6 +155,8 @@ model Enrollment {
   submissions Submission[]
 
   @@unique([userId, challengeId])
+  @@index([challengeId, status])
+  @@index([userId, status])
   @@map("enrollments")
 }
 
@@ -174,6 +180,9 @@ model Submission {
 
   @@unique([enrollmentId, dayNumber])
   @@index([status])
+  @@index([problemId])
+  @@index([enrollmentId, status])
+  @@index([dayNumber])
   @@map("submissions")
 }
 
@@ -191,6 +200,8 @@ model InterviewApplication {
   challenge   Challenge @relation(fields: [challengeId], references: [id])
   interviewer User?     @relation("Interviewer", fields: [interviewerId], references: [id])
 
+  @@index([userId, challengeId])
+  @@index([status])
   @@map("interview_applications")
 }
 
@@ -209,6 +220,8 @@ model GoodiesClaim {
   user      User      @relation(fields: [userId], references: [id])
   challenge Challenge @relation(fields: [challengeId], references: [id])
 
+  @@index([userId, challengeId])
+  @@index([status])
   @@map("goodies_claims")
 }
 

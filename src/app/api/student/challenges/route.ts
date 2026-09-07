@@ -1,28 +1,35 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { memoryCache, CACHE_TTL } from "@/lib/cache";
 
 export async function GET() {
   try {
     const auth = await requireRole("STUDENT");
 
-    // Get active challenges
-    const challenges = await prisma.challenge.findMany({
-      where: { isActive: true },
-      include: {
-        _count: { select: { problems: true, enrollments: true } },
-      },
-      orderBy: { name: "asc" },
-    });
-
-    // Get current student's completed challenge IDs
-    const userEnrollments = await prisma.enrollment.findMany({
-      where: { userId: auth.userId },
-      select: {
-        challengeId: true,
-        status: true,
-      },
-    });
+    // Fetch active challenges from cache and user enrollments/student in parallel
+    const [challenges, userEnrollments, student] = await Promise.all([
+      memoryCache.getOrSet("all_system_challenges", CACHE_TTL.CHALLENGES, () =>
+        prisma.challenge.findMany({
+          where: { isActive: true },
+          include: {
+            _count: { select: { problems: true, enrollments: true } },
+          },
+          orderBy: { name: "asc" },
+        })
+      ),
+      prisma.enrollment.findMany({
+        where: { userId: auth.userId },
+        select: {
+          challengeId: true,
+          status: true,
+        },
+      }),
+      prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: { year: true, campusId: true },
+      }),
+    ]);
 
     const completedChallengeIds = userEnrollments
       .filter((e) => e.status === "COMPLETED")
@@ -31,12 +38,6 @@ export async function GET() {
     const activeEnrollment = userEnrollments.find(
       (e) => e.status === "ACTIVE"
     );
-
-    // Get current student profile
-    const student = await prisma.user.findUnique({
-      where: { id: auth.userId },
-      select: { year: true, campusId: true },
-    });
 
     // Map challenges with unlocked & eligibility state
     const mapped = challenges.map((c) => {
@@ -86,10 +87,17 @@ export async function GET() {
       };
     });
 
-    return NextResponse.json({
-      challenges: mapped,
-      activeEnrollmentChallengeId: activeEnrollment?.challengeId || null,
-    });
+    return NextResponse.json(
+      {
+        challenges: mapped,
+        activeEnrollmentChallengeId: activeEnrollment?.challengeId || null,
+      },
+      {
+        headers: {
+          "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        },
+      }
+    );
   } catch (error: any) {
     const message = error instanceof Error ? error.message : "Server error";
     if (message === "Unauthorized" || message === "Forbidden") {

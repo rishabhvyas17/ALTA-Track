@@ -2,57 +2,58 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { renderRulesAsPlainText, parseRules } from "@/lib/rules";
+import { memoryCache, CACHE_TTL } from "@/lib/cache";
 
 export async function GET(request: NextRequest) {
   try {
     const auth = await requireRole("STUDENT");
     const requestedChallengeId = request.nextUrl.searchParams.get("challengeId");
 
-    // Fetch student profile (to check year & campus eligibility for tracks)
-    const student = await prisma.user.findUnique({
-      where: { id: auth.userId },
-      select: {
-        id: true,
-        name: true,
-        year: true,
-        campusId: true,
-        campus: { select: { id: true, name: true, region: true } },
-      },
-    });
-
-    // Fetch all active campuses for leaderboard filtering
-    const allCampuses = await prisma.campus.findMany({
-      select: { id: true, name: true, region: true },
-      orderBy: { name: "asc" },
-    });
-
-    // Fetch all active enrollments for this student
-    const allUserEnrollments = await prisma.enrollment.findMany({
-      where: {
-        userId: auth.userId,
-        status: "ACTIVE",
-      },
-      include: {
-        challenge: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            totalDays: true,
+    // Stage 1: Parallel fetch of student profile, cached campuses, active enrollments, and cached system challenges
+    const [student, allCampuses, allUserEnrollments, allSystemChallenges] = await Promise.all([
+      prisma.user.findUnique({
+        where: { id: auth.userId },
+        select: {
+          id: true,
+          name: true,
+          year: true,
+          campusId: true,
+          campus: { select: { id: true, name: true, region: true } },
+        },
+      }),
+      memoryCache.getOrSet("all_campuses", CACHE_TTL.CAMPUSES, () =>
+        prisma.campus.findMany({
+          select: { id: true, name: true, region: true },
+          orderBy: { name: "asc" },
+        })
+      ),
+      prisma.enrollment.findMany({
+        where: {
+          userId: auth.userId,
+          status: "ACTIVE",
+        },
+        include: {
+          challenge: {
+            select: {
+              id: true,
+              name: true,
+              slug: true,
+              totalDays: true,
+            },
           },
         },
-      },
-      orderBy: { updatedAt: "desc" },
-    });
-
-    // Fetch all active system challenges
-    const allSystemChallenges = await prisma.challenge.findMany({
-      where: { isActive: true },
-      include: {
-        _count: { select: { problems: true, enrollments: true } },
-      },
-      orderBy: { name: "asc" },
-    });
+        orderBy: { updatedAt: "desc" },
+      }),
+      memoryCache.getOrSet("all_system_challenges", CACHE_TTL.CHALLENGES, () =>
+        prisma.challenge.findMany({
+          where: { isActive: true },
+          include: {
+            _count: { select: { problems: true, enrollments: true } },
+          },
+          orderBy: { name: "asc" },
+        })
+      ),
+    ]);
 
     // Map challenges with eligibility
     const availableTracks = allSystemChallenges.map((c) => {
@@ -105,77 +106,110 @@ export async function GET(request: NextRequest) {
 
     if (!targetEnrollmentId) {
       // Not enrolled in any challenge yet
-      return NextResponse.json({
-        enrollment: null,
-        student,
-        allUserEnrollments: [],
-        availableTracks,
-      });
+      return NextResponse.json(
+        {
+          enrollment: null,
+          student,
+          allUserEnrollments: [],
+          availableTracks,
+          allCampuses,
+        },
+        {
+          headers: {
+            "Cache-Control": "private, no-cache, no-store, must-revalidate",
+          },
+        }
+      );
     }
 
-    // Fetch full enrollment details
-    const enrollment = await prisma.enrollment.findUnique({
-      where: { id: targetEnrollmentId },
-      include: {
-        challenge: {
-          include: {
-            linkedInPostTemplates: {
-              where: { isActive: true },
-              take: 1,
+    // Identify target challenge ID for parallel fetching
+    const targetMeta = allUserEnrollments.find((e) => e.id === targetEnrollmentId);
+    const targetChallengeId = targetMeta?.challenge?.id || requestedChallengeId;
+
+    // Stage 2: Fetch enrollment details in parallel with cached problem definitions, interview app, and goodies claim
+    const [enrollment, allProblems, interviewApp, goodiesClaim] = await Promise.all([
+      prisma.enrollment.findUnique({
+        where: { id: targetEnrollmentId },
+        include: {
+          challenge: {
+            include: {
+              linkedInPostTemplates: {
+                where: { isActive: true },
+                take: 1,
+              },
+            },
+          },
+          submissions: {
+            orderBy: { dayNumber: "asc" },
+            select: {
+              id: true,
+              enrollmentId: true,
+              dayNumber: true,
+              problemId: true,
+              linkedinPostUrl: true,
+              supportingLink: true,
+              githubLink: true,
+              status: true,
+              reviewedAt: true,
+              rejectionReason: true,
+              submittedAt: true,
             },
           },
         },
-        submissions: {
-          orderBy: { dayNumber: "asc" },
-          include: {
-            problem: true,
-          },
-        },
-      },
-    });
+      }),
+      targetChallengeId
+        ? memoryCache.getOrSet(`challenge_problems_${targetChallengeId}`, CACHE_TTL.PROBLEMS, () =>
+            prisma.problem.findMany({
+              where: { challengeId: targetChallengeId },
+              orderBy: { dayNumber: "asc" },
+            })
+          )
+        : Promise.resolve([]),
+      targetChallengeId
+        ? prisma.interviewApplication.findFirst({
+            where: {
+              userId: auth.userId,
+              challengeId: targetChallengeId,
+            },
+            orderBy: { appliedAt: "desc" },
+          })
+        : Promise.resolve(null),
+      targetChallengeId
+        ? prisma.goodiesClaim.findFirst({
+            where: {
+              userId: auth.userId,
+              challengeId: targetChallengeId,
+            },
+          })
+        : Promise.resolve(null),
+    ]);
 
     if (!enrollment) {
-      return NextResponse.json({
-        enrollment: null,
-        student,
-        allUserEnrollments: [],
-        availableTracks,
-      });
+      return NextResponse.json(
+        {
+          enrollment: null,
+          student,
+          allUserEnrollments: [],
+          availableTracks,
+          allCampuses,
+        },
+        {
+          headers: {
+            "Cache-Control": "private, no-cache, no-store, must-revalidate",
+          },
+        }
+      );
     }
 
     const { challenge } = enrollment;
 
-    // Fetch current day problem
-    const currentProblem = await prisma.problem.findUnique({
-      where: {
-        challengeId_dayNumber: {
-          challengeId: challenge.id,
-          dayNumber: enrollment.currentDay,
-        },
-      },
-    });
+    // Derive current day problem in memory directly from cached problem definitions
+    const currentProblem = allProblems.find((p) => p.dayNumber === enrollment.currentDay) || null;
 
-    // Fetch current day submission (if any)
+    // Current day submission (if any)
     const todaySubmission = enrollment.submissions.find(
       (s: any) => s.dayNumber === enrollment.currentDay
     );
-
-    // Fetch interview application status
-    const interviewApp = await prisma.interviewApplication.findFirst({
-      where: {
-        userId: auth.userId,
-        challengeId: challenge.id,
-      },
-      orderBy: { appliedAt: "desc" },
-    });
-
-    // Fetch goodies claim status
-    const goodiesClaim = await prisma.goodiesClaim.findFirst({
-      where: {
-        userId: auth.userId,
-        challengeId: challenge.id,
-      },
-    });
 
     // Parse & Render rules as plain text
     const rulesObj = parseRules(challenge.rules);
@@ -184,64 +218,65 @@ export async function GET(request: NextRequest) {
       totalDays: challenge.totalDays,
     });
 
-    // Fetch all problems for this challenge (needed for eligibility check below)
-    const allProblems = await prisma.problem.findMany({
-      where: { challengeId: challenge.id },
-      orderBy: { dayNumber: "asc" },
-    });
-
     // Eligibility: Interview = all problems solved, Goodies = all solved + interview passed
     const approvedProblemIds = new Set(
       enrollment.submissions
-        .filter((s: any) => s.status === 'APPROVED')
+        .filter((s: any) => s.status === "APPROVED")
         .map((s: any) => s.problemId)
     );
     const totalProblemsInChallenge = allProblems.length;
     const allProblemsSolved = totalProblemsInChallenge > 0 && approvedProblemIds.size >= totalProblemsInChallenge;
 
     const isEligibleForInterview = allProblemsSolved;
-    const isEligibleForGoodies = allProblemsSolved && interviewApp?.status === 'PASSED';
+    const isEligibleForGoodies = allProblemsSolved && interviewApp?.status === "PASSED";
 
-    return NextResponse.json({
-      student,
-      enrollment: {
-        id: enrollment.id,
-        challengeId: challenge.id,
-        currentDay: enrollment.currentDay,
-        streakCount: enrollment.streakCount,
-        longestStreak: enrollment.longestStreak,
-        graceDaysUsedThisMonth: enrollment.graceDaysUsedThisMonth,
-        restartCount: enrollment.restartCount,
-        status: enrollment.status,
-        startDate: enrollment.startDate,
+    return NextResponse.json(
+      {
+        student,
+        enrollment: {
+          id: enrollment.id,
+          challengeId: challenge.id,
+          currentDay: enrollment.currentDay,
+          streakCount: enrollment.streakCount,
+          longestStreak: enrollment.longestStreak,
+          graceDaysUsedThisMonth: enrollment.graceDaysUsedThisMonth,
+          restartCount: enrollment.restartCount,
+          status: enrollment.status,
+          startDate: enrollment.startDate,
+        },
+        challenge: {
+          id: challenge.id,
+          name: challenge.name,
+          slug: challenge.slug,
+          totalDays: challenge.totalDays,
+          rules: challenge.rules,
+          rulesFormatted: plainTextRules,
+          template: challenge.linkedInPostTemplates[0] || null,
+        },
+        allUserEnrollments: allUserEnrollments.map((e) => ({
+          id: e.id,
+          challengeId: e.challenge.id,
+          challengeName: e.challenge.name,
+          slug: e.challenge.slug,
+          totalDays: e.challenge.totalDays,
+        })),
+        availableTracks,
+        currentProblem,
+        allProblems,
+        todaySubmission: todaySubmission || null,
+        submissions: enrollment.submissions,
+        interviewApp: interviewApp || null,
+        goodiesClaim: goodiesClaim || null,
+        isEligibleForInterview,
+        isEligibleForGoodies,
+        allCampuses,
       },
-      challenge: {
-        id: challenge.id,
-        name: challenge.name,
-        slug: challenge.slug,
-        totalDays: challenge.totalDays,
-        rules: challenge.rules,
-        rulesFormatted: plainTextRules,
-        template: challenge.linkedInPostTemplates[0] || null,
-      },
-      allUserEnrollments: allUserEnrollments.map((e) => ({
-        id: e.id,
-        challengeId: e.challenge.id,
-        challengeName: e.challenge.name,
-        slug: e.challenge.slug,
-        totalDays: e.challenge.totalDays,
-      })),
-      availableTracks,
-      currentProblem,
-      allProblems,
-      todaySubmission: todaySubmission || null,
-      submissions: enrollment.submissions,
-      interviewApp: interviewApp || null,
-      goodiesClaim: goodiesClaim || null,
-      isEligibleForInterview,
-      isEligibleForGoodies,
-      allCampuses,
-    });
+      {
+        headers: {
+          "Cache-Control": "private, no-cache, no-store, must-revalidate",
+        },
+      }
+    );
   } catch (error: any) {
     const message = error instanceof Error ? error.message : "Server error";
     if (message === "Unauthorized" || message === "Forbidden") {
