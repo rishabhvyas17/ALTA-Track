@@ -29,8 +29,14 @@ import {
   RefreshCw,
   Linkedin,
   Github,
+  Search,
+  Eye,
+  Building2,
+  BookOpen,
+  Loader2,
 } from "lucide-react";
 import Link from "next/link";
+import StudentQuestionsModal from "@/components/StudentQuestionsModal";
 
 interface SuperAdminStats {
   summary: {
@@ -116,12 +122,54 @@ interface SuperAdminStats {
 export default function SuperAdminDashboard() {
   const [stats, setStats] = useState<SuperAdminStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<"campuses" | "analytics" | "feed">("campuses");
+  const [activeTab, setActiveTab] = useState<"campuses" | "students" | "analytics" | "feed">("campuses");
   const [refreshing, setRefreshing] = useState(false);
+
+  // Student Directory State
+  const [students, setStudents] = useState<any[]>([]);
+  const [studentsLoading, setStudentsLoading] = useState(false);
+  const [selectedCampus, setSelectedCampus] = useState<string>("ALL");
+  const [selectedYear, setSelectedYear] = useState<"ALL" | 1 | 2 | 3 | 4>("ALL");
+  const [studentSearch, setStudentSearch] = useState<string>("");
+  const [debouncedSearch, setDebouncedSearch] = useState<string>("");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchStats();
   }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(studentSearch);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [studentSearch]);
+
+  const fetchStudents = async () => {
+    try {
+      setStudentsLoading(true);
+      const params = new URLSearchParams();
+      if (selectedCampus !== "ALL") params.set("campusId", selectedCampus);
+      if (selectedYear !== "ALL") params.set("year", selectedYear.toString());
+      if (debouncedSearch.trim()) params.set("search", debouncedSearch.trim());
+
+      const res = await fetch(`/api/superadmin/students?${params.toString()}`);
+      if (res.ok) {
+        const json = await res.json();
+        setStudents(json.students || []);
+      }
+    } catch (err) {
+      console.error("Failed to load students:", err);
+    } finally {
+      setStudentsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (activeTab === "students") {
+      fetchStudents();
+    }
+  }, [activeTab, selectedCampus, selectedYear, debouncedSearch]);
 
   const fetchStats = async () => {
     try {
@@ -324,6 +372,17 @@ export default function SuperAdminDashboard() {
           }`}
         >
           <School className="w-4 h-4" /> 5-Campus Matrix
+        </button>
+
+        <button
+          onClick={() => setActiveTab("students")}
+          className={`px-4 py-2 rounded-xl text-xs font-bold transition-all flex items-center gap-2 cursor-pointer ${
+            activeTab === "students"
+              ? "bg-[#3bc3e2]/20 text-[#3bc3e2] border border-[#3bc3e2]/30 shadow-lg shadow-cyan-500/10 font-black"
+              : "text-slate-400 hover:text-white hover:bg-white/5"
+          }`}
+        >
+          <Users className="w-4 h-4" /> Students Directory
         </button>
 
         <button
@@ -558,6 +617,207 @@ export default function SuperAdminDashboard() {
         </div>
       )}
 
+      {/* TAB 2: CAMPUS & YEAR STUDENTS DIRECTORY */}
+      {activeTab === "students" && (
+        <div className="space-y-6">
+          {/* Controls Bar: Campus dropdown, Year toggle, Search input */}
+          <div className="alta-card p-5 space-y-4 border border-white/10 bg-[#0b1842]/90">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+              <div>
+                <h3 className="text-base font-extrabold text-white flex items-center gap-2">
+                  <Users className="w-4 h-4 text-[#3bc3e2]" /> Campus-Wise & Year-Wise Students Directory
+                </h3>
+                <p className="text-xs text-slate-400 mt-0.5">
+                  Filter students across partner campuses and cohorts. Click any student row to view every question they attempted.
+                </p>
+              </div>
+
+              {/* Count badge & Refresh */}
+              <div className="flex items-center gap-2">
+                <span className="px-3 py-1 rounded-full bg-[#3bc3e2]/10 border border-[#3bc3e2]/30 text-xs font-black text-[#3bc3e2]">
+                  {students.length} Students Found
+                </span>
+                <button
+                  onClick={fetchStudents}
+                  className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-gray-300 hover:text-white hover:bg-white/10 transition-all cursor-pointer"
+                  title="Refresh student roster"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 ${studentsLoading ? "animate-spin text-[#3bc3e2]" : ""}`} />
+                </button>
+              </div>
+            </div>
+
+            {/* Filter Controls Row */}
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-white/10">
+              <div className="flex flex-wrap items-center gap-3">
+                {/* Campus Filter */}
+                <div className="flex items-center gap-2 text-xs">
+                  <span className="text-slate-400 font-bold flex items-center gap-1">
+                    <Building2 className="w-3.5 h-3.5 text-[#3bc3e2]" /> College:
+                  </span>
+                  <select
+                    value={selectedCampus}
+                    onChange={(e) => setSelectedCampus(e.target.value)}
+                    className="alta-input py-1.5 text-xs w-52 bg-[#071130]"
+                  >
+                    <option value="ALL">All Partner Campuses</option>
+                    {stats?.campusMetrics?.map((camp) => (
+                      <option key={camp.id} value={camp.id}>
+                        {camp.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Year Filter */}
+                <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl text-xs font-bold border border-white/10">
+                  {(["ALL", 1, 2, 3, 4] as const).map((yr) => (
+                    <button
+                      key={yr}
+                      onClick={() => setSelectedYear(yr)}
+                      className={`px-3 py-1 rounded-lg cursor-pointer transition-all ${
+                        selectedYear === yr
+                          ? "bg-[#3bc3e2] text-slate-950 font-black shadow-sm"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                    >
+                      {yr === "ALL" ? "All Years" : `Year ${yr}`}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Search Bar */}
+              <div className="relative w-full sm:w-64">
+                <Search className="w-3.5 h-3.5 text-gray-400 absolute left-3 top-1/2 -translate-y-1/2" />
+                <input
+                  type="text"
+                  placeholder="Search student or email..."
+                  value={studentSearch}
+                  onChange={(e) => setStudentSearch(e.target.value)}
+                  className="alta-input pl-8 py-1.5 text-xs w-full"
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Student Table */}
+          <div className="alta-card overflow-hidden border border-white/10 bg-[#0b1842]/90">
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse min-w-[760px]">
+                <thead>
+                  <tr className="border-b border-white/10 bg-white/[0.02] text-[11px] font-extrabold text-slate-400 uppercase tracking-wider">
+                    <th className="p-3.5 pl-6">Student</th>
+                    <th className="p-3.5">Campus</th>
+                    <th className="p-3.5">Year</th>
+                    <th className="p-3.5">Enrolled Track</th>
+                    <th className="p-3.5">Active Streak</th>
+                    <th className="p-3.5">Questions Attempted</th>
+                    <th className="p-3.5">Status</th>
+                    <th className="p-3.5 pr-6 text-right">Action</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-white/5 text-xs">
+                  {studentsLoading ? (
+                    <tr>
+                      <td colSpan={8} className="p-16 text-center text-slate-400">
+                        <Loader2 className="w-8 h-8 text-[#3bc3e2] animate-spin mx-auto mb-2" />
+                        <p className="font-bold text-slate-300">Loading student directory...</p>
+                      </td>
+                    </tr>
+                  ) : students.length === 0 ? (
+                    <tr>
+                      <td colSpan={8} className="p-16 text-center text-slate-400">
+                        <Users className="w-10 h-10 text-slate-600 mx-auto mb-2" />
+                        <p className="font-bold text-sm text-slate-300">No students found</p>
+                        <p className="text-xs text-slate-500 mt-0.5">
+                          Try changing your campus, year filter, or search query.
+                        </p>
+                      </td>
+                    </tr>
+                  ) : (
+                    students.map((stu) => (
+                      <tr
+                        key={stu.id}
+                        onClick={() => setSelectedStudentId(stu.id)}
+                        className="hover:bg-[#3bc3e2]/[0.08] hover:border-cyan-500/20 transition-all cursor-pointer group"
+                        title="Click to view attempted questions"
+                      >
+                        <td className="p-3.5 pl-6">
+                          <p className="font-extrabold text-white group-hover:text-[#3bc3e2] transition-colors">
+                            {stu.name}
+                          </p>
+                          <p className="text-[10px] text-slate-400">{stu.email}</p>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="px-2 py-0.5 rounded-md bg-sky-500/10 text-sky-300 text-[11px] font-semibold border border-sky-500/20">
+                            {stu.campus?.name || "Global Campus"}
+                          </span>
+                        </td>
+                        <td className="p-3.5 font-bold text-slate-300">
+                          {stu.year ? `Year ${stu.year}` : "—"}
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-extrabold text-[#3bc3e2]">{stu.trackName}</span>
+                          <span className="text-[10px] text-slate-400 block">Day {stu.currentDay}</span>
+                        </td>
+                        <td className="p-3.5">
+                          <span className="font-black text-amber-400 text-sm flex items-center gap-1">
+                            {stu.streakCount} <Flame className="w-3.5 h-3.5 fill-amber-400 inline" />
+                          </span>
+                          {stu.longestStreak > stu.streakCount && (
+                            <span className="text-[10px] text-slate-400 block">Best: {stu.longestStreak}d</span>
+                          )}
+                        </td>
+                        <td className="p-3.5">
+                          <div className="flex flex-col">
+                            <span className="font-extrabold text-white flex items-center gap-1">
+                              <span className="text-[#3bc3e2]">{stu.totalAttempted}</span>
+                              <span className="text-slate-400 text-[10px] font-normal">attempted</span>
+                            </span>
+                            <span className="text-[10px] font-semibold text-emerald-400">
+                              {stu.approvedCount} approved
+                              {stu.pendingCount > 0 && (
+                                <span className="text-amber-400 ml-1">({stu.pendingCount} pending)</span>
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                        <td className="p-3.5">
+                          <span
+                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
+                              stu.status === "ACTIVE"
+                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                                : stu.status === "COMPLETED"
+                                ? "bg-cyan-500/10 text-cyan-400 border border-cyan-500/20"
+                                : "bg-slate-500/10 text-slate-400 border border-slate-500/20"
+                            }`}
+                          >
+                            {stu.status}
+                          </span>
+                        </td>
+                        <td className="p-3.5 pr-6 text-right">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setSelectedStudentId(stu.id);
+                            }}
+                            className="px-2.5 py-1 rounded-lg bg-[#3bc3e2]/10 text-[#3bc3e2] border border-[#3bc3e2]/20 hover:bg-[#3bc3e2] hover:text-black transition-all text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                          >
+                            <Eye className="w-3 h-3" />
+                            <span>Questions</span>
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* TAB 2: COHORTS & DIFFICULTY */}
       {activeTab === "analytics" && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -779,6 +1039,12 @@ export default function SuperAdminDashboard() {
           )}
         </div>
       )}
+
+      {/* STUDENT QUESTIONS MODAL */}
+      <StudentQuestionsModal
+        studentId={selectedStudentId}
+        onClose={() => setSelectedStudentId(null)}
+      />
     </div>
   );
 }

@@ -78,4 +78,7 @@ export const CACHE_TTL = {
   CHALLENGES: 300, // 5 minutes (system challenge tracks)
   PROBLEMS: 600, // 10 minutes (problem curriculum definitions)
   LEADERBOARD: 20, // 20 seconds (balances real-time rankings with high query efficiency)
+  ADMIN_STATS: 15, // 15 seconds (campus admin analytics)
+  SUPERADMIN_STATS: 15, // 15 seconds (super admin platform analytics)
+  SUPERADMIN_STUDENTS: 15, // 15 seconds (super admin students directory)
 };

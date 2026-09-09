@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { memoryCache, CACHE_TTL } from "@/lib/cache";
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,107 +23,115 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "No campus assigned" }, { status: 404 });
     }
 
-    // Fetch campus details
-    const campus = await prisma.campus.findUnique({
-      where: { id: campusId },
-      include: {
-        users: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            role: true,
-            year: true,
-            createdAt: true,
-          },
-        },
-      },
-    });
+    const cacheKey = `admin_stats_${campusId}_${auth.userId}`;
 
-    if (!campus) {
-      return NextResponse.json({ error: "Campus not found" }, { status: 404 });
-    }
-
-    const currentAdminUser = await prisma.user.findUnique({
-      where: { id: auth.userId },
-      select: { year: true },
-    });
-    const adminAssignedYear = currentAdminUser?.year ?? null;
-
-    const students = adminAssignedYear
-      ? campus.users.filter((u) => u.role === "STUDENT" && u.year === adminAssignedYear)
-      : campus.users.filter((u) => u.role === "STUDENT");
-    const admins = campus.users.filter((u) => u.role === "CAMPUS_ADMIN");
-    const studentIds = students.map((s) => s.id);
-
-    // Fetch all enrollments for students of this campus
-    const enrollments = await prisma.enrollment.findMany({
-      where: { userId: { in: studentIds } },
-      include: {
-        user: {
-          select: {
-            id: true,
-            name: true,
-            email: true,
-            year: true,
-          },
-        },
-        challenge: {
-          select: {
-            id: true,
-            name: true,
-            slug: true,
-            totalDays: true,
-          },
-        },
-        submissions: {
-          select: {
-            id: true,
-            dayNumber: true,
-            status: true,
-            submittedAt: true,
-          },
-        },
-      },
-      orderBy: [
-        { streakCount: "desc" },
-        { currentDay: "desc" },
-      ],
-    });
-
-    // Fetch all submissions for students of this campus
-    const submissions = await prisma.submission.findMany({
-      where: {
-        enrollment: {
-          userId: { in: studentIds },
-        },
-      },
-      include: {
-        enrollment: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-                year: true,
+    const statsData = await memoryCache.getOrSet(
+      cacheKey,
+      CACHE_TTL.ADMIN_STATS,
+      async () => {
+        // Fetch campus details and admin's year assignment in parallel
+        const [campus, currentAdminUser] = await Promise.all([
+          prisma.campus.findUnique({
+            where: { id: campusId },
+            include: {
+              users: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  role: true,
+                  year: true,
+                  createdAt: true,
+                },
               },
             },
-            challenge: {
-              select: { name: true },
+          }),
+          prisma.user.findUnique({
+            where: { id: auth.userId },
+            select: { year: true },
+          }),
+        ]);
+
+        if (!campus) {
+          throw new Error("Campus not found");
+        }
+
+        const adminAssignedYear = currentAdminUser?.year ?? null;
+
+        const students = adminAssignedYear
+          ? campus.users.filter((u) => u.role === "STUDENT" && u.year === adminAssignedYear)
+          : campus.users.filter((u) => u.role === "STUDENT");
+        const admins = campus.users.filter((u) => u.role === "CAMPUS_ADMIN");
+        const studentIds = students.map((s) => s.id);
+
+        // Fetch enrollments and submissions in parallel
+        const [enrollments, submissions] = await Promise.all([
+          prisma.enrollment.findMany({
+            where: { userId: { in: studentIds } },
+            include: {
+              user: {
+                select: {
+                  id: true,
+                  name: true,
+                  email: true,
+                  year: true,
+                },
+              },
+              challenge: {
+                select: {
+                  id: true,
+                  name: true,
+                  slug: true,
+                  totalDays: true,
+                },
+              },
+              submissions: {
+                select: {
+                  id: true,
+                  dayNumber: true,
+                  status: true,
+                  submittedAt: true,
+                },
+              },
             },
-          },
-        },
-        problem: {
-          select: {
-            title: true,
-            topic: true,
-            difficulty: true,
-          },
-        },
-      },
-      orderBy: { submittedAt: "desc" },
-    });
+            orderBy: [
+              { streakCount: "desc" },
+              { currentDay: "desc" },
+            ],
+          }),
+          prisma.submission.findMany({
+            where: {
+              enrollment: {
+                userId: { in: studentIds },
+              },
+            },
+            include: {
+              enrollment: {
+                include: {
+                  user: {
+                    select: {
+                      id: true,
+                      name: true,
+                      email: true,
+                      year: true,
+                    },
+                  },
+                  challenge: {
+                    select: { name: true },
+                  },
+                },
+              },
+              problem: {
+                select: {
+                  title: true,
+                  topic: true,
+                  difficulty: true,
+                },
+              },
+            },
+            orderBy: { submittedAt: "desc" },
+          }),
+        ]);
 
     // Metrics calculations
     const startOfToday = new Date();
@@ -242,29 +251,57 @@ export async function GET(request: NextRequest) {
       };
     });
 
-    // Top students of this campus (ranked by questions solved, then streak)
-    const topStudents = enrollments
-      .map((e) => {
-        const approvedCount = e.submissions.filter((s) => s.status === "APPROVED").length;
-        return {
-          id: e.user.id,
-          name: e.user.name,
-          email: e.user.email,
-          year: e.user.year,
-          challengeName: e.challenge.name,
-          streakCount: e.streakCount,
-          currentDay: e.currentDay,
-          status: e.status,
-          questionsSolved: approvedCount,
-        };
-      })
+    // Top students of this campus (ranked by questions solved, then streak — deduplicated by student user ID)
+    const bestTopStudentByUser = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        email: string;
+        year: number | null;
+        challengeName: string;
+        streakCount: number;
+        currentDay: number;
+        status: string;
+        questionsSolved: number;
+      }
+    >();
+
+    for (const e of enrollments) {
+      const approvedCount = e.submissions.filter((s) => s.status === "APPROVED").length;
+      const existing = bestTopStudentByUser.get(e.user.id);
+      const candidate = {
+        id: e.user.id,
+        name: e.user.name,
+        email: e.user.email,
+        year: e.user.year,
+        challengeName: e.challenge.name,
+        streakCount: e.streakCount,
+        currentDay: e.currentDay,
+        status: e.status,
+        questionsSolved: approvedCount,
+      };
+
+      if (
+        !existing ||
+        candidate.questionsSolved > existing.questionsSolved ||
+        (candidate.questionsSolved === existing.questionsSolved && candidate.streakCount > existing.streakCount) ||
+        (candidate.questionsSolved === existing.questionsSolved &&
+          candidate.streakCount === existing.streakCount &&
+          candidate.currentDay > existing.currentDay)
+      ) {
+        bestTopStudentByUser.set(e.user.id, candidate);
+      }
+    }
+
+    const topStudents = Array.from(bestTopStudentByUser.values())
       .sort((a, b) => {
         if (b.questionsSolved !== a.questionsSolved) return b.questionsSolved - a.questionsSolved;
         return b.streakCount - a.streakCount;
       })
       .slice(0, 10);
 
-    return NextResponse.json({
+    return {
       campus: {
         id: campus.id,
         name: campus.name,
@@ -305,7 +342,15 @@ export async function GET(request: NextRequest) {
         supportingLink: s.supportingLink,
         status: s.status,
       })),
-    });
+    };
+  }
+);
+
+  return NextResponse.json(statsData, {
+    headers: {
+      "Cache-Control": "private, s-maxage=10, stale-while-revalidate=30",
+    },
+  });
   } catch (error: any) {
     const message = error instanceof Error ? error.message : "Server error";
     if (message === "Unauthorized" || message === "Forbidden") {

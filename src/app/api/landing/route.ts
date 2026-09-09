@@ -51,18 +51,46 @@ export async function GET() {
       },
     });
 
-    const leaderboard = topEnrollments
-      .map((e) => {
-        const scoreData = calculateScore(e.submissions);
-        return {
-          id: e.user.id,
-          name: e.user.name,
-          streakCount: e.streakCount,
-          totalScore: scoreData.score,
-          questionsSolved: scoreData.questionsSolved,
-          campus: e.user.campus,
-        };
-      })
+    // Group enrollments by student user ID to ensure each student appears at most once
+    const bestByStudent = new Map<
+      string,
+      {
+        id: string;
+        name: string;
+        streakCount: number;
+        totalScore: number;
+        questionsSolved: number;
+        campus: { name: string } | null;
+      }
+    >();
+
+    for (const e of topEnrollments) {
+      const scoreData = calculateScore(e.submissions);
+      const studentId = e.user.id;
+      const existing = bestByStudent.get(studentId);
+
+      const candidate = {
+        id: e.user.id,
+        name: e.user.name,
+        streakCount: e.streakCount,
+        totalScore: scoreData.score,
+        questionsSolved: scoreData.questionsSolved,
+        campus: e.user.campus,
+      };
+
+      if (
+        !existing ||
+        candidate.totalScore > existing.totalScore ||
+        (candidate.totalScore === existing.totalScore && candidate.streakCount > existing.streakCount) ||
+        (candidate.totalScore === existing.totalScore &&
+          candidate.streakCount === existing.streakCount &&
+          candidate.questionsSolved > existing.questionsSolved)
+      ) {
+        bestByStudent.set(studentId, candidate);
+      }
+    }
+
+    const leaderboard = Array.from(bestByStudent.values())
       .sort((a, b) => {
         if (b.totalScore !== a.totalScore) return b.totalScore - a.totalScore;
         return b.streakCount - a.streakCount;

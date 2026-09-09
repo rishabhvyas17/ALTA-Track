@@ -25,7 +25,9 @@ import {
   Github,
   Linkedin,
   ArrowRight,
+  Eye,
 } from "lucide-react";
+import StudentQuestionsModal from "@/components/StudentQuestionsModal";
 
 interface CampusInfo {
   id: string;
@@ -124,6 +126,7 @@ export default function CampusAdminDashboard() {
   const [refreshing, setRefreshing] = useState(false);
   const [activeYearTab, setActiveYearTab] = useState<"ALL" | 1 | 2 | 3 | 4>("ALL");
   const [studentSearch, setStudentSearch] = useState("");
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [processingId, setProcessingId] = useState<string | null>(null);
   const [actionSuccess, setActionSuccess] = useState<string>("");
 
@@ -534,14 +537,15 @@ export default function CampusAdminDashboard() {
                 <th className="p-3">Enrolled Track</th>
                 <th className="p-3">Progress</th>
                 <th className="p-3">Active Streak</th>
-                <th className="p-3">Verified Solves</th>
-                <th className="p-3 pr-4 text-right">Status</th>
+                <th className="p-3">Questions Attempted</th>
+                <th className="p-3">Status</th>
+                <th className="p-3 pr-4 text-right">Details</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[var(--color-border-dark)]/60 text-xs">
               {filteredStudents.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-12 text-center text-gray-400">
+                  <td colSpan={8} className="p-12 text-center text-gray-400">
                     <Users className="w-8 h-8 text-gray-600 mx-auto mb-2" />
                     <p className="font-bold text-gray-300">No students found</p>
                     <p className="text-xs text-gray-500 mt-0.5">
@@ -551,9 +555,16 @@ export default function CampusAdminDashboard() {
                 </tr>
               ) : (
                 filteredStudents.map((stu) => (
-                  <tr key={stu.id} className="hover:bg-white/5 transition-colors">
+                  <tr
+                    key={stu.id}
+                    onClick={() => setSelectedStudentId(stu.id)}
+                    className="hover:bg-cyan-500/[0.07] hover:border-cyan-500/20 transition-all cursor-pointer group"
+                    title="Click to view attempted questions"
+                  >
                     <td className="p-3 pl-4">
-                      <p className="font-extrabold text-white">{stu.name}</p>
+                      <p className="font-extrabold text-white group-hover:text-cyan-300 transition-colors">
+                        {stu.name}
+                      </p>
                       <p className="text-[10px] text-gray-400">{stu.email}</p>
                     </td>
                     <td className="p-3 font-semibold text-gray-300">
@@ -571,15 +582,21 @@ export default function CampusAdminDashboard() {
                         <span className="text-[10px] text-gray-400 block">Best: {stu.longestStreak}d</span>
                       )}
                     </td>
-                    <td className="p-3 font-bold text-emerald-400">
-                      {stu.approvedCount} approved
-                      {stu.pendingCount > 0 && (
-                        <span className="text-[10px] text-amber-400 block">
-                          ({stu.pendingCount} pending)
+                    <td className="p-3">
+                      <div className="flex flex-col">
+                        <span className="font-extrabold text-white flex items-center gap-1">
+                          <span className="text-cyan-300">{stu.totalSubmissions}</span>
+                          <span className="text-gray-400 text-[10px] font-normal">attempted</span>
                         </span>
-                      )}
+                        <span className="text-[10px] font-semibold text-emerald-400">
+                          {stu.approvedCount} approved
+                          {stu.pendingCount > 0 && (
+                            <span className="text-amber-400 ml-1">({stu.pendingCount} pending)</span>
+                          )}
+                        </span>
+                      </div>
                     </td>
-                    <td className="p-3 pr-4 text-right">
+                    <td className="p-3">
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-black ${
                           stu.status === "ACTIVE"
@@ -591,6 +608,18 @@ export default function CampusAdminDashboard() {
                       >
                         {stu.status}
                       </span>
+                    </td>
+                    <td className="p-3 pr-4 text-right">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setSelectedStudentId(stu.id);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-cyan-500/10 text-cyan-300 border border-cyan-500/20 hover:bg-cyan-500 hover:text-black transition-all text-[11px] font-bold inline-flex items-center gap-1 cursor-pointer"
+                      >
+                        <Eye className="w-3 h-3" />
+                        <span>Questions</span>
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -616,13 +645,20 @@ export default function CampusAdminDashboard() {
           ) : (
             <div className="divide-y divide-[var(--color-border-dark)]/60 text-xs">
               {topStudents.map((st, idx) => (
-                <div key={st.id} className="py-2.5 flex items-center justify-between">
+                <div
+                  key={`${st.id}-${idx}`}
+                  onClick={() => setSelectedStudentId(st.id)}
+                  className="py-2.5 px-2 rounded-lg flex items-center justify-between hover:bg-cyan-500/[0.08] transition-colors cursor-pointer group"
+                  title="Click to view attempted questions"
+                >
                   <div className="flex items-center gap-3">
                     <span className="font-black text-gray-400 w-5">
                       {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}
                     </span>
                     <div>
-                      <p className="font-bold text-white">{st.name}</p>
+                      <p className="font-bold text-white group-hover:text-cyan-300 transition-colors">
+                        {st.name}
+                      </p>
                       <p className="text-[10px] text-gray-400">
                         {st.year ? `Year ${st.year} • ` : ""}
                         {st.challengeName} (Day {st.currentDay})
@@ -678,6 +714,12 @@ export default function CampusAdminDashboard() {
           </div>
         </div>
       </div>
+
+      {/* STUDENT QUESTIONS MODAL */}
+      <StudentQuestionsModal
+        studentId={selectedStudentId}
+        onClose={() => setSelectedStudentId(null)}
+      />
     </div>
   );
 }

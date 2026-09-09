@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
 import { parseRules } from "@/lib/rules";
+import { memoryCache } from "@/lib/cache";
 import { z } from "zod";
 
 function normalizeUrl(url: any): string | undefined {
@@ -207,6 +208,12 @@ export async function POST(request: NextRequest) {
         },
       });
     }
+
+    // Invalidate dashboard stats caches so new submissions reflect immediately
+    memoryCache.deleteByPrefix("admin_stats_");
+    memoryCache.delete("superadmin_stats");
+    memoryCache.deleteByPrefix("superadmin_students_");
+    memoryCache.deleteByPrefix("leaderboard_");
 
     return NextResponse.json({ submission }, { status: 201 });
   } catch (error: any) {

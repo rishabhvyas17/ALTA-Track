@@ -138,16 +138,14 @@ export default function CampusDetailsPage() {
         totalSubmissions: matched?.totalSubmissions || 0,
         approvedSubmissions: matched?.approvedSubmissions || 0,
         pendingSubmissions: matched?.pendingSubmissions || 0,
-        rejectedSubmissions: 0,
+        rejectedSubmissions: matched?.rejectedSubmissions || 0,
         approvalRate: matched?.totalSubmissions > 0
           ? Math.round((matched.approvedSubmissions / matched.totalSubmissions) * 100)
           : 100,
-        yearDistribution: statsData?.yearDistribution || [],
-        difficultyBreakdown: statsData?.difficultyCount || { Easy: 0, Medium: 0, Hard: 0 },
-        topStudents: matched?.topStudent ? [matched.topStudent] : [],
-        recentSubmissions: (statsData?.recentActivity || []).filter(
-          (s: any) => s.campusName === baseCampus.name
-        ),
+        yearDistribution: matched?.yearDistribution || [],
+        difficultyBreakdown: matched?.difficultyBreakdown || { Easy: 0, Medium: 0, Hard: 0 },
+        topStudents: matched?.topStudents || (matched?.topStudent ? [matched.topStudent] : []),
+        recentSubmissions: matched?.recentSubmissions || [],
       });
     } catch (err: any) {
       setError(err.message || "Failed to load campus details");
@@ -548,7 +546,7 @@ export default function CampusDetailsPage() {
         {campus.topStudents && campus.topStudents.length > 0 ? (
           <div className="divide-y divide-white/5">
             {campus.topStudents.map((st, idx) => (
-              <div key={st.id} className="py-3 flex items-center justify-between gap-4">
+              <div key={`${st.id}-${idx}`} className="py-3 flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <span className="w-7 h-7 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-xs font-bold text-gray-300">
                     {idx === 0 ? "🥇" : idx === 1 ? "🥈" : idx === 2 ? "🥉" : `#${idx + 1}`}

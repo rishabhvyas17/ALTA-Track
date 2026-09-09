@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { memoryCache } from "@/lib/cache";
 import { z } from "zod";
 
 const reviewSchema = z.object({
@@ -61,6 +62,12 @@ export async function PUT(
         reviewedAt: new Date(),
       },
     });
+
+    // Invalidate dashboard stats caches so updates reflect immediately
+    memoryCache.deleteByPrefix("admin_stats_");
+    memoryCache.delete("superadmin_stats");
+    memoryCache.deleteByPrefix("superadmin_students_");
+    memoryCache.deleteByPrefix("leaderboard_");
 
     return NextResponse.json({ submission });
   } catch (error: any) {

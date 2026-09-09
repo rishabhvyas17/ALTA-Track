@@ -71,25 +71,40 @@ export async function GET(request: NextRequest) {
           };
         });
 
-        // Deduplicate: keep only the best enrollment per student.
-        // This handles both:
-        // 1. A student enrolled in multiple challenges (BASE 111 & APEX 151) under the same account.
-        // 2. A student who registered multiple accounts with different emails (e.g. personal email vs college email).
+        // Deduplicate: keep only the single best-performing enrollment per student.
+        // This ensures:
+        // 1. A student enrolled in multiple DSA sheets (BASE 111 & APEX 151) appears ONLY ONCE in the leaderboard.
+        // 2. Multi-account duplicates (e.g. personal vs college email with identical name & campus) are merged to their highest score.
         const bestByUser = new Map<string, typeof allEnrollmentScores[0]>();
+        const nameCampusToCanonicalId = new Map<string, string>();
+
         for (const entry of allEnrollmentScores) {
-          // Normalize name and campus to prevent duplicate student profiles
           const cleanName = (entry.user.name || "").trim().toLowerCase();
           const campusId = entry.user.campus?.id || "global";
-          const studentKey = `${campusId}_${cleanName}`;
+          const campusNameKey = cleanName ? `${campusId}_${cleanName}` : "";
+
+          // Resolve canonical student identity (primary: entry.user.id, secondary: name+campus alias)
+          let studentKey = entry.user.id;
+          if (campusNameKey && nameCampusToCanonicalId.has(campusNameKey)) {
+            studentKey = nameCampusToCanonicalId.get(campusNameKey)!;
+          } else if (campusNameKey) {
+            nameCampusToCanonicalId.set(campusNameKey, studentKey);
+          }
 
           const existing = bestByUser.get(studentKey);
-          if (
+          const isBetter =
             !existing ||
             entry.score > existing.score ||
             (entry.score === existing.score && entry.streakCount > existing.streakCount) ||
-            (entry.score === existing.score && entry.streakCount === existing.streakCount && entry.questionsSolved > existing.questionsSolved)
-          ) {
-            // Ensure student name is nicely trimmed and title-cased if entered in lowercase
+            (entry.score === existing.score &&
+              entry.streakCount === existing.streakCount &&
+              entry.questionsSolved > existing.questionsSolved) ||
+            (entry.score === existing.score &&
+              entry.streakCount === existing.streakCount &&
+              entry.questionsSolved === existing.questionsSolved &&
+              entry.currentDay > existing.currentDay);
+
+          if (isBetter) {
             if (entry.user.name) {
               entry.user.name = entry.user.name.trim().replace(/\b\w/g, (char) => char.toUpperCase());
             }
