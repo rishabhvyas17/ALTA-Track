@@ -34,16 +34,17 @@ interface Submission {
 export default function SuperAdminSubmissionsPage() {
   const [submissions, setSubmissions] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processingId, setProcessingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("ALL");
 
   useEffect(() => {
-    fetchSubmissions();
+    fetchSubmissions(true);
   }, []);
 
-  const fetchSubmissions = async () => {
+  const fetchSubmissions = async (showLoading = false) => {
     try {
-      setLoading(true);
+      if (showLoading) setLoading(true);
       const res = await fetch("/api/admin/submissions");
       if (res.ok) {
         const data = await res.json();
@@ -52,20 +53,35 @@ export default function SuperAdminSubmissionsPage() {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (showLoading) setLoading(false);
     }
   };
 
   const handleReview = async (id: string, status: "APPROVED" | "REJECTED") => {
     try {
+      setProcessingId(id);
+      // Optimistic update so row updates immediately with no full page flicker
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status } : s))
+      );
+
       const res = await fetch(`/api/admin/submissions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       });
-      if (res.ok) fetchSubmissions();
-    } catch (err) {
-      console.error(err);
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || "Failed to review");
+      }
+
+      fetchSubmissions(false);
+    } catch (err: any) {
+      alert(err.message || "Failed to update submission");
+      fetchSubmissions(false);
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -186,14 +202,18 @@ export default function SuperAdminSubmissionsPage() {
                     <div className="flex items-center justify-end gap-2">
                       <button
                         onClick={() => handleReview(s.id, "APPROVED")}
-                        className="px-2.5 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/20 cursor-pointer"
+                        disabled={processingId === s.id}
+                        className="px-2.5 py-1 rounded bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/20 cursor-pointer disabled:opacity-50 inline-flex items-center gap-1"
                       >
+                        {processingId === s.id && <Loader2 className="w-3 h-3 animate-spin" />}
                         Approve
                       </button>
                       <button
                         onClick={() => handleReview(s.id, "REJECTED")}
-                        className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/20 cursor-pointer"
+                        disabled={processingId === s.id}
+                        className="px-2.5 py-1 rounded bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/20 cursor-pointer disabled:opacity-50 inline-flex items-center gap-1"
                       >
+                        {processingId === s.id && <Loader2 className="w-3 h-3 animate-spin" />}
                         Reject
                       </button>
                     </div>

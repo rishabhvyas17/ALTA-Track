@@ -73,6 +73,7 @@ interface CampusStatsData {
   campus: CampusInfo;
   kpis: {
     totalStudents: number;
+    enrolledStudents?: number;
     activeStreakers: number;
     avgStreak: number;
     maxStreak: number;
@@ -134,9 +135,9 @@ export default function CampusAdminDashboard() {
     fetchDashboardStats();
   }, []);
 
-  const fetchDashboardStats = async () => {
+  const fetchDashboardStats = async (isBackground = false) => {
     try {
-      setRefreshing(true);
+      if (!isBackground) setRefreshing(true);
       const res = await fetch("/api/admin/stats");
       if (!res.ok) throw new Error("Failed to load campus data");
       const json = await res.json();
@@ -148,7 +149,7 @@ export default function CampusAdminDashboard() {
       console.error(err);
     } finally {
       setLoading(false);
-      setRefreshing(false);
+      if (!isBackground) setRefreshing(false);
     }
   };
 
@@ -160,6 +161,28 @@ export default function CampusAdminDashboard() {
   ) => {
     try {
       setProcessingId(id);
+
+      // Optimistic state update so the item updates immediately without full-page reload or lag
+      setData((prev) => {
+        if (!prev) return prev;
+        return {
+          ...prev,
+          recentPendingSubmissions: prev.recentPendingSubmissions.filter((s) => s.id !== id),
+          kpis: {
+            ...prev.kpis,
+            pendingSubmissions: Math.max(0, prev.kpis.pendingSubmissions - 1),
+            approvedSubmissions:
+              status === "APPROVED"
+                ? prev.kpis.approvedSubmissions + 1
+                : prev.kpis.approvedSubmissions,
+            rejectedSubmissions:
+              status === "REJECTED"
+                ? prev.kpis.rejectedSubmissions + 1
+                : prev.kpis.rejectedSubmissions,
+          },
+        };
+      });
+
       const res = await fetch(`/api/admin/submissions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -169,12 +192,18 @@ export default function CampusAdminDashboard() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to update submission");
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || "Failed to update submission");
+      }
+
       setActionSuccess(`Submission marked as ${status}!`);
-      fetchDashboardStats();
+      // Silent background refresh to synchronize server state without flashing UI
+      fetchDashboardStats(true);
       setTimeout(() => setActionSuccess(""), 3000);
     } catch (err: any) {
       alert(err.message || "Failed to process submission");
+      fetchDashboardStats(true);
     } finally {
       setProcessingId(null);
     }
@@ -247,7 +276,7 @@ export default function CampusAdminDashboard() {
 
           <div className="flex items-center gap-3">
             <button
-              onClick={fetchDashboardStats}
+              onClick={() => fetchDashboardStats(false)}
               disabled={refreshing}
               className="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-cyan-500/10 hover:bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 text-xs font-bold transition-all cursor-pointer"
             >
@@ -279,7 +308,7 @@ export default function CampusAdminDashboard() {
             <Users className="w-4 h-4 text-cyan-400" />
           </div>
           <div className="text-2xl font-black text-white">{kpis.totalStudents}</div>
-          <p className="text-[10px] text-cyan-400 font-semibold">Enrolled Students</p>
+          <p className="text-[10px] text-cyan-400 font-semibold">{kpis.enrolledStudents ?? kpis.totalStudents} Enrolled</p>
         </div>
 
         <div className="alta-card p-4 space-y-1">

@@ -93,6 +93,7 @@ interface CampusMetric {
 interface StatsApiResponse {
   summary: {
     totalStudents: number;
+    enrolledStudents?: number;
     totalCampuses: number;
     totalChallenges: number;
     activeChallenges: number;
@@ -336,7 +337,7 @@ export default function SuperAdminStatsPage() {
             <div className="alta-card p-4 space-y-1">
               <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider">Students</span>
               <div className="text-2xl font-black text-white">{selectedCampus.studentCount}</div>
-              <p className="text-[11px] text-cyan-400 font-semibold">Registered</p>
+              <p className="text-[11px] text-cyan-400 font-semibold">{selectedCampus.enrolledCount ?? selectedCampus.studentCount} Enrolled</p>
             </div>
 
             <div className="alta-card p-4 space-y-1">
@@ -535,11 +536,11 @@ export default function SuperAdminStatsPage() {
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
             <div className="alta-card p-4 space-y-1">
               <div className="flex items-center justify-between text-gray-400">
-                <span className="text-[10px] font-bold uppercase tracking-wider">Students</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">Enrolled Students</span>
                 <Users className="w-4 h-4 text-cyan-400" />
               </div>
-              <div className="text-2xl font-black text-white">{summary.totalStudents}</div>
-              <p className="text-[10px] text-cyan-400 font-semibold">Across 5 Campuses</p>
+              <div className="text-2xl font-black text-white">{summary.enrolledStudents ?? summary.totalStudents}</div>
+              <p className="text-[10px] text-cyan-400 font-semibold">{summary.totalStudents} Registered</p>
             </div>
 
             <div className="alta-card p-4 space-y-1">

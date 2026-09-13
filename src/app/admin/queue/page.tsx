@@ -51,12 +51,12 @@ export default function VerificationQueuePage() {
   const itemsPerPage = 8;
 
   useEffect(() => {
-    fetchQueue();
+    fetchQueue(true);
   }, []);
 
-  const fetchQueue = async () => {
+  const fetchQueue = async (showLoader = false) => {
     try {
-      setLoading(true);
+      if (showLoader) setLoading(true);
       const res = await fetch("/api/admin/submissions");
       if (res.ok) {
         const data = await res.json();
@@ -66,7 +66,7 @@ export default function VerificationQueuePage() {
     } catch (err) {
       console.error(err);
     } finally {
-      setLoading(false);
+      if (showLoader) setLoading(false);
     }
   };
 
@@ -77,6 +77,12 @@ export default function VerificationQueuePage() {
   ) => {
     try {
       setProcessingId(id);
+
+      // Optimistic update: immediately update item status in local state so UI reacts instantly
+      setSubmissions((prev) =>
+        prev.map((s) => (s.id === id ? { ...s, status } : s))
+      );
+
       const res = await fetch(`/api/admin/submissions/${id}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
@@ -86,10 +92,16 @@ export default function VerificationQueuePage() {
         }),
       });
 
-      if (!res.ok) throw new Error("Failed to review");
-      fetchQueue();
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.error || "Failed to review");
+      }
+
+      // Silent background refresh: does NOT flash the full page spinner!
+      fetchQueue(false);
     } catch (err: any) {
       alert(err.message);
+      fetchQueue(false);
     } finally {
       setProcessingId(null);
     }
@@ -299,8 +311,9 @@ export default function VerificationQueuePage() {
                           <button
                             onClick={() => handleReview(s.id, "APPROVED")}
                             disabled={processingId === s.id}
-                            className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-all cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold border border-emerald-500/30 transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1"
                           >
+                            {processingId === s.id && <Loader2 className="w-3 h-3 animate-spin" />}
                             Approve
                           </button>
                         )}
@@ -311,8 +324,9 @@ export default function VerificationQueuePage() {
                               if (reason) handleReview(s.id, "REJECTED", reason);
                             }}
                             disabled={processingId === s.id}
-                            className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/30 transition-all cursor-pointer"
+                            className="px-3 py-1.5 rounded-lg bg-red-500/10 hover:bg-red-500/20 text-red-400 text-xs font-bold border border-red-500/30 transition-all cursor-pointer disabled:opacity-50 inline-flex items-center gap-1"
                           >
+                            {processingId === s.id && <Loader2 className="w-3 h-3 animate-spin" />}
                             Reject
                           </button>
                         )}

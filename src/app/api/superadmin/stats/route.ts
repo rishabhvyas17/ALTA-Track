@@ -87,12 +87,32 @@ export async function GET() {
           }),
         ]);
 
-        // Active enrollments & streaks
-        const activeEnrollments = allEnrollments.filter((e) => e.status === "ACTIVE");
-        const streak7Plus = activeEnrollments.filter((e) => e.streakCount >= 7).length;
-        const streak14Plus = activeEnrollments.filter((e) => e.streakCount >= 14).length;
-        const streak25Plus = activeEnrollments.filter((e) => e.streakCount >= 25).length;
-        const streak50Plus = activeEnrollments.filter((e) => e.streakCount >= 50).length;
+        // Active enrollments & streaks (deduplicated by student for active streakers)
+        const studentBestStreak = new Map<string, number>();
+        for (const e of allEnrollments) {
+          if (e.status === "ACTIVE") {
+            const prev = studentBestStreak.get(e.userId) ?? 0;
+            if (e.streakCount > prev) {
+              studentBestStreak.set(e.userId, e.streakCount);
+            } else if (!studentBestStreak.has(e.userId)) {
+              studentBestStreak.set(e.userId, e.streakCount);
+            }
+          }
+        }
+
+        const enrolledStudentIds = new Set(allEnrollments.map((e) => e.userId));
+        const activeStreakerUserIds = new Set<string>();
+        for (const [userId, streak] of studentBestStreak.entries()) {
+          if (streak > 0) {
+            activeStreakerUserIds.add(userId);
+          }
+        }
+
+        const activeStreaksList = Array.from(studentBestStreak.values()).filter((s) => s > 0);
+        const streak7Plus = activeStreaksList.filter((s) => s >= 7).length;
+        const streak14Plus = activeStreaksList.filter((s) => s >= 14).length;
+        const streak25Plus = activeStreaksList.filter((s) => s >= 25).length;
+        const streak50Plus = activeStreaksList.filter((s) => s >= 50).length;
 
         // Submissions metrics
         const startOfToday = new Date();
@@ -120,7 +140,16 @@ export async function GET() {
 
           const studentIds = new Set(students.map((u) => u.id));
           const campusEnrollments = allEnrollments.filter((e) => studentIds.has(e.userId));
-          const campusActiveEnrollments = campusEnrollments.filter((e) => e.status === "ACTIVE");
+          const campusEnrolledUserIds = new Set(campusEnrollments.map((e) => e.userId));
+          const campusActiveStreakerUserIds = new Set(
+            campusEnrollments
+              .filter((e) => e.status === "ACTIVE" && e.streakCount > 0)
+              .map((e) => e.userId)
+          );
+
+          const campusActiveEnrollments = campusEnrollments.filter(
+            (e) => e.status === "ACTIVE" && e.streakCount > 0
+          );
 
           const campusSubmissions = allSubmissions.filter((s) =>
             studentIds.has(s.enrollment.userId)
@@ -216,8 +245,9 @@ export async function GET() {
             region: camp.region,
             admins,
             studentCount: students.length,
-            enrolledCount: campusEnrollments.length,
-            activeStreakCount: campusActiveEnrollments.length,
+            enrolledCount: campusEnrolledUserIds.size,
+            totalEnrollments: campusEnrollments.length,
+            activeStreakCount: campusActiveStreakerUserIds.size,
             avgStreak,
             maxStreak,
             totalSubmissions: campusSubmissions.length,
@@ -235,20 +265,30 @@ export async function GET() {
 
         // 3. Year-wise Distribution
         const yearDistribution = [1, 2, 3, 4].map((yr) => {
-          const yearStudents = allEnrollments.filter((e) => e.user.year === yr);
-          const activeYear = yearStudents.filter((e) => e.status === "ACTIVE");
+          const yrEnrollments = allEnrollments.filter((e) => e.user.year === yr);
+          const yrEnrolledUserIds = new Set(yrEnrollments.map((e) => e.userId));
+          const yrActiveStreakerUserIds = new Set(
+            yrEnrollments
+              .filter((e) => e.status === "ACTIVE" && e.streakCount > 0)
+              .map((e) => e.userId)
+          );
+          const yrActiveEnrollments = yrEnrollments.filter(
+            (e) => e.status === "ACTIVE" && e.streakCount > 0
+          );
           const avgYearStreak =
-            activeYear.length > 0
+            yrActiveEnrollments.length > 0
               ? Math.round(
-                  (activeYear.reduce((sum, e) => sum + e.streakCount, 0) / activeYear.length) * 10
+                  (yrActiveEnrollments.reduce((sum, e) => sum + e.streakCount, 0) /
+                    yrActiveEnrollments.length) *
+                    10
                 ) / 10
               : 0;
 
           return {
             year: yr,
             label: `${yr}${yr === 1 ? "st" : yr === 2 ? "nd" : yr === 3 ? "rd" : "th"} Year`,
-            totalStudents: yearStudents.length,
-            activeCount: activeYear.length,
+            totalStudents: yrEnrolledUserIds.size,
+            activeCount: yrActiveStreakerUserIds.size,
             avgStreak: avgYearStreak,
           };
         });
@@ -286,11 +326,14 @@ export async function GET() {
         return {
           summary: {
             totalStudents,
+            enrolledStudents: enrolledStudentIds.size,
             totalCampuses: officialCampuses.length,
             totalChallenges: challenges.length,
             activeChallenges: challenges.filter((c) => c.isActive).length,
             totalProblems: problemsCount,
-            activeEnrollments: activeEnrollments.length,
+            activeEnrollments: activeStreakerUserIds.size,
+            activeStreakers: activeStreakerUserIds.size,
+            totalEnrollments: allEnrollments.length,
             submissionsToday,
             totalSubmissions: allSubmissions.length,
             pendingSubmissions: pendingSubmissions.length,
@@ -313,7 +356,7 @@ export async function GET() {
           },
           goodies: {
             total: goodiesClaims.length,
-            eligible: activeEnrollments.filter((e) => e.streakCount >= 30).length,
+            eligible: activeStreaksList.filter((s) => s >= 30).length,
             claimed: goodiesClaims.filter((g) => g.status === "CLAIMED").length,
             shipped: goodiesClaims.filter((g) => g.status === "SHIPPED").length,
           },

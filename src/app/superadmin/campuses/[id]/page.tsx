@@ -36,6 +36,7 @@ interface CampusDetails {
   createdAt: string;
   admins: { id: string; name: string; email: string; year?: number | null; createdAt?: string }[];
   studentCount: number;
+  enrolledCount?: number;
   activeStreakCount: number;
   avgStreak: number;
   maxStreak: number;
@@ -132,6 +133,7 @@ export default function CampusDetailsPage() {
         createdAt: baseCampus.createdAt,
         admins: baseCampus.users || [],
         studentCount: matched ? matched.studentCount : (baseCampus._count?.users || 0),
+        enrolledCount: matched?.enrolledCount ?? (matched ? matched.studentCount : 0),
         activeStreakCount: matched?.activeStreakCount || 0,
         avgStreak: matched?.avgStreak || 0,
         maxStreak: matched?.maxStreak || 0,
@@ -441,7 +443,7 @@ export default function CampusDetailsPage() {
         <div className="alta-card p-4 space-y-1">
           <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider block">Students</span>
           <div className="text-2xl font-black text-white">{campus.studentCount}</div>
-          <p className="text-[11px] text-cyan-400 font-semibold">Registered cohort</p>
+          <p className="text-[11px] text-cyan-400 font-semibold">{campus.enrolledCount ?? campus.studentCount} Enrolled</p>
         </div>
 
         <div className="alta-card p-4 space-y-1">

@@ -37,6 +37,7 @@ interface StatsPayload {
   };
   kpis: {
     totalStudents: number;
+    enrolledStudents?: number;
     activeStreakers: number;
     avgStreak: number;
     maxStreak: number;
@@ -142,7 +143,7 @@ export default function CampusStatsPage() {
           <span className="text-xs font-bold text-gray-400 uppercase tracking-wider">Total Students</span>
           <div className="text-3xl font-black text-white">{kpis.totalStudents}</div>
           <p className="text-[11px] text-cyan-400 font-semibold flex items-center gap-1">
-            <Users className="w-3.5 h-3.5" /> Registered in campus
+            <Users className="w-3.5 h-3.5" /> {kpis.enrolledStudents ?? kpis.totalStudents} Enrolled
           </p>
         </div>
 

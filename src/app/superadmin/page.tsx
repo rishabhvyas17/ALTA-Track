@@ -41,6 +41,7 @@ import StudentQuestionsModal from "@/components/StudentQuestionsModal";
 interface SuperAdminStats {
   summary: {
     totalStudents: number;
+    enrolledStudents?: number;
     totalCampuses: number;
     totalChallenges: number;
     activeChallenges: number;
@@ -274,15 +275,15 @@ export default function SuperAdminDashboard() {
           </div>
           <div className="flex items-baseline justify-between">
             <div className="text-3xl font-black text-white">
-              {summary.totalStudents}
+              {summary.enrolledStudents ?? summary.totalStudents}
             </div>
             <span className="text-[11px] font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">
               Across 5 Colleges
             </span>
           </div>
           <div className="text-[11px] text-slate-400 flex items-center gap-1">
-            <span>Active enrollments:</span>
-            <span className="text-white font-bold">{summary.activeEnrollments}</span>
+            <span>Registered students:</span>
+            <span className="text-white font-bold">{summary.totalStudents}</span>
           </div>
         </div>
 

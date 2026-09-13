@@ -149,10 +149,30 @@ export async function GET(request: NextRequest) {
       ? Math.round((approvedSubmissions.length / submissions.length) * 100)
       : 0;
 
-    const activeEnrollments = enrollments.filter((e) => e.status === "ACTIVE");
-    const totalStreak = activeEnrollments.reduce((sum, e) => sum + e.streakCount, 0);
-    const avgStreak = activeEnrollments.length > 0
-      ? Math.round((totalStreak / activeEnrollments.length) * 10) / 10
+    // Deduplicated student streaks: each student's highest active streak
+    const studentBestStreak = new Map<string, number>();
+    for (const e of enrollments) {
+      if (e.status === "ACTIVE") {
+        const prevBest = studentBestStreak.get(e.userId) ?? 0;
+        if (e.streakCount > prevBest) {
+          studentBestStreak.set(e.userId, e.streakCount);
+        } else if (!studentBestStreak.has(e.userId)) {
+          studentBestStreak.set(e.userId, e.streakCount);
+        }
+      }
+    }
+
+    const enrolledStudentIds = new Set(enrollments.map((e) => e.userId));
+    const activeStreakerIds = new Set<string>();
+    for (const [userId, streak] of studentBestStreak.entries()) {
+      if (streak > 0) {
+        activeStreakerIds.add(userId);
+      }
+    }
+
+    const activeStreaksList = Array.from(studentBestStreak.values()).filter((s) => s > 0);
+    const avgStreak = activeStreaksList.length > 0
+      ? Math.round((activeStreaksList.reduce((sum, s) => sum + s, 0) / activeStreaksList.length) * 10) / 10
       : 0;
 
     const maxStreak = enrollments.reduce(
@@ -169,12 +189,12 @@ export async function GET(request: NextRequest) {
       else difficultyCount.Medium++;
     });
 
-    // Streak milestones
+    // Streak milestones deduplicated per student
     const streakMilestones = {
-      streak7Plus: activeEnrollments.filter((e) => e.streakCount >= 7).length,
-      streak14Plus: activeEnrollments.filter((e) => e.streakCount >= 14).length,
-      streak25Plus: activeEnrollments.filter((e) => e.streakCount >= 25).length,
-      streak50Plus: activeEnrollments.filter((e) => e.streakCount >= 50).length,
+      streak7Plus: activeStreaksList.filter((s) => s >= 7).length,
+      streak14Plus: activeStreaksList.filter((s) => s >= 14).length,
+      streak25Plus: activeStreaksList.filter((s) => s >= 25).length,
+      streak50Plus: activeStreaksList.filter((s) => s >= 50).length,
     };
 
     // Year-wise detailed breakdown
@@ -182,10 +202,16 @@ export async function GET(request: NextRequest) {
       const yrStudents = students.filter((s) => s.year === yr);
       const yrStudentIds = new Set(yrStudents.map((s) => s.id));
       const yrEnrollments = enrollments.filter((e) => yrStudentIds.has(e.userId));
-      const yrActiveEnrollments = yrEnrollments.filter((e) => e.status === "ACTIVE");
+      const yrEnrolledIds = new Set(yrEnrollments.map((e) => e.userId));
+      const yrActiveStreakerIds = new Set(
+        yrEnrollments
+          .filter((e) => e.status === "ACTIVE" && e.streakCount > 0)
+          .map((e) => e.userId)
+      );
       const yrSubmissions = submissions.filter((s) => yrStudentIds.has(s.enrollment.userId));
       const yrApproved = yrSubmissions.filter((s) => s.status === "APPROVED");
 
+      const yrActiveEnrollments = yrEnrollments.filter((e) => e.status === "ACTIVE" && e.streakCount > 0);
       const yrStreakSum = yrActiveEnrollments.reduce((sum, e) => sum + e.streakCount, 0);
       const yrAvgStreak = yrActiveEnrollments.length > 0
         ? Math.round((yrStreakSum / yrActiveEnrollments.length) * 10) / 10
@@ -219,7 +245,8 @@ export async function GET(request: NextRequest) {
         year: yr,
         label: `Year ${yr}`,
         totalStudents: yrStudents.length,
-        activeStreakers: yrActiveEnrollments.length,
+        enrolledStudents: yrEnrolledIds.size,
+        activeStreakers: yrActiveStreakerIds.size,
         avgStreak: yrAvgStreak,
         totalSubmissions: yrSubmissions.length,
         approvedSubmissions: yrApproved.length,
@@ -310,7 +337,8 @@ export async function GET(request: NextRequest) {
       },
       kpis: {
         totalStudents: students.length,
-        activeStreakers: activeEnrollments.length,
+        enrolledStudents: enrolledStudentIds.size,
+        activeStreakers: activeStreakerIds.size,
         avgStreak,
         maxStreak,
         submissionsToday,

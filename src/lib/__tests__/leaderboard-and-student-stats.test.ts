@@ -210,6 +210,85 @@ async function runLeaderboardAndStatsTests() {
   assert(pendingCount === 1, "Pending submissions counted accurately (1)");
   assert(rejectedCount === 1, "Rejected submissions counted accurately (1)");
 
+  // ──────────────────────────────────────────────────────────────────────────
+  // Test 4: Enrolled Students vs Active Streakers Deduplication
+  // Verify that multiple enrollments do not inflate active streakers beyond enrolled students
+  // ──────────────────────────────────────────────────────────────────────────
+  const mockStudents = Array.from({ length: 64 }, (_, i) => ({
+    id: `student-${i + 1}`,
+    name: `Student ${i + 1}`,
+    year: ((i % 4) + 1),
+    role: "STUDENT",
+  }));
+
+  // 64 students enrolled, but 7 of them enrolled in 2 tracks => 71 total enrollments!
+  const mockEnrollments71: Array<{
+    id: string;
+    userId: string;
+    streakCount: number;
+    status: string;
+  }> = [];
+
+  mockStudents.forEach((stu, idx) => {
+    // 40 students have active streak > 0, 24 students have streak 0
+    const streak = idx < 40 ? ((idx % 15) + 1) : 0;
+    mockEnrollments71.push({
+      id: `enr-primary-${stu.id}`,
+      userId: stu.id,
+      streakCount: streak,
+      status: "ACTIVE",
+    });
+
+    // 7 students are also enrolled in a second challenge
+    if (idx < 7) {
+      mockEnrollments71.push({
+        id: `enr-secondary-${stu.id}`,
+        userId: stu.id,
+        streakCount: streak > 0 ? streak + 2 : 0,
+        status: "ACTIVE",
+      });
+    }
+  });
+
+  assert(mockStudents.length === 64, "Total registered students is 64");
+  assert(mockEnrollments71.length === 71, "Raw enrollment count is 71 due to multiple track enrollments");
+
+  // Deduplication logic as implemented in admin and superadmin routes:
+  const enrolledStudentIds = new Set(mockEnrollments71.map((e) => e.userId));
+  const studentBestStreak = new Map<string, number>();
+  for (const e of mockEnrollments71) {
+    if (e.status === "ACTIVE") {
+      const prev = studentBestStreak.get(e.userId) ?? 0;
+      if (e.streakCount > prev) {
+        studentBestStreak.set(e.userId, e.streakCount);
+      } else if (!studentBestStreak.has(e.userId)) {
+        studentBestStreak.set(e.userId, e.streakCount);
+      }
+    }
+  }
+
+  const activeStreakerIds = new Set<string>();
+  for (const [userId, streak] of studentBestStreak.entries()) {
+    if (streak > 0) {
+      activeStreakerIds.add(userId);
+    }
+  }
+
+  assert(
+    enrolledStudentIds.size === 64,
+    "Deduplicated enrolled students is exactly 64 (not 71)",
+    `Expected 64, got ${enrolledStudentIds.size}`
+  );
+  assert(
+    activeStreakerIds.size === 40,
+    "Active streakers is exactly 40 unique students with streak > 0 (not 71)",
+    `Expected 40, got ${activeStreakerIds.size}`
+  );
+  assert(
+    activeStreakerIds.size <= enrolledStudentIds.size && enrolledStudentIds.size <= mockStudents.length,
+    "Mathematical invariant holds: activeStreakers (40) <= enrolledStudents (64) <= totalStudents (64)"
+  );
+
   console.log(`\n🎉 Test Results: ${passed} Passed, ${failed} Failed\n`);
   if (failed > 0) process.exit(1);
 }
